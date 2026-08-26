@@ -1,0 +1,2714 @@
+<!DOCTYPE html>
+<!--
+  元藏·博观 — 消费者端（微信小程序 / H5 移动形态）高保真可点击原型
+  设计系统：元藏·典藏（青瓷雅集·冷调）
+  构建师：筑原型（Zhu）  |  单文件自包含 · 禁止任何外部网络资源
+  令牌见 <style> 顶部 :root
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>元藏·博观 · 消费者端原型</title>
+<style>
+/* ============================================================
+   设计系统「元藏·典藏」令牌（必须严格使用）
+   ============================================================ */
+:root{
+  --color-primary:#5B7B6F; --color-primary-hover:#4E6B5F; --color-primary-soft:rgba(91,123,111,0.12);
+  --color-action:#1A1A1A; --color-action-hover:#000000; /* 主按钮填充：墨黑（对齐权威源 --yz-ink-900），替代青瓷绿实底 */
+  --color-bg:#F5F1E8; --color-surface:#FBF9F3; --color-surface-sunken:#EDE8DC;
+  --color-overlay-veil:rgba(245,241,232,0.82); --color-overlay-dim:rgba(26,26,26,0.55);
+  --color-text-primary:#1A1A1A; --color-text-secondary:#6B6B63; --color-text-tertiary:#756E60; --color-text-on-primary:#FFFFFF;
+  --color-seal-red:#9E2B25; --color-seal-red-hover:#8A241F; --color-success:#446B47; --color-warning:#856127; --color-danger:#B4423A; --color-info:#6E8B82;
+  --color-gold:#B08D57; --color-gold-soft:rgba(176,141,87,0.16);
+  --color-border:#E4DECF; --color-border-strong:#D2C9B4; --border-width:1px;
+  --radius-sm:6px; --radius-md:10px; --radius-lg:16px; --radius-pill:999px;
+  --shadow-card:0 1px 2px rgba(26,26,26,0.04),0 2px 8px rgba(26,26,26,0.04);
+  --shadow-float:0 4px 16px rgba(26,26,26,0.08);
+  --shadow-overlay:0 8px 32px rgba(26,26,26,0.12);
+  --space-xs:4px; --space-sm:8px; --space-md:12px; --space-lg:16px; --space-xl:24px; --space-2xl:32px; --space-3xl:48px; --space-4xl:64px;
+  --font-heading:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  --font-mono:"SF Mono","JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px); --nav-height:44px; --tabbar-height:50px;
+  --z-dropdown:100; --z-sticky:200; --z-modal:300; --z-unlock:350; --z-toast:400;
+}
+
+/* ============================================================
+   基础重置
+   ============================================================ */
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--font-body);
+  color:var(--color-text-primary);
+  background:#D9D3C4; /* 桌面预览时的设备外背景 */
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+h1,h2,h3,h4{font-family:var(--font-heading);font-weight:600;margin:0;letter-spacing:.02em;}
+svg{display:block;}
+img{display:block;max-width:100%;}
+
+/* ============================================================
+   设备外壳 / App 容器（375 基准，移动优先）
+   ============================================================ */
+.device{
+  width:375px;max-width:100vw;height:812px;max-height:100dvh;
+  margin:0 auto;
+  background:#cfc8b8;
+  display:flex;align-items:center;justify-content:center;
+  padding:0;
+}
+.app{
+  position:relative;
+  width:375px;max-width:100vw;
+  height:812px;max-height:100dvh;
+  background:var(--color-bg);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  border-radius:0;
+  box-shadow:0 12px 48px rgba(26,26,26,0.18);
+}
+@media (min-width:430px){
+  .app{border-radius:36px;}
+  .device{padding:18px;}
+}
+
+/* ============================================================
+   顶部导航（兼容微信胶囊：右侧 87px 留白，不放电）
+   ============================================================ */
+.top-nav{
+  flex:0 0 auto;
+  height:calc(var(--safe-top) + var(--nav-height));
+  padding-top:var(--safe-top);
+  display:flex;align-items:center;
+  background:var(--color-bg);
+  border-bottom:var(--border-width) solid var(--color-border);
+  position:relative;z-index:var(--z-sticky);
+}
+.top-nav.hidden{display:none;}
+.nav-back{
+  width:44px;height:44px;flex:0 0 44px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--color-text-primary);
+}
+.nav-back svg{width:22px;height:22px;}
+.nav-back.hidden{visibility:hidden;}
+.nav-title{
+  flex:1 1 auto;
+  font-size:17px;font-weight:600;
+  font-family:var(--font-heading);
+  color:var(--color-text-primary);
+  text-align:center;
+  /* 居中标题，为右侧胶囊留白对称：左 44 + 右 87 */
+}
+.nav-capsule{
+  /* 微信胶囊占位：86–87px，不放任何控件 */
+  width:87px;flex:0 0 87px;height:100%;
+}
+
+/* ============================================================
+   视图容器与切换
+   ============================================================ */
+.views{position:relative;flex:1 1 auto;overflow:hidden;background:var(--color-bg);}
+.view{
+  position:absolute;inset:0;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  display:none;
+  padding-bottom:var(--space-2xl);
+}
+.view.active{display:block;}
+.view::-webkit-scrollbar{width:0;height:0;}
+
+/* ============================================================
+   通用排版 / 工具类
+   ============================================================ */
+.pad{padding:var(--space-lg);}
+.pad-x{padding-left:var(--space-lg);padding-right:var(--space-lg);}
+.muted{color:var(--color-text-secondary);}
+.micro-text{font-size:11px;color:var(--color-text-tertiary);margin:var(--space-xs) 0 0;}
+.label-xs{font-size:11px;color:var(--color-text-tertiary);letter-spacing:.04em;}
+.serif{font-family:var(--font-heading);}
+.divider{height:var(--border-width);background:var(--color-border);margin:var(--space-lg) 0;border:none;}
+.between{display:flex;align-items:center;justify-content:space-between;}
+.row{display:flex;align-items:center;gap:var(--space-sm);}
+.wrap{display:flex;flex-wrap:wrap;gap:var(--space-sm);}
+.grow{flex:1 1 auto;}
+.section-title{font-size:15px;font-weight:600;font-family:var(--font-heading);margin:var(--space-xl) 0 var(--space-md);color:var(--color-text-primary);display:flex;align-items:center;justify-content:space-between;}
+.section-title .more{font-size:12px;color:var(--color-text-tertiary);font-family:var(--font-body);font-weight:400;}
+
+/* ============================================================
+   按钮
+   ============================================================ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-sm);
+  height:44px;padding:0 var(--space-xl);border-radius:var(--radius-md);
+  font-size:15px;font-weight:500;transition:background .18s ease,opacity .18s ease;width:100%;}
+.btn:active{opacity:.88;}
+.btn-primary{background:var(--color-action);color:var(--color-text-on-primary);}
+.btn-primary:active{background:var(--color-action-hover);}
+.btn-secondary{background:transparent;color:var(--color-primary);border:var(--border-width) solid var(--color-primary);}
+.btn-pay{background:var(--color-seal-red);color:#fff;height:48px;border-radius:var(--radius-md);font-weight:600;}
+.btn-pay:active{background:var(--color-seal-red-hover);}
+.btn-block{width:100%;}
+.btn[disabled]{opacity:.5;pointer-events:none;}
+.pay-note{font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:var(--space-sm);}
+/* 收藏按钮（btn-secondary 风，心形 SVG 12x12） */
+.fav-btn{display:inline-flex;align-items:center;gap:4px;height:auto;padding:4px 10px;font-size:11px;font-weight:500;white-space:nowrap;border-radius:var(--radius-pill);background:transparent;border:var(--border-width) solid var(--color-primary);color:var(--color-primary);flex:0 0 auto;}
+.fav-btn svg{width:12px;height:12px;flex:0 0 12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;}
+.fav-btn-active{background:var(--color-primary-soft);border-color:var(--color-action);color:var(--color-action);}
+.fav-btn-active svg{fill:currentColor;stroke:var(--color-action);}
+
+/* ============================================================
+   标签 / 徽章
+   ============================================================ */
+.tag{display:inline-flex;align-items:center;font-size:11px;line-height:1;padding:4px 8px;border-radius:var(--radius-sm);white-space:nowrap;}
+.tag-dynasty{background:var(--color-surface);border:var(--border-width) solid var(--color-border-strong);color:var(--color-text-primary);}
+.tag-kiln{background:var(--color-primary-soft);color:var(--color-primary);}
+.tag-cat{background:var(--color-surface-sunken);color:var(--color-text-secondary);}
+.pill{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px;border-radius:var(--radius-pill);font-size:11px;font-weight:600;line-height:1;}
+.pill-vip{background:var(--color-seal-red);color:#fff;}
+.pill-year{background:transparent;border:1px solid var(--color-gold);color:var(--color-gold);}
+.gold-emblem{width:14px;height:14px;flex:0 0 14px;}
+
+/* ============================================================
+   卡片
+   ============================================================ */
+.card{background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-card);}
+/* 藏品卡 */
+.treasure-card{background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-card);display:flex;flex-direction:column;}
+.thumb{position:relative;width:100%;aspect-ratio:3/4;background:var(--color-surface-sunken);overflow:hidden;}
+.thumb svg.vessel{width:100%;height:100%;}
+.thumb-lock{position:absolute;top:var(--space-sm);right:var(--space-sm);width:22px;height:22px;border-radius:var(--radius-pill);background:rgba(245,241,232,.9);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-card);}
+.thumb-lock svg{width:13px;height:13px;}
+.tc-body{padding:var(--space-md);}
+.tc-title{font-size:14px;font-family:var(--font-heading);font-weight:600;color:var(--color-text-primary);line-height:1.4;}
+.tc-meta{display:flex;gap:6px;margin-top:var(--space-sm);flex-wrap:wrap;}
+
+/* 微痕卡 */
+.micro-card{background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-card);}
+.micro-card .mc-body{padding:var(--space-md);}
+.micro-card .mc-title{font-size:14px;font-family:var(--font-heading);font-weight:600;}
+.disclaimer{display:inline-flex;align-items:center;gap:5px;margin-top:var(--space-sm);font-size:10px;color:var(--color-text-tertiary);background:var(--color-surface-sunken);padding:3px 7px;border-radius:var(--radius-sm);}
+
+/* 窑口卡 */
+.kiln-card{background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md);box-shadow:var(--shadow-card);display:flex;gap:var(--space-md);align-items:center;}
+.kiln-card .kc-thumb{width:64px;height:64px;flex:0 0 64px;border-radius:var(--radius-sm);background:var(--color-surface-sunken);overflow:hidden;}
+.kiln-card .kc-thumb svg{width:100%;height:100%;}
+
+/* ============================================================
+   微痕导航：年代时间轴（圆点 + 连接线）
+   ============================================================ */
+.micro-timeline{position:relative;}
+.mt-dynasty-item{position:relative;display:flex;gap:var(--space-lg);margin-bottom:var(--space-xl);}
+.mt-dynasty-item::before{content:"";position:absolute;left:7px;top:6px;width:6px;height:6px;border-radius:50%;background:var(--color-primary);z-index:1;box-shadow:0 0 0 4px rgba(91,123,111,.18);}
+.mt-dynasty-item::after{content:"";position:absolute;left:9.5px;top:28px;bottom:0;height:auto;width:1.5px;background:var(--color-border-strong);}
+.mt-dynasty-item:last-child::after{display:none;}
+.mt-dynasty-name{width:24px;flex:0 0 24px;text-align:center;font-family:var(--font-heading);font-size:15px;font-weight:600;color:var(--color-text-primary);}
+.mt-dynasty-body{flex:1;display:flex;flex-direction:column;gap:var(--space-md);min-width:0;}
+.mt-kiln-row{position:relative;border-radius:var(--radius-md);overflow:hidden;cursor:pointer;background:var(--color-surface-sunken);}
+.mt-kiln-row:active{opacity:.7;}
+.mcc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--color-surface-sunken);}
+.mcc-cell{height:52px;background:var(--color-surface-sunken);overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.mcc-cell svg{width:100%;height:100%;opacity:.62;transform:scale(1.25);}
+.mcc-label{position:absolute;left:10px;bottom:8px;font-size:12px;font-weight:600;color:#fff;background:rgba(26,26,26,.72);border-radius:var(--radius-pill);padding:4px 12px;font-family:var(--font-heading);}
+.mcc-building{position:absolute;right:10px;bottom:10px;font-size:10px;color:var(--color-text-tertiary);}
+
+/* ============================================================
+   微痕窑口库页：藏品卡片 + 特征图
+   ============================================================ */
+.mk-list{display:flex;flex-direction:column;gap:var(--space-md);}
+.mk-item{display:flex;gap:var(--space-md);align-items:center;cursor:pointer;padding:var(--space-sm);border-radius:var(--radius-md);}
+.mk-item:active{background:var(--color-surface-sunken);}
+.mk-thumb{width:56px;height:56px;flex:0 0 56px;border-radius:var(--radius-sm);overflow:hidden;background:var(--color-surface-sunken);}
+.mk-thumb svg{width:100%;height:100%;}
+.mk-info{flex:1 1 auto;min-width:0;}
+.mk-name{font-family:var(--font-heading);font-size:15px;font-weight:600;color:var(--color-text-primary);}
+.mk-meta{font-size:11px;color:var(--color-text-tertiary);margin-top:2px;}
+.mk-card{border-bottom:1px solid var(--color-border);padding:var(--space-md) 0;}
+.mk-card:last-child{border-bottom:none;}
+.mk-card-head{display:flex;align-items:center;gap:var(--space-md);cursor:pointer;}
+.mk-feats{display:flex;gap:var(--space-sm);margin-top:var(--space-sm);overflow-x:auto;}
+.feat-card{width:calc((100% - 16px)/3);min-width:96px;aspect-ratio:4/3;border-radius:var(--radius-sm);background:var(--color-surface-sunken);overflow:hidden;position:relative;cursor:pointer;flex:0 0 auto;}
+.feat-card svg{width:100%;height:100%;opacity:.55;}
+.feat-tag{position:absolute;left:6px;bottom:6px;font-size:10px;color:var(--color-text-primary);background:var(--color-surface);border-radius:var(--radius-pill);padding:2px 8px;white-space:nowrap;}
+
+/* ============================================================
+   解锁遮罩（米白实色薄纱，无渐变无模糊，禁用玻璃拟态）
+   ============================================================ */
+.unlock-veil{position:absolute;inset:0;background:var(--color-overlay-veil);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-md);z-index:var(--z-unlock);text-align:center;padding:var(--space-lg);}
+.unlock-veil .lock-mark{width:34px;height:34px;color:var(--color-text-secondary);}
+.unlock-veil .lock-mark svg{width:34px;height:34px;}
+.unlock-veil .veil-pill{display:inline-flex;align-items:center;background:var(--color-seal-red);color:#fff;font-size:13px;font-weight:600;padding:9px 16px;border-radius:var(--radius-pill);box-shadow:var(--shadow-float);}
+.unlock-veil .veil-sub{font-size:11px;color:var(--color-text-secondary);}
+
+/* ============================================================
+   金刚区 / 网格
+   ============================================================ */
+.kingkong{display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-md);}
+.kk-item{display:flex;flex-direction:column;align-items:center;gap:var(--space-sm);padding:var(--space-md) 0;background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-card);}
+.kk-item .kk-icon{width:34px;height:34px;color:var(--color-primary);}
+.kk-item .kk-label{font-size:12px;color:var(--color-text-primary);}
+
+/* ============================================================
+   搜索 / 筛选条
+   ============================================================ */
+.search-bar{display:flex;align-items:center;gap:var(--space-sm);height:40px;padding:0 var(--space-md);background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-pill);color:var(--color-text-tertiary);}
+.search-bar svg{width:18px;height:18px;flex:0 0 18px;}
+.search-bar .sb-ph{font-size:14px;color:var(--color-text-tertiary);}
+.filter-bar{display:flex;gap:var(--space-sm);overflow-x:auto;padding:var(--space-md) var(--space-lg);}
+.filter-bar::-webkit-scrollbar{display:none;}
+.chip{flex:0 0 auto;font-size:13px;padding:7px 14px;border-radius:var(--radius-pill);background:var(--color-surface);border:var(--border-width) solid var(--color-border);color:var(--color-text-secondary);white-space:nowrap;}
+.chip.active{background:var(--color-primary-soft);border-color:var(--color-primary);color:var(--color-primary);}
+
+/* ============================================================
+   元藏图书馆：书目编目卡 / 章节 / 阅读器
+   ============================================================ */
+.lib-card{display:flex;gap:var(--space-md);padding:var(--space-md);background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-card);margin-bottom:var(--space-md);}
+.lib-card:active{background:var(--color-surface-sunken);}
+.lc-cover{width:64px;height:88px;flex:0 0 64px;border-radius:var(--radius-sm);overflow:hidden;background:var(--color-surface-sunken);}
+.lc-cover svg{width:100%;height:100%;}
+.lc-body{flex:1 1 auto;min-width:0;}
+.lc-title{font-family:var(--font-heading);font-size:15px;font-weight:600;color:var(--color-text-primary);}
+.lc-author{font-size:12px;color:var(--color-text-secondary);margin-top:2px;}
+.lc-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.lc-desc{font-size:12px;color:var(--color-text-tertiary);margin:6px 0 0;line-height:1.5;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;}
+.tag-txt{background:transparent;border:var(--border-width) solid var(--color-border-strong);color:var(--color-text-secondary);}
+.tag-pdf{background:var(--color-primary-soft);color:var(--color-primary);}
+.chapter-item{width:100%;display:flex;align-items:center;justify-content:space-between;padding:var(--space-md);background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-md);margin-bottom:var(--space-sm);box-shadow:var(--shadow-card);}
+.chapter-item .ch-name{font-family:var(--font-heading);font-size:14px;font-weight:500;}
+.chapter-item .ch-go{display:flex;align-items:center;gap:6px;color:var(--color-text-tertiary);font-size:11px;}
+.chapter-item svg{width:16px;height:16px;}
+/* 阅读器：仿古籍 TXT 纸面 */
+.reader-paper{background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-md);margin:var(--space-lg);padding:var(--space-2xl) var(--space-xl);line-height:1.75;color:var(--color-text-primary);}
+.reader-title{font-family:var(--font-heading);font-size:17px;font-weight:600;text-align:center;margin-bottom:var(--space-xl);letter-spacing:.06em;}
+.reader-content p{text-indent:2em;margin:0 0 var(--space-lg);font-size:14px;line-height:1.75;}
+/* 阅读器：PDF 文档占位 */
+.pdf-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--color-surface-sunken);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-md);margin:var(--space-lg);padding:var(--space-4xl) 0;color:var(--color-text-tertiary);}
+.pdf-doc{width:84px;height:84px;color:var(--color-primary);opacity:.6;}
+.pdf-doc svg{width:84px;height:84px;}
+.pdf-label{font-size:13px;color:var(--color-text-secondary);margin-top:var(--space-md);}
+.pdf-page{font-family:var(--font-mono);font-size:11px;color:var(--color-text-tertiary);margin-top:var(--space-sm);}
+/* 阅读器底部工具条 */
+.reader-bar{position:sticky;bottom:0;z-index:2;display:flex;justify-content:space-around;align-items:center;background:var(--color-surface);border-top:var(--border-width) solid var(--color-border);padding:var(--space-md) var(--space-lg);}
+.reader-bar button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--color-text-secondary);}
+.reader-bar svg{width:20px;height:20px;color:var(--color-text-secondary);}
+.reader-footer{text-align:center;padding:var(--space-sm) 0 var(--space-lg);font-family:var(--font-mono);font-size:11px;color:var(--color-text-tertiary);}
+
+/* ============================================================
+   列表 / 结果项
+   ============================================================ */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);}
+.result-item{display:flex;gap:var(--space-md);padding:var(--space-md);background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-card);align-items:center;}
+.result-item .ri-thumb{width:56px;height:72px;flex:0 0 56px;border-radius:var(--radius-sm);background:var(--color-surface-sunken);overflow:hidden;}
+.result-item .ri-thumb svg{width:100%;height:100%;}
+.ri-title{font-size:14px;font-family:var(--font-heading);font-weight:600;}
+.bm-time{display:block;margin-top:3px;font-size:11px;color:var(--color-text-tertiary);line-height:1.5;white-space:normal;}
+
+/* ============================================================
+   会员卡（首页入口 / 个人中心）
+   ============================================================ */
+.member-card{background:var(--color-surface-sunken);border:1px solid var(--color-border-strong);border-radius:var(--radius-lg);padding:var(--space-lg);position:relative;overflow:hidden;}
+.member-card.is-year{border-color:var(--color-gold);}
+.member-card .mc-grain{display:none;position:absolute;right:-20px;top:-20px;width:120px;height:120px;opacity:.12;color:var(--color-gold);}
+.member-card.is-year .mc-grain{display:block;}
+.member-card h3{font-size:16px;font-family:var(--font-heading);}
+.member-card .mc-price{font-family:var(--font-heading);font-size:22px;color:var(--color-seal-red);font-weight:700;}
+.member-card .mc-price small{font-size:12px;font-weight:400;color:var(--color-text-secondary);}
+.mc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-sm);}
+.mc-price-row{display:flex;align-items:baseline;gap:var(--space-md);margin-top:var(--space-md);}
+.mc-price-year{font-size:16px;color:var(--color-text-primary);}
+.mc-save{font-size:11px;color:var(--color-primary);background:var(--color-primary-soft);border-radius:var(--radius-pill);padding:2px 8px;font-weight:600;}
+.mc-benefits{display:flex;flex-wrap:wrap;gap:var(--space-sm);margin-top:var(--space-md);}
+.mcb-item{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--color-text-secondary);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-pill);padding:4px 10px;}
+.mcb-item svg{width:12px;height:12px;color:var(--color-success);}
+.mc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:var(--space-md);padding-top:var(--space-sm);border-top:1px solid var(--color-border);}
+.mc-expire{font-size:11px;color:var(--color-text-tertiary);}
+.mc-manage{font-size:12px;color:var(--color-primary);font-weight:600;display:inline-flex;align-items:center;gap:2px;}
+
+/* 未登录引导条 */
+.banner-guest{display:flex;align-items:center;gap:var(--space-sm);background:var(--color-primary-soft);border:var(--border-width) solid var(--color-primary);border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);margin:var(--space-md) var(--space-lg);}
+.banner-guest .bg-text{font-size:13px;color:var(--color-primary);flex:1 1 auto;}
+.banner-guest .bg-go{font-size:13px;font-weight:600;color:var(--color-primary);display:flex;align-items:center;}
+.banner-guest .bg-go svg{width:16px;height:16px;}
+
+/* 首页全宽沉浸式 Banner（零渐变，纯色 var(--color-primary)，禁用玻璃拟态） */
+.home-banner{position:relative;width:100%;height:200px;background:var(--color-primary);overflow:hidden;}
+/* 轮播主图：整幅藏品线描铺满为 Banner 主体 */
+.hb-art-wrap{position:absolute;inset:0;width:100%;height:100%;opacity:.55;color:var(--color-text-on-primary);pointer-events:none;transition:opacity .6s ease;display:flex;align-items:center;justify-content:center;}
+.hb-art-wrap svg{width:100%;height:100%;}
+/* 底部藏品信息条：纯色半透 veil，无渐变 */
+.hb-info{position:absolute;left:0;right:0;bottom:0;padding:var(--space-lg) var(--space-lg) 28px;background:var(--color-overlay-veil);color:var(--color-text-primary);transition:opacity .4s ease;pointer-events:none;}
+.hb-info-name{font-family:var(--font-heading);font-size:14px;font-weight:600;}
+.hb-info-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px;}
+/* 轮播圆点指示 */
+.hb-dots{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:6px;z-index:2;}
+.hb-dots button{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);padding:0;transition:background .2s ease;}
+.hb-dots button.active{background:var(--color-action);}
+.hb-guest{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:11px;color:var(--color-text-on-primary);opacity:.75;z-index:3;pointer-events:none;}
+
+/* ============================================================
+   表单
+   ============================================================ */
+.field{margin-bottom:var(--space-lg);}
+.field label{display:block;font-size:13px;color:var(--color-text-secondary);margin-bottom:var(--space-sm);}
+.input{width:100%;height:46px;padding:0 var(--space-md);background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-md);font-size:15px;color:var(--color-text-primary);}
+.input:focus{outline:none;border-color:var(--color-primary);}
+.checkbox-row{display:flex;align-items:flex-start;gap:var(--space-sm);font-size:12px;color:var(--color-text-secondary);}
+.checkbox-row .cb{width:18px;height:18px;flex:0 0 18px;margin-top:1px;border:var(--border-width) solid var(--color-border-strong);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:#fff;}
+.checkbox-row.checked .cb{background:var(--color-primary);border-color:var(--color-primary);}
+.checkbox-row .cb svg{width:12px;height:12px;}
+.checkbox-row a{color:var(--color-primary);text-decoration:none;}
+
+/* ============================================================
+   分段控件 / 价格
+   ============================================================ */
+.seg{display:flex;background:var(--color-surface-sunken);border-radius:var(--radius-md);padding:3px;gap:3px;}
+.seg button{flex:1;height:40px;border-radius:var(--radius-sm);font-size:14px;color:var(--color-text-secondary);font-weight:500;}
+.seg button.active{background:var(--color-surface);color:var(--color-primary);box-shadow:var(--shadow-card);font-weight:600;}
+.price-row{display:flex;align-items:baseline;gap:var(--space-sm);}
+.price-now{font-family:var(--font-heading);font-size:28px;font-weight:700;color:var(--color-text-primary);}
+.price-now .cny{font-size:16px;}
+.price-old{font-size:13px;color:var(--color-text-tertiary);text-decoration:line-through;}
+
+/* ============================================================
+   底部 Tab
+   ============================================================ */
+.tab-bar{
+  flex:0 0 auto;
+  height:calc(var(--safe-bottom) + var(--tabbar-height));
+  padding-bottom:var(--safe-bottom);
+  display:flex;
+  background:var(--color-surface);
+  border-top:var(--border-width) solid var(--color-border);
+  position:relative;z-index:var(--z-sticky);
+}
+.tab-bar.hidden{display:none;}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--color-text-tertiary);}
+.tab-item svg{width:24px;height:24px;color:var(--color-text-tertiary);}
+.tab-item .tab-label{font-size:10px;line-height:1;color:var(--color-text-tertiary);}
+.tab-item.active svg{color:var(--color-primary);}
+.tab-item.active .tab-label{color:var(--color-text-primary);font-weight:600;}
+
+/* ============================================================
+   详情页：Hero / 著录 / 微观面板
+   ============================================================ */
+.detail-hero{position:relative;width:100%;aspect-ratio:1/1;background:var(--color-surface-sunken);overflow:hidden;}
+.detail-hero svg.artifact{width:100%;height:100%;}
+.detail-hero .dh-badges{position:absolute;left:var(--space-md);top:var(--space-md);display:flex;gap:6px;}
+.meta-list{font-size:13px;}
+.meta-list .ml-row{display:flex;gap:var(--space-md);padding:var(--space-sm) 0;border-bottom:var(--border-width) solid var(--color-border);}
+.meta-list .ml-row:last-child{border-bottom:none;}
+.meta-list .ml-k{width:64px;flex:0 0 64px;color:var(--color-text-tertiary);}
+.meta-list .ml-v{color:var(--color-text-primary);flex:1 1 auto;}
+
+/* 微痕详情：标注点 */
+.annot-wrap{position:relative;width:100%;background:var(--color-surface-sunken);border-radius:var(--radius-md);overflow:hidden;}
+.annot-wrap svg{width:100%;height:100%;}
+.annot-dot{position:absolute;width:18px;height:18px;border-radius:var(--radius-pill);background:var(--color-primary);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px rgba(245,241,232,.9);transform:translate(-50%,-50%);z-index:2;}
+.annot-dot::after{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:var(--color-primary);}
+.annot-note{position:absolute;background:var(--color-surface);border:1px solid var(--color-primary);border-radius:var(--radius-sm);padding:6px 9px;font-size:11px;color:var(--color-text-primary);max-width:130px;box-shadow:var(--shadow-card);z-index:3;transform:translate(-50%,0);}
+.annot-note b{color:var(--color-primary);font-family:var(--font-heading);}
+
+.micro-panel{background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-card);}
+.micro-panel .mp-head{display:flex;align-items:center;justify-content:space-between;padding:var(--space-md) var(--space-lg);border-bottom:var(--border-width) solid var(--color-border);}
+.micro-panel .mp-head h4{font-size:14px;font-family:var(--font-heading);}
+.micro-panel .mp-img{position:relative;width:100%;aspect-ratio:4/3;background:var(--color-surface-sunken);}
+.micro-panel .mp-img svg{width:100%;height:100%;}
+.micro-panel .mp-read{padding:var(--space-md) var(--space-lg);font-size:13px;color:var(--color-text-secondary);line-height:1.65;}
+
+/* 固定免责条 */
+/* 微痕详情无固定底栏，免责条贴底；其余页不再显示（由 .show 控制） */
+.fixed-disclaimer{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--safe-bottom) + 8px);width:calc(100% - 24px);max-width:351px;background:rgba(245,241,232,.96);border:1px solid var(--color-seal-red);border-radius:var(--radius-pill);padding:8px 14px;font-size:11px;color:var(--color-seal-red);text-align:center;z-index:var(--z-unlock);box-shadow:var(--shadow-overlay);display:none;}
+#view-micro-detail{padding-bottom:72px;}
+.fixed-disclaimer.show{display:block;}
+
+/* ============================================================
+   空状态 / 权限拦截
+   ============================================================ */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:var(--space-4xl) var(--space-2xl);color:var(--color-text-tertiary);}
+.empty-state .es-icon{width:72px;height:72px;color:var(--color-border-strong);margin-bottom:var(--space-lg);}
+.empty-state h3{font-size:15px;color:var(--color-text-secondary);font-family:var(--font-heading);margin-bottom:var(--space-sm);}
+.empty-state p{font-size:13px;margin:0 0 var(--space-xl);}
+
+.permission{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:var(--space-4xl) var(--space-2xl);}
+.permission .pm-icon{width:80px;height:80px;color:var(--color-primary);opacity:.5;margin-bottom:var(--space-xl);}
+.permission h2{font-size:18px;font-family:var(--font-heading);margin-bottom:var(--space-sm);}
+.permission p{font-size:13px;color:var(--color-text-secondary);margin:0 0 var(--space-2xl);max-width:260px;}
+
+/* ============================================================
+   登录 / 微信授权
+   ============================================================ */
+.auth-wrap{height:100%;display:flex;flex-direction:column;padding:calc(var(--space-4xl)) var(--space-2xl) var(--space-2xl);background:var(--color-bg);}
+.auth-logo{width:84px;height:84px;margin:0 auto var(--space-xl);color:var(--color-primary);}
+.auth-title{font-size:24px;font-family:var(--font-heading);text-align:center;color:var(--color-text-primary);margin-bottom:var(--space-sm);}
+.auth-sub{font-size:13px;color:var(--color-text-tertiary);text-align:center;margin-bottom:var(--space-4xl);}
+.auth-spacer{flex:1 1 auto;}
+.wechat-btn{display:flex;align-items:center;justify-content:center;gap:var(--space-sm);height:48px;background:#07C160;color:#fff;border-radius:var(--radius-md);font-size:16px;font-weight:600;width:100%;}
+.wechat-btn svg{width:22px;height:22px;}
+.auth-foot{margin-top:var(--space-lg);}
+
+/* ============================================================
+   Toast
+   ============================================================ */
+.toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(26,26,26,.88);color:var(--color-text-on-primary);font-size:13px;padding:10px 18px;border-radius:var(--radius-md);z-index:var(--z-toast);opacity:0;pointer-events:none;transition:opacity .2s ease;max-width:80%;text-align:center;}
+.toast.show{opacity:1;}
+
+/* 演示状态浮标（仅原型内可见，便于切换登录/会员态） */
+.demo-fab{position:fixed;right:8px;bottom:calc(var(--safe-bottom) + var(--tabbar-height) + 8px);z-index:var(--z-toast);display:flex;flex-direction:column;gap:4px;align-items:flex-end;}
+.demo-fab button{font-size:10px;background:rgba(26,26,26,.6);color:#fff;border-radius:var(--radius-pill);padding:5px 10px;}
+.demo-fab.hidden{display:none;}
+
+/* ============================================================
+   第 3 轮新增：藏品多视图缩略图 / 平台价值卡 / 权限对比表
+   ============================================================ */
+/* 藏品详情：缩略图条 */
+.gd-thumbs{display:flex;gap:8px;padding:var(--space-sm) var(--space-lg) 0;overflow-x:auto;}
+.gd-thumbs::-webkit-scrollbar{display:none;}
+.gd-thumb{flex:0 0 56px;width:56px;height:56px;padding:0;border-radius:var(--radius-sm);background:var(--color-surface-sunken);border:2px solid transparent;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.gd-thumb.active{border-color:var(--color-action);}
+.gd-thumb svg.vessel{width:32px;height:42px;}
+.gd-thumb .gd-t-label{font-size:9px;color:var(--color-text-tertiary);line-height:1;margin-top:2px;}
+/* 首页：平台价值卡 */
+.value-card{background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-lg);box-shadow:var(--shadow-card);margin-top:var(--space-lg);}
+.metric-row{display:flex;align-items:flex-start;margin-top:var(--space-lg);padding:var(--space-md) 0;border-top:var(--border-width) solid var(--color-border);border-bottom:var(--border-width) solid var(--color-border);}
+.metric{flex:1 1 0;text-align:center;padding:0 2px;}
+.metric + .metric{border-left:var(--border-width) solid var(--color-border);}
+.metric .m-num{font-family:var(--font-heading);font-size:17px;font-weight:600;color:var(--color-text-primary);}
+.metric .m-label{font-size:10px;color:var(--color-text-tertiary);margin-top:2px;}
+.entry-card{display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-card);}
+.entry-card .ec-icon{width:38px;height:38px;flex:0 0 38px;border-radius:var(--radius-sm);background:var(--color-primary-soft);color:var(--color-primary);display:flex;align-items:center;justify-content:center;}
+.entry-card .ec-icon svg{width:20px;height:20px;}
+.entry-card .ec-title{font-family:var(--font-heading);font-size:14px;font-weight:600;color:var(--color-text-primary);}
+.entry-card .ec-desc{font-size:11px;color:var(--color-text-tertiary);margin-top:2px;}
+.entry-card .ec-go{color:var(--color-text-tertiary);}
+.entry-card .ec-go svg{width:16px;height:16px;}
+/* 会员：游客 vs 会员 权限对比表（仅横向分隔线） */
+.perm-table{width:100%;font-size:13px;border-collapse:collapse;margin-top:var(--space-lg);}
+.perm-table th,.perm-table td{padding:var(--space-sm) var(--space-sm);border-bottom:var(--border-width) solid var(--color-border);text-align:left;vertical-align:middle;}
+.perm-table th{font-family:var(--font-heading);font-weight:600;color:var(--color-text-primary);font-size:13px;}
+.perm-table .pt-fn{color:var(--color-text-secondary);}
+.perm-table .pt-yes{color:var(--color-success);display:inline-flex;align-items:center;}
+.perm-table .pt-yes svg{width:14px;height:14px;}
+.perm-table .pt-no{color:var(--color-text-tertiary);}
+.perm-table .pt-sub{color:var(--color-text-secondary);}
+.pt-tag{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 8px;border-radius:var(--radius-pill);}
+.pt-tag.guest{background:var(--color-surface-sunken);color:var(--color-text-secondary);}
+.pt-tag.member{background:var(--color-seal-red);color:#fff;}
+
+/* ===== 我的邀请码 ===== */
+.ava-sm{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-family:var(--font-heading);font-size:15px;flex:0 0 34px}
+.invite-card .invite-main{display:flex;gap:var(--space-lg);align-items:flex-start;margin-top:var(--space-md)}
+.invite-card .qr-box{width:112px;height:112px;flex:0 0 112px;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:9px;background:#fff;display:flex;align-items:center;justify-content:center}
+.invite-card .qr-box svg{width:100%;height:100%;display:block}
+.invite-card .invite-side{flex:1;min-width:0}
+.invite-card .field-label{font-size:12px;color:var(--color-text-tertiary)}
+.invite-card .invite-code{font-family:var(--font-mono);font-size:19px;font-weight:700;letter-spacing:1.5px;color:var(--color-primary);margin-top:4px;word-break:break-all}
+.invite-card .invitee-hint{font-size:13px;color:var(--color-text-secondary);margin-top:var(--space-md)}
+.invite-card .invitee-hint .mono{color:var(--color-primary)}
+.invite-card .invitee-title{font-size:13px;color:var(--color-text-tertiary);margin:var(--space-lg) 0 var(--space-sm)}
+.invite-card .invitee-list{display:flex;flex-direction:column;gap:10px}
+.invite-card .invitee{display:flex;align-items:center;gap:11px}
+.invite-card .invitee-meta .invitee-name{font-size:14px;line-height:1.3}
+.invite-card .invitee-meta .invitee-sub{font-size:12px;color:var(--color-text-tertiary)}
+.invite-card .invitee-meta .invitee-reg{margin-top:2px;color:var(--color-text-tertiary)}
+.invite-count-pill{display:inline-flex;align-items:center;font-size:12px;font-weight:600;padding:3px 10px;border-radius:var(--radius-pill);background:var(--color-primary-soft);color:var(--color-primary)}
+</style>
+</head>
+<body>
+<div class="device">
+<div class="app" id="app">
+
+  <!-- ============ 顶部导航 ============ -->
+  <header class="top-nav" id="topNav">
+    <button class="nav-back hidden" id="navBack" aria-label="返回">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 5 8 12 15 19"></polyline></svg>
+    </button>
+    <h1 class="nav-title" id="navTitle">元藏·博观</h1>
+    <div class="nav-capsule"></div>
+  </header>
+
+  <!-- ============ 视图容器 ============ -->
+  <main class="views" id="views">
+
+    <!-- ===== 1. 微信授权登录页 ===== -->
+    <section class="view" id="view-login">
+      <div class="auth-wrap">
+        <div class="auth-logo">
+          <svg viewBox="0 0 84 84" fill="none"><circle cx="42" cy="42" r="40" stroke="currentColor" stroke-width="2"/><path d="M42 20 C30 20 22 29 22 39 C22 46 27 52 34 55 L32 62 L40 57 C41 57 41 57 42 57 C54 57 62 48 62 39 C62 29 54 20 42 20 Z" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="34" cy="38" r="2.4" fill="currentColor"/><circle cx="50" cy="38" r="2.4" fill="currentColor"/></svg>
+        </div>
+        <h2 class="auth-title">元藏·博观</h2>
+        <p class="auth-sub">基于 MCP 的 AI 文博检索 · 全球馆藏 + 宫廷档案</p>
+        <div class="auth-spacer"></div>
+        <button class="wechat-btn" id="wechatLoginBtn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4C5.1 4 2 6.7 2 10c0 1.9 1 3.5 2.6 4.7L4 17l2.6-1.3c.8.2 1.6.3 2.4.3h.6a5.6 5.6 0 0 1-.2-1.5C9.4 10.6 12.8 8 17 8c.3 0 .6 0 .9.1C16.8 5.8 13.2 4 9 4Zm-2.4 4.2a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm4.8 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"/><path d="M22 14.5c0-2.8-2.7-5-6-5s-6 2.2-6 5 2.7 5 6 5c.7 0 1.4-.1 2-.3L20 20l-.5-1.6c1.4-.9 2.5-2.3 2.5-4Zm-8-.9a.8.8 0 1 1 0 1.6.8.8 0 0 1 0-1.6Zm4 0a.8.8 0 1 1 0 1.6.8.8 0 0 1 0-1.6Z"/></svg>
+          微信一键登录
+        </button>
+        <div class="auth-foot">
+          <label class="checkbox-row checked" id="privacyCheck" onclick="toggleCheck(this)">
+            <span class="cb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12 10 17 19 7"></polyline></svg></span>
+            <span>已阅读并同意 <a href="javascript:void(0)">《用户协议》</a> 与 <a href="javascript:void(0)">《隐私政策》</a></span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 2. 引导绑定手机页 ===== -->
+    <section class="view" id="view-bind">
+      <div class="pad" style="padding-top:var(--space-lg)">
+        <h2 class="serif" style="font-size:20px">绑定手机号</h2>
+        <p class="muted" style="font-size:13px;margin-top:6px">微信已授权，绑定手机以同步你的收藏与书签</p>
+        <div style="display:flex;align-items:center;gap:12px;margin:var(--space-lg) 0;padding:var(--space-md);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md)">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--color-primary-soft);display:flex;align-items:center;justify-content:center;color:var(--color-primary);font-family:var(--font-heading);font-size:16px">藏</div>
+          <div>
+            <div style="font-size:14px;font-weight:600" id="bindNick">微信用户_博观</div>
+            <div class="micro-text">微信已授权获取头像与昵称</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>手机号</label>
+          <input class="input" id="phoneInput" placeholder="请输入手机号" inputmode="numeric" maxlength="11" value="138" />
+        </div>
+        <div class="field">
+          <label>验证码</label>
+          <div style="display:flex;gap:var(--space-sm)">
+            <input class="input" placeholder="6 位验证码" inputmode="numeric" maxlength="6" style="flex:1" />
+            <button class="btn btn-secondary" style="width:auto;padding:0 var(--space-lg);white-space:nowrap" onclick="sendCode(this)">获取验证码</button>
+          </div>
+        </div>
+        <div style="margin-bottom:var(--space-md)">
+          <label>邀请码（选填）</label>
+          <div class="row">
+            <input class="input" id="inviteInput" placeholder="输入邀请码（选填）" maxlength="12" style="flex:1" />
+            <span style="font-size:11px;color:var(--color-text-tertiary);white-space:nowrap;display:flex;align-items:center">≤12 位字母数字</span>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" style="margin-top:var(--space-lg)" onclick="confirmBind()">确认绑定并进入</button>
+      </div>
+    </section>
+
+    <!-- ===== 3. 首页 ===== -->
+    <section class="view" id="view-home">
+      <!-- 首页全宽沉浸式 Banner（纯色零渐变 + 藏品图整幅轮放） -->
+      <div class="home-banner" id="homeBannerCarousel">
+        <div class="hb-art-wrap" id="hbArtWrap"></div>
+        <div class="hb-info" id="hbInfo">
+          <div class="hb-info-name" id="hbInfoName"></div>
+          <div class="hb-info-sub" id="hbInfoSub"></div>
+        </div>
+        <div class="hb-dots" id="hbDots"></div>
+        <div class="hb-guest" data-show="guest">登录后解锁更多</div>
+      </div>
+
+      <!-- 金刚区 -->
+      <div class="pad-x" style="margin-top:var(--space-xl)">
+        <div class="kingkong">
+          <button class="kk-item" onclick="navigate('global-list')">
+            <svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>
+            <span class="kk-label">全球馆藏</span>
+          </button>
+          <button class="kk-item" onclick="navigate('archive-list')">
+            <svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h7"/></svg>
+            <span class="kk-label">宫廷档案</span>
+          </button>
+          <button class="kk-item" onclick="navigate('micro-nav')">
+            <svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="6"/><path d="M11 8v6M8 11h6M16 16l4 4"/></svg>
+            <span class="kk-label">微痕索证</span>
+          </button>
+          <button class="kk-item" onclick="navigate('library')">
+            <svg class="kk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg>
+            <span class="kk-label">元藏图书馆</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 全局搜索入口 -->
+      <div class="pad-x" style="margin-top:var(--space-lg)">
+        <button class="search-bar" style="width:100%" onclick="navigate('search')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <span class="sb-ph">搜索全球馆藏 · 宫廷档案 · 微痕索证</span>
+        </button>
+      </div>
+
+      <!-- 推荐搜索词 -->
+      <div class="pad-x" style="margin-top:var(--space-sm);display:flex;flex-wrap:wrap;gap:8px">
+        <button class="chip" onclick="navigate('search')">南宋官窑</button>
+        <button class="chip" onclick="navigate('search')">汝窑</button>
+        <button class="chip" onclick="navigate('search')">青花</button>
+        <button class="chip" onclick="navigate('search')">故宫博物院</button>
+        <button class="chip" onclick="navigate('search')">乾隆御题</button>
+      </div>
+
+      <!-- 会员入口卡 -->
+      <div class="pad-x" style="margin-top:var(--space-xl)">
+        <!-- guest：引导订阅 -->
+        <div class="member-card mc-guest" data-show="guest" onclick="navigate('login')">
+          <div class="mc-grain"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 5 5.6.8-4 4 1 5.6L12 19l-5 2.4 1-5.6-4-4 5.6-.8z"/></svg></div>
+          <div class="mc-top">
+            <div>
+              <h3>开通会员 · 解锁完整馆藏</h3>
+              <p class="muted" style="font-size:12px;margin:4px 0 0">高清大图 · 完整著录 · 微痕微观图 全开放</p>
+            </div>
+          </div>
+          <div class="mc-price-row">
+            <span class="mc-price">¥30<small>/月</small></span>
+            <span class="mc-price mc-price-year">¥298<small>/年</small></span>
+            <span class="mc-save">省 ¥62</span>
+          </div>
+          <button class="btn btn-pay btn-block" style="margin-top:var(--space-md);height:40px">立即开通</button>
+        </div>
+        <!-- member：会员状态布局 -->
+        <div class="member-card mc-member" id="homeMemberCard" data-show="member" onclick="navigate('my-member')">
+          <div class="mc-grain"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 5 5.6.8-4 4 1 5.6L12 19l-5 2.4 1-5.6-4-4 5.6-.8z"/></svg></div>
+          <div class="mc-top">
+            <div>
+              <h3 id="homeMemberTitle">尊敬的会员</h3>
+              <p class="muted" style="font-size:12px;margin:4px 0 0">以下权益已全部解锁</p>
+            </div>
+            <span id="homeMemberPill"></span>
+          </div>
+          <div class="mc-benefits">
+            <div class="mcb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5 12 10 17 19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>高清大图</div>
+            <div class="mcb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5 12 10 17 19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>完整著录</div>
+            <div class="mcb-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5 12 10 17 19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>微痕微观图</div>
+          </div>
+          <div class="mc-foot">
+            <span class="mc-expire" id="homeMemberExpire">2026-09-19 到期</span>
+            <span class="mc-manage">管理会员 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg></span>
+          </div>
+        </div>
+        <!-- registered：已登录未开通会员 -->
+        <div class="member-card mc-guest" data-show="registered" onclick="navigate('member-purchase')">
+          <div class="mc-grain"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 5 5.6.8-4 4 1 5.6L12 19l-5 2.4 1-5.6-4-4 5.6-.8z"/></svg></div>
+          <div class="mc-top">
+            <div>
+              <h3>开通会员 · 解锁完整馆藏</h3>
+              <p class="muted" style="font-size:12px;margin:4px 0 0">高清大图 · 完整著录 · 微痕微观图 全开放</p>
+            </div>
+          </div>
+          <div class="mc-price-row">
+            <span class="mc-price">¥30<small>/月</small></span>
+            <span class="mc-price mc-price-year">¥298<small>/年</small></span>
+            <span class="mc-save">省 ¥62</span>
+          </div>
+          <button class="btn btn-pay btn-block" style="margin-top:var(--space-md);height:40px">立即开通</button>
+        </div>
+      </div>
+
+      <!-- 平台价值：元藏·博观 -->
+      <div class="pad-x">
+        <div class="value-card">
+          <h3 class="serif" style="font-size:17px">元藏·博观</h3>
+          <p class="muted" style="font-size:12px;margin-top:2px">全球馆藏与宫廷档案检索</p>
+          <p style="font-size:12px;color:var(--color-text-secondary);line-height:1.7;margin-top:var(--space-md)">聚合全球博物馆公开藏品数据与宫廷档案文献，支持器物、窑口、文书多维检索，一件文物，多库印证</p>
+          <div class="metric-row">
+            <div class="metric"><div class="m-num">26 国</div><div class="m-label">340+ 博物馆</div></div>
+            <div class="metric"><div class="m-num">12.8 万+</div><div class="m-label">藏品</div></div>
+            <div class="metric"><div class="m-num">4.5 万+</div><div class="m-label">档案</div></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-md);margin-top:var(--space-lg)">
+          <button class="entry-card" style="width:100%;text-align:left" onclick="navigate('global-list')">
+            <span class="ec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+            <span class="grow"><span class="ec-title">全球馆藏</span><br><span class="ec-desc">聚合博物馆公开藏品数据，支持器物与窑口检索</span></span>
+            <span class="ec-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg></span>
+          </button>
+          <button class="entry-card" style="width:100%;text-align:left" onclick="navigate('archive-list')">
+            <span class="ec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h7"/></svg></span>
+            <span class="grow"><span class="ec-title">宫廷档案</span><br><span class="ec-desc">内务府造办处、御窑厂进单等档案全文检索</span></span>
+            <span class="ec-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg></span>
+          </button>
+          <button class="entry-card" style="width:100%;text-align:left" onclick="navigate('micro-nav')">
+            <span class="ec-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="M11 8v6M8 11h6M16 16l4 4"/></svg></span>
+            <span class="grow"><span class="ec-title">微痕索证</span><br><span class="ec-desc">紫口铁足、开片、釉光等微观特征比对索引</span></span>
+            <span class="ec-go"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg></span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 4. 全局搜索结果页 ===== -->
+    <section class="view" id="view-search">
+      <div class="pad-x" style="padding-top:var(--space-lg)">
+        <div class="search-bar" style="width:100%">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="searchInput" placeholder="搜索器物 / 窑口 / 档案关键词" style="border:none;background:transparent;flex:1;font-size:14px;outline:none;color:var(--color-text-primary)" value="南宋 官窑" onkeydown="if(event.key==='Enter')reSearch()" />
+        </div>
+      </div>
+      <div class="filter-bar">
+        <button class="chip active" id="searchTabGlobal" onclick="switchSearchTab('global')">全球馆藏</button>
+        <button class="chip" id="searchTabArchive" onclick="switchSearchTab('archive')">宫廷档案</button>
+      </div>
+      <div class="pad-x">
+        <div id="searchGlobalWrap">
+          <div class="section-title" style="margin-top:0" id="searchGlobalTitle">全球馆藏</div>
+          <div id="searchGlobal"></div>
+        </div>
+        <div id="searchArchiveWrap" style="display:none">
+          <div class="section-title" id="searchArchiveTitle">宫廷档案</div>
+          <div id="searchArchive"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5. 全球馆藏-检索页 ===== -->
+    <section class="view" id="view-global-filter">
+      <div class="pad">
+        <h2 class="serif" style="font-size:19px;margin-bottom:var(--space-lg)">筛选全球馆藏</h2>
+        <div class="field"><label>国家 / 地区</label>
+          <div class="wrap">
+            <button class="chip active" onclick="chipToggle(this)">全部</button>
+            <button class="chip" onclick="chipToggle(this)">中国</button>
+            <button class="chip" onclick="chipToggle(this)">英国</button>
+            <button class="chip" onclick="chipToggle(this)">日本</button>
+            <button class="chip" onclick="chipToggle(this)">伊朗</button>
+          </div>
+        </div>
+        <div class="field"><label>博物馆</label>
+          <div class="wrap">
+            <button class="chip active" onclick="chipToggle(this)">全部</button>
+            <button class="chip" onclick="chipToggle(this)">故宫博物院</button>
+            <button class="chip" onclick="chipToggle(this)">大英博物馆</button>
+            <button class="chip" onclick="chipToggle(this)">上海博物馆</button>
+            <button class="chip" onclick="chipToggle(this)">台北故宫</button>
+          </div>
+        </div>
+        <div class="field"><label>品类</label>
+          <div class="wrap">
+            <button class="chip active" onclick="chipToggle(this)">全部</button>
+            <button class="chip" onclick="chipToggle(this)">瓷器</button>
+            <button class="chip" onclick="chipToggle(this)">玉器</button>
+            <button class="chip" onclick="chipToggle(this)">书画</button>
+            <button class="chip" onclick="chipToggle(this)">青铜器</button>
+          </div>
+        </div>
+        <div class="field"><label>年代</label>
+          <div class="wrap">
+            <button class="chip active" onclick="chipToggle(this)">全部</button>
+            <button class="chip" onclick="chipToggle(this)">唐</button>
+            <button class="chip" onclick="chipToggle(this)">宋</button>
+            <button class="chip" onclick="chipToggle(this)">元</button>
+            <button class="chip" onclick="chipToggle(this)">明</button>
+            <button class="chip" onclick="chipToggle(this)">清</button>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" style="margin-top:var(--space-xl)" onclick="navigate('global-list')">查看 128 件结果</button>
+      </div>
+    </section>
+
+    <!-- ===== 6. 全球馆藏-列表页 ===== -->
+    <section class="view" id="view-global-list">
+      <div class="pad-x" style="padding-top:var(--space-md)">
+        <div class="search-bar" style="width:100%" onclick="navigate('search')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <span class="sb-ph">在 128 件全球馆藏中搜索</span>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <button class="chip" onclick="navigate('global-filter')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;vertical-align:-2px"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" stroke-linecap="round"/></svg>筛选</button>
+        <button class="chip active" onclick="chipToggle(this)">推荐</button>
+        <button class="chip" onclick="chipToggle(this)">年代</button>
+        <button class="chip" onclick="chipToggle(this)">馆藏地</button>
+      </div>
+      <div class="pad-x">
+        <div class="two-col" id="globalList"></div>
+        <div style="text-align:center;padding:var(--space-lg) 0"><span class="label-xs">已显示 8 / 128 件</span></div>
+      </div>
+    </section>
+
+    <!-- ===== 7. 全球馆藏-详情页 ===== -->
+    <section class="view" id="view-global-detail">
+      <div class="detail-hero" id="gdHero">
+        <div class="dh-badges" id="gdBadges"></div>
+        <!-- 解锁薄纱（非会员显示，点击直达订阅） -->
+        <div class="unlock-veil" data-veil onclick="navigate(isLoggedIn?'member-purchase':'login')" style="cursor:pointer">
+          <span class="lock-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+          <span class="veil-pill">开通会员查看高清大图</span>
+          <span class="veil-sub">含完整著录与来源信息</span>
+        </div>
+      </div>
+      <p class="micro-text" id="gdViewLabel" style="text-align:center;margin-top:4px">图 1 · 整体</p>
+      <div class="gd-thumbs" id="gdThumbs"></div>
+      <div class="pad">
+        <div class="between" style="align-items:flex-start;gap:var(--space-md)">
+          <div style="min-width:0">
+            <h2 class="serif" id="gdTitle" style="font-size:19px"></h2>
+            <p class="muted" id="gdSub" style="font-size:12px;margin-top:4px"></p>
+          </div>
+          <button class="fav-btn" id="favGlobalBtn" onclick="toggleFav('treasure', curGlobal.id, {name:curGlobal.name, sub:curGlobal.dynasty+' · '+curGlobal.kiln+' · '+curGlobal.museum, shape:curGlobal.shape})"><svg viewBox="0 0 24 24"><path d="M12 21s-8-4.9-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.1-8 11-8 11z"/></svg><span>收藏</span></button>
+          <button class="fav-btn" id="shareGlobalBtn" onclick="shareTreasure()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg><span>分享</span></button>
+        </div>
+        <div class="between" style="margin-top:var(--space-lg)">
+          <div class="serif" style="font-size:15px">基本信息</div>
+          <button class="btn btn-secondary" style="padding:2px 6px;font-size:10px;height:auto;width:56px;text-align:center" id="metaToggleBtn" onclick="toggleMetadata()">元数据</button>
+        </div>
+        <p class="micro-text" style="text-align:right;margin-top:6px">部分信息经 AI 辅助翻译整理，准确数据请查看元数据</p>
+        <div class="meta-list" id="gdMeta" style="margin-top:var(--space-md)"></div>
+        <div class="unlock-block" data-show="guest" style="margin-top:var(--space-lg)">
+          <button class="btn btn-pay btn-block" onclick="navigate('member-purchase')">开通会员 · 查看完整著录</button>
+          <p class="pay-note">免费用户仅可见摘要与低清缩略图</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 8. 宫廷档案-检索页 ===== -->
+    <section class="view" id="view-archive-filter">
+      <div class="pad">
+        <h2 class="serif" style="font-size:19px;margin-bottom:var(--space-lg)">筛选宫廷档案</h2>
+        <div class="field"><label>朝代</label>
+          <div class="wrap">
+            <button class="chip active" onclick="chipToggle(this)">全部</button>
+            <button class="chip" onclick="chipToggle(this)">唐</button>
+            <button class="chip" onclick="chipToggle(this)">宋</button>
+            <button class="chip" onclick="chipToggle(this)">元</button>
+            <button class="chip" onclick="chipToggle(this)">明</button>
+            <button class="chip" onclick="chipToggle(this)">清</button>
+          </div>
+        </div>
+        <div class="field"><label>机构</label>
+          <div class="wrap">
+            <button class="chip active" onclick="chipToggle(this)">全部</button>
+            <button class="chip" onclick="chipToggle(this)">内务府</button>
+            <button class="chip" onclick="chipToggle(this)">御窑厂</button>
+            <button class="chip" onclick="chipToggle(this)">司礼监</button>
+          </div>
+        </div>
+        <div class="field"><label>类别</label>
+          <div class="wrap">
+            <button class="chip active" onclick="chipToggle(this)">全部</button>
+            <button class="chip" onclick="chipToggle(this)">档案</button>
+            <button class="chip" onclick="chipToggle(this)">进单</button>
+            <button class="chip" onclick="chipToggle(this)">图谱</button>
+            <button class="chip" onclick="chipToggle(this)">著录</button>
+            <button class="chip" onclick="chipToggle(this)">簿册</button>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" style="margin-top:var(--space-xl)" onclick="navigate('archive-list')">查看 64 件档案</button>
+      </div>
+    </section>
+
+    <!-- ===== 9. 宫廷档案-列表页 ===== -->
+    <section class="view" id="view-archive-list">
+      <div class="pad-x" style="padding-top:var(--space-md)">
+        <div class="search-bar" style="width:100%" onclick="navigate('search')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <span class="sb-ph">在 64 件宫廷档案中搜索</span>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <button class="chip" onclick="navigate('archive-filter')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;vertical-align:-2px"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" stroke-linecap="round"/></svg>筛选</button>
+        <button class="chip active" onclick="chipToggle(this)">清宫旧藏</button>
+        <button class="chip" onclick="chipToggle(this)">御窑进单</button>
+        <button class="chip" onclick="chipToggle(this)">图谱著录</button>
+      </div>
+      <div class="pad-x"><div id="archiveList"></div></div>
+    </section>
+
+    <!-- ===== 10. 宫廷档案-详情页 ===== -->
+    <section class="view" id="view-archive-detail">
+      <div class="pad">
+        <div class="between" style="align-items:flex-start;gap:var(--space-md)">
+          <h2 class="serif" id="adTitle" style="font-size:19px"></h2>
+          <button class="fav-btn" id="favArchiveBtn" onclick="toggleFav('archive', curArchive.id, {name:curArchive.title, sub:curArchive.dynasty+' · '+curArchive.org, shape:'document'})"><svg viewBox="0 0 24 24"><path d="M12 21s-8-4.9-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.1-8 11-8 11z"/></svg><span>收藏</span></button>
+        </div>
+        <div class="row" style="margin-top:var(--space-sm)">
+          <span class="tag tag-dynasty" id="adDynasty"></span>
+          <span class="tag tag-kiln" id="adOrg"></span>
+          <span class="tag tag-cat" id="adCat"></span>
+        </div>
+        <div class="card" style="margin-top:var(--space-lg);padding:var(--space-md);background:var(--color-surface-sunken)">
+          <div class="label-xs">文献 / 影像预览</div>
+          <div id="adArt" style="margin-top:var(--space-sm)"></div>
+        </div>
+        <h3 class="serif" style="font-size:15px;margin-top:var(--space-xl)">释读</h3>
+        <p class="muted" id="adRead" style="font-size:13px;line-height:1.7;margin-top:var(--space-sm)"></p>
+        <div class="meta-list" id="adMeta" style="margin-top:var(--space-lg)"></div>
+      </div>
+    </section>
+
+    <!-- ===== 11. 微痕索证-年代窑口导航页 ===== -->
+    <section class="view" id="view-micro-nav">
+      <div class="pad">
+        <!-- 搜索框 -->
+        <div class="search-bar" style="margin-top:var(--space-md)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="microSearchInput" placeholder="输入朝代、窑口、及窑口关键词" style="flex:1;border:none;background:none;outline:none;font-size:14px;color:var(--color-text-primary)" />
+        </div>
+
+        <!-- 按朝代分组（圆点 + 连接线） -->
+        <div class="micro-timeline" id="microTimeline" style="margin-top:var(--space-lg)"></div>
+
+        <div class="disclaimer" style="margin-top:var(--space-lg)">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+          微观特征 · 仅供参考，非鉴定结论
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 12. 微痕索证-窑口库页 ===== -->
+    <section class="view" id="view-micro-kiln">
+      <div class="pad">
+        <!-- 窑口名 + 微痕索证数据库 -->
+        <h2 class="serif" id="mkTitle" style="font-size:20px;margin-top:var(--space-md)"></h2>
+        <p class="muted" id="mkDesc" style="font-size:13px;line-height:1.7;margin-top:var(--space-sm)"></p>
+
+        <!-- 核心特征 card -->
+        <div class="card" style="margin-top:var(--space-lg);padding:var(--space-md)">
+          <h3 class="serif" style="font-size:15px;margin-bottom:var(--space-sm)">核心特征</h3>
+          <div class="meta-list" id="mkFeatures"></div>
+        </div>
+
+        <!-- 按核心特征筛选 chips -->
+        <h4 class="serif" style="font-size:14px;margin-top:var(--space-lg)">按核心特征筛选</h4>
+        <div class="wrap" id="mkChips" style="margin-top:var(--space-sm)"></div>
+
+        <!-- 关联藏品列表（藏品卡片 + 特征图） -->
+        <div class="mk-list" id="mkList" style="margin-top:var(--space-md)"></div>
+
+        <div class="disclaimer" style="margin-top:var(--space-md)">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+          微观特征 · 仅供参考，非鉴定结论
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 13. 微痕索证-详情页（动态渲染） ===== -->
+    <section class="view" id="view-micro-detail">
+      <div class="pad">
+        <div class="row" id="mdBadges" style="margin-bottom:var(--space-sm)"></div>
+        <div class="between" style="align-items:flex-start;gap:var(--space-md)">
+          <h2 class="serif" id="mdTitle" style="font-size:20px"></h2>
+          <button class="fav-btn" id="favMicroBtn" onclick="favMicro()"><svg viewBox="0 0 24 24"><path d="M12 21s-8-4.9-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.1-8 11-8 11z"/></svg><span>收藏</span></button>
+        </div>
+        <p class="muted" id="mdSub" style="font-size:12px;margin-top:4px"></p>
+
+        <!-- 器物线描（随藏品动态渲染） -->
+        <div class="annot-wrap" id="microLineArt" style="margin-top:var(--space-lg);aspect-ratio:3/2"></div>
+
+        <div class="section-title" style="margin-top:var(--space-xl)">微观特征图</div>
+        <div id="mdPanels" style="margin-top:var(--space-md)"></div>
+
+        <button class="btn btn-primary btn-block" style="margin-top:var(--space-xl)" id="mdViewArtifact" onclick="openGlobal(curMicroArtifactId)">查看馆藏</button>
+        <div data-show="guest" style="margin-top:var(--space-md)">
+          <button class="btn btn-pay btn-block" onclick="navigate('member-purchase')">开通会员 · 解锁高清微观图</button>
+        </div>
+        <div class="disclaimer" style="margin-top:var(--space-md)">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+          微观特征 · 仅供参考，非鉴定结论
+        </div>
+      </div>
+      <!-- 固定免责标签 -->
+      <div class="fixed-disclaimer show">微观特征 · 仅供参考，非鉴定结论</div>
+    </section>
+
+    <!-- ===== 14. 会员权益说明页 ===== -->
+    <section class="view" id="view-member-benefits">
+      <div class="pad">
+        <h2 class="serif" style="font-size:20px">会员权益</h2>
+        <p class="muted" style="font-size:12px;margin-top:4px">高清大图 · 完整著录 · 微痕微观图全开放</p>
+        <table class="perm-table">
+          <tr>
+            <th>功能</th>
+            <th style="text-align:center"><span class="pt-tag guest">游客</span></th>
+            <th style="text-align:center"><span class="pt-tag member">会员</span></th>
+          </tr>
+          <tr><td class="pt-fn">全局检索与摘要</td><td style="text-align:center"><span class="pt-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5 12 10 17 19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td><td style="text-align:center"><span class="pt-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5 12 10 17 19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+          <tr><td class="pt-fn">缩略图（低清）</td><td style="text-align:center"><span class="pt-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5 12 10 17 19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td><td style="text-align:center"><span class="pt-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5 12 10 17 19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+          <tr><td class="pt-fn">高清大图</td><td style="text-align:center"><span class="pt-no">—</span></td><td style="text-align:center"><span class="pt-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5 12 10 17 19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+          <tr><td class="pt-fn">完整著录字段</td><td style="text-align:center"><span class="pt-no">—</span></td><td style="text-align:center"><span class="pt-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5 12 10 17 19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+          <tr><td class="pt-fn">微痕微观影像</td><td style="text-align:center"><span class="pt-no">—</span></td><td style="text-align:center"><span class="pt-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5 12 10 17 19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+          <tr><td class="pt-fn">原始元数据</td><td style="text-align:center"><span class="pt-no">—</span></td><td style="text-align:center"><span class="pt-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5 12 10 17 19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+          <tr><td class="pt-fn">宫廷档案全文</td><td style="text-align:center"><span class="pt-sub">摘要</span></td><td style="text-align:center"><span class="pt-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5 12 10 17 19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+          <tr><td class="pt-fn">图书阅读与书签</td><td style="text-align:center"><span class="pt-sub">3 本</span></td><td style="text-align:center"><span class="pt-yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="5 12 10 17 19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+        </table>
+        <div style="display:flex;flex-direction:column;gap:var(--space-md);margin-top:var(--space-lg)">
+          <div class="card" style="padding:var(--space-lg)"><div class="row"><span style="width:22px;height:22px;flex:0 0 22px;color:var(--color-primary);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><div style="margin-left:var(--space-md)"><h3 class="serif" style="font-size:15px">高清大图</h3><p class="muted" style="font-size:12px;margin:4px 0 0">馆藏器物高清影像，支持放大查看釉面与款识。</p></div></div></div>
+          <div class="card" style="padding:var(--space-lg)"><div class="row"><span style="width:22px;height:22px;flex:0 0 22px;color:var(--color-primary);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h7"/></svg></span><div style="margin-left:var(--space-md)"><h3 class="serif" style="font-size:15px">完整著录</h3><p class="muted" style="font-size:12px;margin:4px 0 0">尺寸、来源、款识、历代著录，逐条可比对。</p></div></div></div>
+          <div class="card" style="padding:var(--space-lg)"><div class="row"><span style="width:22px;height:22px;flex:0 0 22px;color:var(--color-primary);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="M11 8v6M8 11h6M16 16l4 4"/></svg></span><div style="margin-left:var(--space-md)"><h3 class="serif" style="font-size:15px">微痕微观图</h3><p class="muted" style="font-size:12px;margin:4px 0 0">紫口铁足、开片、釉光等微观特征高清呈现。</p></div></div></div>
+          <div class="card" style="padding:var(--space-lg)"><div class="row"><span style="width:22px;height:22px;flex:0 0 22px;color:var(--color-gold);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8 6.8 19l1-5.8L3.6 9.1l5.8-.8z"/></svg></span><div style="margin-left:var(--space-md)"><h3 class="serif" style="font-size:15px">年会员专属</h3><p class="muted" style="font-size:12px;margin:4px 0 0">金徽标标识、优先新品策展、年度检索报告。</p></div></div></div>
+        </div>
+        <button class="btn btn-pay btn-block" style="margin-top:var(--space-2xl)" onclick="navigate('member-purchase')">选择方案并开通</button>
+      </div>
+    </section>
+
+    <!-- ===== 15. 会员开通页 ===== -->
+    <section class="view" id="view-member-purchase">
+      <div class="pad">
+        <h2 class="serif" style="font-size:20px">开通会员</h2>
+        <div class="seg" id="planSeg" style="margin-top:var(--space-lg);flex-wrap:wrap">
+          <button data-plan="month" onclick="selectPlan('month',this)">月会员 ¥45</button>
+          <button data-plan="year" onclick="selectPlan('year',this)">年会员 ¥360</button>
+          <button class="active" data-plan="contmonth" onclick="selectPlan('contmonth',this)">连续月会员 ¥30</button>
+          <button data-plan="contyear" onclick="selectPlan('contyear',this)">连续年会员 ¥298</button>
+        </div>
+
+        <div id="planCard" class="card" style="margin-top:var(--space-lg);padding:var(--space-lg)">
+          <div class="between">
+            <div><div class="serif" style="font-size:16px">连续月会员</div><div class="micro-text">自动续费</div></div>
+            <div class="price-row"><span class="price-now"><span class="cny">¥</span>30</span></div>
+          </div>
+          <div class="divider"></div>
+          <ul style="font-size:13px;color:var(--color-text-secondary);line-height:2;padding-left:18px;margin:0">
+            <li>高清大图 + 完整著录</li>
+            <li>微痕微观图全开放</li>
+            <li>印章红 VIP 标识</li>
+          </ul>
+        </div>
+
+        <div class="disclaimer" style="margin-top:var(--space-lg)">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+          连续月 / 年会员可随时取消自动续费，取消后当期仍可用；普通会员到期不自动续费。
+        </div>
+
+        <button class="btn btn-pay btn-block" style="margin-top:var(--space-2xl)" onclick="goPay()">确认开通 · 微信支付</button>
+        <p class="pay-note">开通即代表同意《会员服务协议》</p>
+        <p class="pay-note" style="margin-top:4px"><a href="javascript:;" style="color:var(--color-text-tertiary);text-decoration:underline" onclick="navigate('member-benefits')">对比游客与会员权益 →</a></p>
+      </div>
+    </section>
+
+    <!-- ===== 16. 支付确认页 ===== -->
+    <section class="view" id="view-payment-confirm">
+      <div class="pad">
+        <h2 class="serif" style="font-size:19px;margin-bottom:var(--space-lg)">支付确认</h2>
+        <div class="card" style="padding:var(--space-lg)">
+          <div class="between" style="padding-bottom:var(--space-md);border-bottom:1px solid var(--color-border)">
+            <span class="muted" style="font-size:13px">商品</span>
+            <span class="serif" id="pcName" style="font-size:15px;font-weight:600"></span>
+          </div>
+          <div class="between" style="padding:var(--space-md) 0;border-bottom:1px solid var(--color-border)">
+            <span class="muted" style="font-size:13px">支付方式</span>
+            <span class="row" style="font-size:14px"><svg viewBox="0 0 24 24" width="18" height="18" fill="#07C160"><path d="M9 4C5.1 4 2 6.7 2 10c0 1.9 1 3.5 2.6 4.7L4 17l2.6-1.3c.8.2 1.6.3 2.4.3h.6a5.6 5.6 0 0 1-.2-1.5C9.4 10.6 12.8 8 17 8c.3 0 .6 0 .9.1C16.8 5.8 13.2 4 9 4Z"/></svg> 微信支付</span>
+          </div>
+          <div class="between" style="padding-top:var(--space-md)">
+            <span class="muted" style="font-size:13px">金额</span>
+            <span class="price-now" id="pcAmount"></span>
+          </div>
+        </div>
+        <div class="disclaimer" style="margin-top:var(--space-lg)">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+          <span id="pcNote"></span>
+        </div>
+        <button class="btn btn-pay btn-block" style="margin-top:var(--space-2xl)" onclick="payNow()">立即支付</button>
+        <button class="btn btn-secondary btn-block" style="margin-top:var(--space-md)" onclick="back()">暂不支付</button>
+      </div>
+    </section>
+
+    <!-- ===== 17. 支付结果页（成功/失败可切换） ===== -->
+    <section class="view" id="view-payment-result">
+      <div class="pad" style="padding-top:var(--space-4xl);text-align:center">
+        <div id="prSuccess" style="display:block">
+          <div style="width:72px;height:72px;margin:0 auto var(--space-lg);color:var(--color-success)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:72px;height:72px"><circle cx="12" cy="12" r="10"/><polyline points="7 12 11 16 17 8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h2 class="serif" style="font-size:20px">开通成功</h2>
+          <p class="muted" style="font-size:13px;margin-top:var(--space-sm)" id="prSuccessSub"></p>
+          <div class="card" style="margin:var(--space-2xl) 0;padding:var(--space-lg);text-align:left">
+            <div class="meta-list">
+              <div class="ml-row"><span class="ml-k">会员</span><span class="ml-v" id="prPlan"></span></div>
+              <div class="ml-row"><span class="ml-k">有效期</span><span class="ml-v" id="prExpire"></span></div>
+              <div class="ml-row"><span class="ml-k">状态</span><span class="ml-v" style="color:var(--color-success)">生效中</span></div>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-block" onclick="navigate('my-member',true)">查看我的会员</button>
+          <button class="btn btn-secondary btn-block" style="margin-top:var(--space-md)" onclick="navigate('home',true)">返回首页</button>
+        </div>
+        <div id="prFail" style="display:none">
+          <div style="width:72px;height:72px;margin:0 auto var(--space-lg);color:var(--color-danger)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:72px;height:72px"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 16h.01" stroke-linecap="round"/></svg>
+          </div>
+          <h2 class="serif" style="font-size:20px">支付未完成</h2>
+          <p class="muted" style="font-size:13px;margin-top:var(--space-sm)">未扣款，可重新尝试支付</p>
+          <button class="btn btn-pay btn-block" style="margin-top:var(--space-2xl)" onclick="navigate('payment-confirm')">重新支付</button>
+          <button class="btn btn-secondary btn-block" style="margin-top:var(--space-md)" onclick="navigate('home',true)">稍后再说</button>
+        </div>
+        <!-- 演示用：切换成功/失败 -->
+        <button class="btn btn-secondary btn-block" style="margin-top:var(--space-3xl);font-size:12px" onclick="togglePayResult()">演示：切换 成功 / 失败 态</button>
+      </div>
+    </section>
+
+    <!-- ===== 18. 我的-个人中心 ===== -->
+    <section class="view" id="view-profile">
+      <!-- 非会员态 -->
+      <div data-show="guest">
+        <div class="pad" style="padding-top:var(--space-2xl);background:var(--color-surface);border-bottom:1px solid var(--color-border)">
+          <div class="row">
+            <div style="width:56px;height:56px;border-radius:50%;background:var(--color-surface-sunken);display:flex;align-items:center;justify-content:center;color:var(--color-text-tertiary);font-family:var(--font-heading);font-size:22px">游</div>
+            <div style="margin-left:var(--space-md)">
+              <div class="serif" style="font-size:17px">游客</div>
+              <div class="micro-text" onclick="navigate('login')" style="color:var(--color-primary)">登录后查看收藏与记录 →</div>
+            </div>
+          </div>
+        </div>
+        <div class="pad-x" style="margin-top:var(--space-lg)">
+          <button class="btn btn-pay btn-block" onclick="navigate('member-purchase')">开通会员 · 解锁高清</button>
+        </div>
+      </div>
+      <!-- 会员态 -->
+      <div data-show="member">
+        <div class="pad" style="padding-top:var(--space-2xl);background:var(--color-surface);border-bottom:1px solid var(--color-border)">
+          <div class="row">
+            <div style="width:56px;height:56px;border-radius:50%;background:var(--color-primary-soft);display:flex;align-items:center;justify-content:center;color:var(--color-primary);font-family:var(--font-heading);font-size:22px" id="pfAvatar">藏</div>
+            <div style="margin-left:var(--space-md);flex:1">
+              <div class="row"><div class="serif" style="font-size:17px" id="pfNick">微信用户_博观</div><span id="pfPill"></span></div>
+              <div class="micro-text" id="pfSub"></div>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-block" style="margin-top:var(--space-lg);width:auto;height:36px;padding:0 var(--space-lg);font-size:12px" onclick="navigate('my-member')">管理会员</button>
+        </div>
+      </div>
+
+      <div class="pad-x" style="margin-top:var(--space-lg)">
+        <div class="card" style="overflow:hidden">
+          <button class="row between" style="width:100%;padding:var(--space-lg);border-bottom:1px solid var(--color-border);text-align:left" onclick="requireLoginThen('favorites')">
+            <span class="row"><span style="color:var(--color-primary);width:22px;height:22px;flex:0 0 22px;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20.8 7a5 5 0 0 0-8.8-2 5 5 0 0 0-8.8 2 5 5 0 0 0 2 5.5L12 20l8.8-7.5a5 5 0 0 0 0-5.5Z"/></svg></span><span style="font-size:14px">我的收藏</span></span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-text-tertiary)" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg>
+          </button>
+          <button class="row between" style="width:100%;padding:var(--space-lg);border-bottom:1px solid var(--color-border);text-align:left" onclick="requireLoginThen('bookmarks')">
+            <span class="row"><span style="color:var(--color-primary);width:22px;height:22px;flex:0 0 22px;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12v18l-6-4-6 4z"/></svg></span><span style="font-size:14px">我的书签</span></span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-text-tertiary)" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg>
+          </button>
+          <button class="row between" style="width:100%;padding:var(--space-lg);border-bottom:1px solid var(--color-border);text-align:left" onclick="requireLoginThen('my-member')">
+            <span class="row"><span style="color:var(--color-primary);width:22px;height:22px;flex:0 0 22px;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8 6.8 19l1-5.8L3.6 9.1l5.8-.8z"/></svg></span>            <span style="font-size:14px">我的会员</span></span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-text-tertiary)" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg>
+          </button>
+          <button class="row between" style="width:100%;padding:var(--space-lg);border-bottom:1px solid var(--color-border);text-align:left" onclick="requireLoginThen('my-invite')">
+            <span class="row"><span style="color:var(--color-primary);width:22px;height:22px;flex:0 0 22px;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3l2.5 2.5L9 14l-3 1 1-3 8.5-8.5zM14 4l3 3M4 20l1-4 9 9-4 1z"/></svg></span><span style="font-size:14px">我的邀请码</span></span>
+            <span class="row" style="gap:8px;align-items:center">
+              <span class="invite-count-pill" id="inviteCountMenu" style="font-weight:500">已邀请 <span id="inviteCountMini">5</span> 人</span>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-text-tertiary)" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg>
+            </span>
+          </button>
+          <button class="row between" style="width:100%;padding:var(--space-lg);text-align:left" onclick="requireLoginThen('settings')">
+            <span class="row"><span style="color:var(--color-primary);width:22px;height:22px;flex:0 0 22px;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" stroke-linecap="round"/></svg></span><span style="font-size:14px">资料与设置</span></span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-text-tertiary)" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="pad-x" style="margin-top:var(--space-lg)">
+        <button class="btn btn-secondary btn-block" onclick="demoLogout()" style="font-size:12px;color:var(--color-text-tertiary)">演示：退出登录 / 清除会员态</button>
+      </div>
+    </section>
+
+    <!-- ===== 18b. 资料与设置（轻量页，补全「资料与设置」入口） ===== -->
+    <section class="view" id="view-settings">
+      <div class="pad">
+        <div class="row" style="gap:var(--space-md)">
+          <div style="width:56px;height:56px;border-radius:50%;background:var(--color-primary-soft);display:flex;align-items:center;justify-content:center;color:var(--color-primary);font-family:var(--font-heading);font-size:22px" id="stAvatar">藏</div>
+          <div>
+            <div class="serif" style="font-size:17px" id="stNick">微信用户_博观</div>
+            <div class="micro-text">微信已授权 · 绑定手机 138****0000</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:var(--space-lg);overflow:hidden">
+          <div class="row between" style="padding:var(--space-lg);border-bottom:1px solid var(--color-border)" onclick="toggleUserEdit()">
+            <span style="font-size:14px">用户信息</span><span class="muted" style="font-size:13px">昵称 / 头像 / 简介 ›</span>
+          </div>
+          <div class="row between" style="padding:var(--space-lg);border-bottom:1px solid var(--color-border)"><span style="font-size:14px">微信绑定</span><span class="muted" style="font-size:13px">已绑定 ›</span></div>
+          <div class="row between" style="padding:var(--space-lg);border-bottom:1px solid var(--color-border)"><span style="font-size:14px">消息通知</span><span style="font-size:13px;color:var(--color-success)">已开启 ›</span></div>
+          <div class="row between" style="padding:var(--space-lg)"><span style="font-size:14px">关于元藏·博观</span><span class="muted" style="font-size:13px">v1.0.0 ›</span></div>
+        </div>
+        <!-- 用户信息编辑面板 -->
+        <div id="userEditPanel" style="display:none;margin-top:var(--space-lg)">
+          <div class="card" style="padding:var(--space-lg)">
+            <div class="row" style="gap:var(--space-md);margin-bottom:var(--space-lg)">
+              <div style="width:56px;height:56px;border-radius:50%;background:var(--color-primary-soft);display:flex;align-items:center;justify-content:center;color:var(--color-primary);font-family:var(--font-heading);font-size:22px" id="ueAvatar">藏</div>
+              <div>
+                <div class="serif" style="font-size:15px">设置用户信息</div>
+                <div class="micro-text">保存后同步至「我的」与个人主页</div>
+              </div>
+            </div>
+            <div class="field">
+              <label>昵称</label>
+              <input class="input" id="ueNick" value="微信用户_博观" maxlength="20" />
+            </div>
+            <div class="field">
+              <label>性别</label>
+              <div class="wrap" id="ueGenderWrap">
+                <button class="chip active" onclick="chipToggle(this)">保密</button>
+                <button class="chip" onclick="chipToggle(this)">男</button>
+                <button class="chip" onclick="chipToggle(this)">女</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>个人简介</label>
+              <textarea class="input" id="ueBio" rows="2" placeholder="介绍一下自己吧" style="resize:none">文博爱好者</textarea>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="saveUserInfo()">保存</button>
+            <button class="btn btn-secondary btn-block" style="margin-top:var(--space-sm)" onclick="toggleUserEdit()">取消</button>
+          </div>
+        </div>
+        <div class="disclaimer" style="margin-top:var(--space-lg)">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+          注销后仍将保留你的收藏与查询记录，可随时重新登录
+        </div>
+        <button class="btn btn-secondary btn-block" style="margin-top:var(--space-lg);color:var(--color-danger);border-color:var(--color-danger)" onclick="demoLogout()">退出登录</button>
+      </div>
+    </section>
+
+    <!-- ===== 19. 我的-收藏 ===== -->
+    <section class="view" id="view-favorites">
+      <div class="filter-bar" style="padding-left:var(--space-lg)">
+        <button class="chip active" onclick="favFilter(this,'all')">全部</button>
+        <button class="chip" onclick="favFilter(this,'treasure')">藏品</button>
+        <button class="chip" onclick="favFilter(this,'archive')">档案</button>
+      </div>
+      <div class="pad-x"><div id="favList"></div></div>
+    </section>
+
+    <!-- ===== 20. 我的-查询记录 ===== -->
+    <section class="view" id="view-history">
+      <div class="pad-x"><div id="histList"></div></div>
+    </section>
+
+    <!-- ===== 21. 我的-会员 ===== -->
+    <section class="view" id="view-my-member">
+      <div data-show="guest">
+        <div class="pad" style="padding-top:var(--space-3xl);text-align:center">
+          <div style="width:64px;height:64px;margin:0 auto var(--space-lg);color:var(--color-text-tertiary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l2.4 5 5.6.8-4 4 1 5.6L12 19l-5 2.4 1-5.6-4-4 5.6-.8z"/></svg></div>
+          <h2 class="serif" style="font-size:18px">你还未开通会员</h2>
+          <p class="muted" style="font-size:13px;margin:var(--space-sm) 0 var(--space-2xl)">开通后解锁高清大图、完整著录与微痕微观图</p>
+          <button class="btn btn-pay btn-block" onclick="navigate('member-purchase')">立即开通</button>
+        </div>
+      </div>
+      <div data-show="member">
+        <div class="pad">
+          <div class="member-card" id="mmCard">
+            <div class="mc-grain"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 5 5.6.8-4 4 1 5.6L12 19l-5 2.4 1-5.6-4-4 5.6-.8z"/></svg></div>
+            <div class="between">
+              <div>
+                <h3 id="mmTitle">我的会员</h3>
+                <p class="muted" style="font-size:12px;margin:4px 0 0" id="mmSub"></p>
+              </div>
+              <span id="mmPill"></span>
+            </div>
+          </div>
+          <div class="card" style="margin-top:var(--space-lg);padding:var(--space-lg)">
+            <div class="meta-list">
+              <div class="ml-row"><span class="ml-k">会员类型</span><span class="ml-v" id="mmType"></span></div>
+              <div class="ml-row"><span class="ml-k">开通时间</span><span class="ml-v">2026-08-19</span></div>
+              <div class="ml-row"><span class="ml-k">到期时间</span><span class="ml-v" id="mmExpire"></span></div>
+              <div class="ml-row"><span class="ml-k">自动续费</span><span class="ml-v" id="mmAutoRenew" style="color:var(--color-success)">开启中</span></div>
+            </div>
+          </div>
+          <div id="mmNormalBtns">
+            <button class="btn btn-secondary btn-block" style="margin-top:var(--space-lg)" onclick="renewMember()">续费</button>
+          </div>
+          <div id="mmContBtns" style="display:none">
+            <button class="btn btn-secondary btn-block" style="margin-top:var(--space-lg);color:var(--color-danger);border-color:var(--color-danger)" onclick="cancelMember()">取消连续续费</button>
+            <p class="pay-note">取消后当期权益仍可使用，到期不再扣费</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 22.5 我的邀请码 · 二级页 ===== -->
+    <section class="view" id="view-my-invite">
+      <div class="pad-x" style="padding-top:var(--space-md)">
+        <div class="card invite-card" style="padding:var(--space-lg)">
+          <div class="row between" style="align-items:flex-start;gap:var(--space-md)">
+            <div style="flex:1;min-width:0">
+              <div class="serif" style="font-size:17px">我的邀请码</div>
+              <div class="micro-text" style="margin-top:4px">分享专属邀请码，好友注册即与你绑定为邀请客户</div>
+            </div>
+          </div>
+          <div class="invite-main">
+            <div class="qr-box" id="myQr"></div>
+            <div class="invite-side">
+              <div class="field-label">我的专属邀请码</div>
+              <div class="invite-code mono" id="myInviteCode">—</div>
+              <button class="btn btn-primary btn-sm" style="width:100%;margin-top:var(--space-sm)" onclick="copyInviteCode()">复制邀请码</button>
+              <div class="invitee-hint" id="myInviter" style="display:none">我的邀请人：<span class="mono" id="myInviterName"></span></div>
+            </div>
+          </div>
+          <div class="invitee-title" style="display:flex;align-items:center;justify-content:space-between">
+            <span>我邀请的用户</span>
+            <span class="invite-count-pill">已邀请 <span id="inviteCount">0</span> 人</span>
+          </div>
+          <div class="invitee-list" id="inviteeList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 22. 权限拦截页 ===== -->
+    <section class="view" id="view-permission">
+      <div class="permission">
+        <div class="pm-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6l-8-4Z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h2 id="pmTitle">请先登录</h2>
+        <p id="pmDesc">登录后即可同步收藏、查询记录，并解锁高清大图与微痕索证。</p>
+        <button class="btn btn-primary btn-block" style="max-width:240px" onclick="navigate('login')">微信登录</button>
+        <button class="btn btn-secondary btn-block" style="max-width:240px;margin-top:var(--space-md)" onclick="back()">返回</button>
+      </div>
+    </section>
+
+    <!-- ===== 23. 空状态页 ===== -->
+    <section class="view" id="view-empty">
+      <div class="empty-state">
+        <div class="es-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 7h16v12H4z"/><path d="M4 7l3-3h10l3 3"/><path d="M9 12h6"/></svg></div>
+        <h3 id="emptyTitle">暂无内容</h3>
+        <p id="emptyDesc">这里还空空如也，去收藏一些心仪的器物吧。</p>
+        <button class="btn btn-primary btn-block" style="max-width:220px" onclick="navigate('global-list')">去逛逛馆藏</button>
+      </div>
+    </section>
+
+    <!-- ===== 24. 元藏图书馆-书目列表页 ===== -->
+    <section class="view" id="view-library">
+      <div class="pad-x" style="padding-top:var(--space-lg)">
+        <div class="search-bar" style="width:100%">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="librarySearch" placeholder="搜索书名 / 作者 / 关键词" style="border:none;background:transparent;flex:1;font-size:14px;outline:none;color:var(--color-text-primary)" />
+        </div>
+      </div>
+      <div class="filter-bar">
+        <button class="chip active" onclick="libFilter(this,'cat','all')">全部</button>
+        <button class="chip" onclick="libFilter(this,'cat','陶瓷研究')">陶瓷研究</button>
+        <button class="chip" onclick="libFilter(this,'cat','书画著录')">书画著录</button>
+        <button class="chip" onclick="libFilter(this,'cat','考古报告')">考古报告</button>
+        <button class="chip" onclick="libFilter(this,'cat','工艺典籍')">工艺典籍</button>
+      </div>
+      <div class="filter-bar" style="padding-top:0">
+        <button class="chip active" onclick="libFilter(this,'format','all')">全部格式</button>
+        <button class="chip" onclick="libFilter(this,'format','TXT')">TXT</button>
+        <button class="chip" onclick="libFilter(this,'format','PDF')">PDF</button>
+      </div>
+      <div class="filter-bar" style="padding-top:0">
+        <button class="chip active" onclick="libSort(this,'rec')">推荐</button>
+        <button class="chip" onclick="libSort(this,'dynasty')">年代</button>
+        <button class="chip" onclick="libSort(this,'pop')">人气</button>
+      </div>
+      <div class="pad-x"><div id="libraryList"></div></div>
+    </section>
+
+    <!-- ===== 25. 元藏图书馆-书籍详情页 ===== -->
+    <section class="view" id="view-library-book">
+      <div class="pad">
+        <div style="display:flex;gap:var(--space-lg)">
+          <div id="lbCover" style="width:96px;height:132px;flex:0 0 96px;border-radius:var(--radius-md);overflow:hidden;background:var(--color-surface-sunken)"></div>
+          <div style="flex:1 1 auto;min-width:0">
+            <h2 class="serif" id="lbTitle" style="font-size:19px"></h2>
+            <p class="muted" id="lbAuthor" style="font-size:12px;margin-top:4px"></p>
+            <p class="muted" id="lbPub" style="font-size:12px;margin-top:2px"></p>
+            <div class="wrap" id="lbTags" style="margin-top:var(--space-sm)"></div>
+          </div>
+        </div>
+        <h3 class="serif" style="font-size:15px;margin-top:var(--space-xl)">简介</h3>
+        <p class="muted" id="lbDesc" style="font-size:13px;line-height:1.7;margin-top:var(--space-sm)"></p>
+        <h3 class="serif" style="font-size:15px;margin-top:var(--space-xl)">目录</h3>
+        <div id="lbChapters" style="margin-top:var(--space-sm)"></div>
+        <button class="btn btn-primary btn-block" style="margin-top:var(--space-xl)" id="lbReadBtn" onclick="openReaderCurrent()">开始阅读</button>
+        <button class="btn btn-secondary btn-block" style="margin-top:var(--space-md)" onclick="favBook()">收藏此书</button>
+      </div>
+    </section>
+
+    <!-- ===== 26. 元藏图书馆-在线阅读页 ===== -->
+    <section class="view" id="view-library-reader">
+      <div id="readerTxt" style="display:block">
+        <div class="reader-paper">
+          <h2 class="reader-title" id="readerTitle"></h2>
+          <div class="reader-content" id="readerContent"></div>
+        </div>
+      </div>
+      <div id="readerPdf" style="display:none">
+        <div class="pdf-placeholder">
+          <div class="pdf-doc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg></div>
+          <div class="pdf-label">PDF 文档预览</div>
+          <div class="pdf-page" id="pdfPage">1 / 128</div>
+        </div>
+      </div>
+      <div class="reader-bar">
+        <button onclick="addBookmark()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+          添加书签
+        </button>
+        <button onclick="toast('字号已调小（演示）')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 19 9 5h2l4 14h-2l-1-3H8l-1 3H5Zm2-5h4l-2-6-2 6Z"/><path d="M18 10v6M15 13h6" stroke-linecap="round"/></svg>
+          A-
+        </button>
+        <button onclick="toast('字号已调大（演示）')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 19 9 5h2l4 14h-2l-1-3H8l-1 3H5Zm2-5h4l-2-6-2 6Z"/><path d="M18 9v6M15 12h6" stroke-linecap="round"/></svg>
+          A+
+        </button>
+        <button onclick="toast('目录（演示）')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          目录
+        </button>
+      </div>
+      <div class="reader-footer"><span id="readerPos"></span></div>
+    </section>
+
+    <!-- ===== 27. 我的-我的书签 ===== -->
+    <section class="view" id="view-bookmarks">
+      <div class="pad-x"><div id="bookmarkList"></div></div>
+    </section>
+
+  </main>
+
+  <!-- ============ 底部 Tab ============ -->
+  <nav class="tab-bar" id="tabBar">
+    <button class="tab-item active" data-tab="home" onclick="goTab('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg>
+      <span class="tab-label">首页</span>
+    </button>
+    <button class="tab-item" data-tab="global" onclick="goTab('global')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>
+      <span class="tab-label">馆藏</span>
+    </button>
+    <button class="tab-item" data-tab="micro" onclick="goTab('micro')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="M11 8v6M8 11h6M16 16l4 4"/></svg>
+      <span class="tab-label">微痕</span>
+    </button>
+    <button class="tab-item" data-tab="archive" onclick="goTab('archive')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h7"/></svg>
+      <span class="tab-label">档案</span>
+    </button>
+    <button class="tab-item" data-tab="mine" onclick="goTab('mine')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+      <span class="tab-label">我的</span>
+    </button>
+  </nav>
+
+  <!-- ============ Toast ============ -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ============ 演示状态浮标 ============ -->
+  <div class="demo-fab" id="demoFab">
+    <button onclick="demoToggleLogin()">登录/登出</button>
+    <button onclick="demoToggleMember()">会员切换</button>
+  </div>
+
+</div>
+</div>
+
+<script>
+/* ============================================================
+   状态
+   ============================================================ */
+let isLoggedIn = false;
+let isMember = false;
+let memberType = 'contmonth'; // 'month' | 'year' | 'contmonth' | 'contyear'
+let payResult = 'success';
+
+/* 我的邀请码 / 邀请关系（演示数据模型）
+   me.inviteCode：当前用户专属邀请码
+   me.invitedBy：注册时使用的邀请码（即我的邀请人），为空表示自主注册
+   me.invitees：通过我的邀请码注册并绑定的客户列表 */
+let me = {
+  inviteCode: 'YZ-MINE-A8K2',
+  invitedBy: null,
+  invitees: [
+    {name:'青花小主', phone:'139****2210', regAt:'2026-06-12'},
+    {name:'陶缘', phone:'137****8890', regAt:'2026-06-25'},
+    {name:'瓷语', phone:'135****6677', regAt:'2026-07-08'},
+    {name:'观古', phone:'138****0042', regAt:'2026-07-19'},
+    {name:'釉色', phone:'136****5520', regAt:'2026-08-02'}
+  ]
+};
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+/* 用户端头像（与后台 ava 风格一致：按昵称取色 + 首字） */
+function uava(name){
+  const colors=['#5B7B6F','#B08D57','#9E2B25','#6E8B82','#7a988c'];
+  const c=colors[(name.charCodeAt(0)||65)%colors.length];
+  return `<span class="ava-sm" style="background:${c}">${esc(name.slice(0,1))}</span>`;
+}
+/* 确定性邀请二维码（装饰用 SVG 矩阵：含三角定位符，原型演示无需真实编码） */
+function genQR(text){
+  const N=25, cell=100/N;
+  let seed=0; for(let i=0;i<text.length;i++) seed=(seed*31+text.charCodeAt(i))>>>0;
+  const rnd=()=>{ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; };
+  const finderOn=(r,c)=>{
+    for(const [fr,fc] of [[0,0],[0,N-7],[N-7,0]]){
+      if(r>=fr&&r<fr+7&&c>=fc&&c<fc+7){
+        const rr=r-fr, cc=c-fc;
+        const border = rr===0||rr===6||cc===0||cc===6;
+        const core = rr>=2&&rr<=4&&cc>=2&&cc<=4;
+        return border||core;
+      }
+    }
+    return null;
+  };
+  let cells='';
+  for(let r=0;r<N;r++){ for(let c=0;c<N;c++){
+    const f=finderOn(r,c); const on = f!==null ? f : (rnd()>0.5);
+    if(on) cells+=`<rect x="${(c*cell).toFixed(2)}" y="${(r*cell).toFixed(2)}" width="${cell.toFixed(2)}" height="${cell.toFixed(2)}"/>`;
+  }}
+  return `<svg viewBox="0 0 100 100" width="100" height="100" style="background:#fff;border-radius:6px"><g fill="#1c1c1c">${cells}</g></svg>`;
+}
+function renderMyInvite(){
+  const codeEl=document.getElementById('myInviteCode'); if(codeEl) codeEl.textContent=me.inviteCode;
+  const qrEl=document.getElementById('myQr'); if(qrEl) qrEl.innerHTML=genQR(me.inviteCode);
+  const cnt=document.getElementById('inviteCount'); if(cnt) cnt.textContent=me.invitees.length;
+  const cntMini=document.getElementById('inviteCountMini'); if(cntMini) cntMini.textContent=me.invitees.length;
+  const list=document.getElementById('inviteeList');
+  if(list) list.innerHTML = me.invitees.map(x=>`<div class="invitee">${uava(x.name)}<div class="invitee-meta"><div class="invitee-name">${esc(x.name)}</div><div class="invitee-sub mono">${esc(x.phone)}</div><div class="invitee-sub invitee-reg">注册 ${esc(x.regAt)}</div></div></div>`).join('')
+    || '<div class="muted" style="font-size:13px">还没有邀请到客户，分享邀请码试试</div>';
+  const inv=document.getElementById('myInviter'); if(inv) inv.style.display = me.invitedBy ? '' : 'none';
+  const invName=document.getElementById('myInviterName'); if(invName) invName.textContent = me.invitedBy || '';
+}
+function copyInviteCode(){
+  const t=me.inviteCode;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(()=>toast('邀请码已复制：'+t),()=>toast('复制失败，请手动复制'));
+  }else{
+    const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); toast('邀请码已复制：'+t); }catch(e){ toast('复制失败，请手动复制'); }
+    document.body.removeChild(ta);
+  }
+}
+
+/* ============================================================
+   SVG 器物线描（克制青瓷绿 / 米白占位，全部内联）
+   ============================================================ */
+function vesselSVG(type, label){
+  const bg = '<rect x="0" y="0" width="100" height="133" fill="#EDE8DC"/>';
+  const stroke = 'stroke="#5B7B6F" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"';
+  const inner = 'stroke="#5B7B6F" stroke-width="1.2" fill="none" opacity="0.55"';
+  let body = '';
+  switch(type){
+    case 'plate': // 盘（葵口）
+      body = `<ellipse cx="50" cy="74" rx="40" ry="22" ${stroke}/><ellipse cx="50" cy="74" rx="26" ry="14" ${inner}/>
+        <path d="M10 74 v-3 M90 74 v3 M50 52 v-3 M50 96 v3 M26 58 l-3-3 M74 58 l3-3 M26 90 l-3 3 M74 90 l3 3" ${inner}/>`;
+      break;
+    case 'washer': // 洗
+      body = `<path d="M24 64 Q50 84 76 64 L71 84 Q50 98 29 84 Z" ${stroke}/><path d="M24 64 Q50 52 76 64" ${stroke}/>`;
+      break;
+    case 'meiping': // 梅瓶
+      body = `<path d="M44 36 Q41 44 43 54 Q31 64 33 90 Q50 100 67 90 Q69 64 57 54 Q59 44 56 36 Q50 32 44 36 Z" ${stroke}/>`;
+      break;
+    case 'guan': // 罐
+      body = `<path d="M40 40 Q38 46 40 50 Q30 60 32 92 Q50 102 68 92 Q70 60 60 50 Q62 46 60 40 Q50 36 40 40 Z" ${stroke}/><path d="M40 40 Q50 34 60 40" ${inner}/>`;
+      break;
+    case 'cup': // 杯
+      body = `<path d="M36 56 L40 90 Q50 96 60 90 L64 56 Z" ${stroke}/><path d="M36 56 Q50 50 64 56" ${stroke}/>`;
+      break;
+    case 'tangping': // 唐瓶（双龙耳）
+      body = `<path d="M46 38 Q44 48 47 56 Q34 66 37 90 Q50 100 63 90 Q66 66 53 56 Q56 48 54 38 Q50 34 46 38 Z" ${stroke}/><path d="M46 40 Q40 44 44 52 M54 40 Q60 44 56 52" ${inner}/>`;
+      break;
+    case 'bowl': // 碗
+      body = `<path d="M28 60 Q50 92 72 60 Z" ${stroke}/><path d="M28 60 Q50 52 72 60" ${stroke}/>`;
+      break;
+    case 'document': // 档案 / 卷轴
+      body = `<rect x="28" y="30" width="44" height="74" rx="3" ${stroke}/><path d="M36 44 h28 M36 54 h28 M36 64 h28 M36 74 h20" ${inner}/>`;
+      break;
+    case 'vase': // 玉壶春瓶
+      body = `<path d="M50 30 Q44 40 47 48 Q38 56 42 72 Q46 92 50 96 Q54 92 58 72 Q62 56 53 48 Q56 40 50 30 Z" ${stroke}/>`;
+      break;
+    default:
+      body = `<ellipse cx="50" cy="74" rx="34" ry="20" ${stroke}/>`;
+  }
+  const lab = label ? `<text x="50" y="124" text-anchor="middle" font-size="8" fill="#756E60" font-family="PingFang SC, sans-serif">${label}</text>` : '';
+  return `<svg class="vessel" viewBox="0 0 100 133" preserveAspectRatio="xMidYMid meet">${bg}${body}${lab}</svg>`;
+}
+
+function lockSVG(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="#6B6B63" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`;
+}
+function goldEmblem(){
+  return `<svg class="gold-emblem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l2.4 5 5.6.8-4 4 1 5.6L12 19l-5 2.4 1-5.6-4-4 5.6-.8z"/></svg>`;
+}
+function memberPillHTML(){
+  if(!isMember) return '';
+  const _p = planInfo(memberType);
+  return _p.isYear ? `<span class="pill pill-year">${goldEmblem()}${_p.name}</span>` : `<span class="pill pill-vip">VIP</span>`;
+}
+
+/* ============================================================
+   数据（真实感中文 Mock）
+   ============================================================ */
+const GLOBAL = [
+  {id:'g1', name:'南宋官窑粉青釉葵口盘', dynasty:'南宋', kiln:'官窑', museum:'故宫博物院', country:'中国', cat:'瓷器', shape:'plate', label:'南宋·官窑',
+   period:'南宋 1127-1279', size:'高 4.2cm 口径 18.3cm 足径 12.5cm', glaze:'粉青釉', foot:'无款，圈足露胎呈铁色',
+   provenance:'清宫旧藏，1949 年后调拨故宫博物院。', records:'《故宫博物院藏文物珍品全集·两宋瓷器》著录。',
+   description:'葵口六瓣，坦腹浅圈足。通体施粉青釉，釉层厚润失透，口沿釉薄处微露紫褐胎色，圈足无釉处呈铁色。釉面满布冰裂开片，大纹间以小纹，错落有致。此器为南宋官窑郊坛下窑址同类器，釉质温润如玉，为宋代单色釉瓷之典范。',
+   material:'瓷', technique:'支钉垫烧，多次施釉，低温素烧后高温烧成', features:['紫口铁足','开片','粉青釉','支钉垫烧']},
+  {id:'g9', name:'南宋官窑米黄釉贯耳瓶', dynasty:'南宋', kiln:'官窑', museum:'故宫博物院', country:'中国', cat:'瓷器', shape:'vase', label:'南宋·官窑',
+   period:'南宋 1127-1279', size:'高 23.5cm 口径 6.2cm 足径 8.4cm', glaze:'米黄釉', foot:'无款，圈足露胎呈铁色',
+   provenance:'清宫旧藏，原陈设乾清宫，今藏故宫博物院。', records:'《故宫博物院藏文物珍品全集·两宋瓷器》著录。',
+   description:'器作贯耳瓶式，直口长颈，颈两侧附管状贯耳，垂腹圈足。通体施米黄釉，釉层厚润失透，釉面布满冰裂开片。口沿釉薄处微露紫褐胎色，圈足处深灰铁色胎骨外露。为南宋官窑修内司窑址同类器，造型取法汉代壶式。',
+   material:'瓷', technique:'多次施釉，支钉垫烧', features:['紫口铁足','米黄釉','厚釉失透']},
+  {id:'g10', name:'南宋官窑粉青釉洗', dynasty:'南宋', kiln:'官窑', museum:'上海博物馆', country:'中国', cat:'瓷器', shape:'washer', label:'南宋·官窑',
+   period:'南宋 1127-1279', size:'高 5.1cm 口径 12.8cm 足径 8.9cm', glaze:'粉青釉', foot:'底部支钉痕四枚，露灰黑胎',
+   provenance:'上海博物馆征购入藏，曾为陈之佛旧藏。', records:'《上海博物馆藏瓷器》著录。',
+   description:'洗作敞口浅腹，弧壁下收，圈足。通体施粉青釉，釉层厚若堆脂，失透呈玉质感，釉面开细密冰裂纹片。底部留支钉垫烧痕四枚，露灰黑胎骨。为南宋官窑郊坛下窑址典型器。',
+   material:'瓷', technique:'支钉垫烧，多次施釉', features:['开片','粉青釉','厚釉失透']},
+  {id:'g11', name:'南宋官窑弦纹瓶', dynasty:'南宋', kiln:'官窑', museum:'台北故宫', country:'中国', cat:'瓷器', shape:'vase', label:'南宋·官窑',
+   period:'南宋 1127-1279', size:'高 17.9cm 口径 4.3cm 足径 6.1cm', glaze:'米黄釉', foot:'无款，圈足露胎呈铁色',
+   provenance:'原清宫旧藏，今藏台北故宫博物院。', records:'《故宫瓷器录》著录。',
+   description:'撇口长颈，颈部饰凸弦纹三道，垂腹圈足。通体施米黄釉，釉面失透，开片疏朗有致。口沿釉薄处紫褐透出，圈足处铁色胎骨外露，紫口铁足特征鲜明。为南宋官窑弦纹瓶之标准器。',
+   material:'瓷', technique:'多次施釉，支钉垫烧', features:['紫口铁足','开片','米黄釉']},
+  {id:'g2', name:'汝窑天青釉洗', dynasty:'北宋', kiln:'汝窑', museum:'大英博物馆', country:'英国', cat:'瓷器', shape:'washer', label:'北宋·汝窑',
+   period:'北宋 960-1127', size:'高 3.3cm 口径 13.2cm 足径 8.7cm', glaze:'天青釉', foot:'底部支钉痕五枚，露灰白胎',
+   provenance:'大英博物馆 1952 年入藏，源自 F. W. Fuller 旧藏。', records:'大英博物馆藏品图录著录。',
+   description:'洗作敞口浅腹，圈足外撇。通体天青釉，釉色天蓝中泛青，釉面莹润如冰似玉，布满细碎开片。底部留五枚细小支钉痕，露灰白胎。汝窑以玛瑙入釉，釉呈天青，居宋代五大名窑之首。',
+   material:'瓷', technique:'支钉满釉烧制，玛瑙末入釉'},
+  {id:'g3', name:'元青花缠枝牡丹纹梅瓶', dynasty:'元', kiln:'景德镇', museum:'伊朗国家博物馆', country:'伊朗', cat:'瓷器', shape:'meiping', label:'元·景德镇',
+   period:'元 1271-1368', size:'高 42.5cm 口径 6.1cm 足径 14cm', glaze:'青花釉', foot:'无款，沙底涩圈',
+   provenance:'伊朗阿尔达比勒神庙旧藏，今藏伊朗国家博物馆。', records:'《Iranian Ceramics》及阿尔达比勒藏品著录。',
+   description:'小口短颈，丰肩收腹，造型挺拔。通体以钴料绘缠枝牡丹纹，纹饰分五层：肩部莲瓣纹，腹部缠枝牡丹，胫部仰莲纹。青花发色浓艳深沉，釉面铁锈斑明显，为元青花外销西亚之代表。',
+   material:'瓷', technique:'青花钴料绘制，釉下彩一次烧成'},
+  {id:'g4', name:'明永乐青花缠枝莲纹压手杯', dynasty:'明', kiln:'景德镇', museum:'故宫博物院', country:'中国', cat:'瓷器', shape:'cup', label:'明·景德镇',
+   period:'明永乐 1403-1424', size:'高 4.9cm 口径 9.2cm 足径 3.9cm', glaze:'青花釉', foot:'圈足内青花双圈楷书「永乐年制」四字款',
+   provenance:'清宫旧藏，现藏故宫博物院。', records:'《故宫博物院藏明代瓷器》著录。',
+   description:'撇口深腹，圈足。口沿绘卷草纹一周，腹部缠枝莲纹，近足处莲瓣纹。胎体轻薄而手感沉实，握于掌中微微压手，故名压手杯。青花色泽浓艳，间有晕散，为永乐官窑青花经典。',
+   material:'瓷', technique:'青花钴料绘制，釉下彩一次烧成'},
+  {id:'g5', name:'清乾隆粉彩百花不落地葫芦瓶', dynasty:'清', kiln:'景德镇', museum:'上海博物馆', country:'中国', cat:'瓷器', shape:'guan', label:'清·景德镇',
+   period:'清乾隆 1736-1795', size:'高 33.5cm 口径 4.8cm 足径 10.2cm', glaze:'粉彩釉', foot:'圈足内青花篆书「大清乾隆年制」六字三行款',
+   provenance:'清宫旧藏，现藏上海博物馆。', records:'《上海博物馆藏清代瓷器》著录。',
+   description:'葫芦造型，小口束腰，线条柔美。通体以粉彩绘百花不落地纹饰，各色花卉满布器身，密不透地，象征百花呈瑞。釉彩明丽，绘制精细，为乾隆粉彩瓷之典型器。',
+   material:'瓷', technique:'粉彩釉上彩绘，二次烧成'},
+  {id:'g6', name:'北宋钧窑天蓝釉紫斑碗', dynasty:'北宋', kiln:'钧窑', museum:'台北故宫', country:'中国', cat:'瓷器', shape:'bowl', label:'北宋·钧窑',
+   period:'北宋 960-1127', size:'高 8.1cm 口径 17.9cm 足径 5.2cm', glaze:'天蓝釉', foot:'无款，圈足施酱釉',
+   provenance:'原清宫旧藏，今藏台北故宫博物院。', records:'《故宫瓷器录》著录。',
+   description:'敞口弧腹，圈足。通体天蓝釉，釉面乳浊失透，碗内壁有玫瑰紫斑，蓝紫相映如云霞变幻，为铜红釉窑变自然天成。钧窑窑变一器一色，为宋代窑变釉瓷之代表。',
+   material:'瓷', technique:'铜红釉窑变，乳浊釉厚施'},
+  {id:'g7', name:'北宋定窑白釉刻花莲纹盘', dynasty:'北宋', kiln:'定窑', museum:'大阪市立东洋陶瓷美术馆', country:'日本', cat:'瓷器', shape:'plate', label:'北宋·定窑',
+   period:'北宋 960-1127', size:'高 4.1cm 口径 20.5cm 足径 6.4cm', glaze:'白釉', foot:'无款，芒口，圈足露胎',
+   provenance:'大阪市立东洋陶瓷美术馆 1977 年入藏，源自安宅英一旧藏。', records:'《安宅コレクション》著录。',
+   description:'敞口浅腹，芒口。盘心刻莲纹，刀法犀利流畅，线条劲挺。釉色白中微泛牙黄，质感温润。定窑以刻划花著称，此盘为北宋定窑白瓷刻花代表作。',
+   material:'瓷', technique:'刻花装饰，覆烧芒口'},
+  {id:'g8', name:'唐三彩贴花双龙耳瓶', dynasty:'唐', kiln:'巩义窑', museum:'中国国家博物馆', country:'中国', cat:'瓷器', shape:'tangping', label:'唐·巩义窑',
+   period:'唐 618-907', size:'高 34.6cm 口径 8.4cm 足径 12.6cm', glaze:'三彩釉', foot:'无款，底部露胎呈粉红色',
+   provenance:'中国国家博物馆征购入藏。', records:'《中国国家博物馆馆藏文物研究丛书·瓷器卷》著录。',
+   description:'盘口细颈，鼓腹平底，双龙耳自肩部衔接口沿。通体施绿、褐、白三彩釉，腹部贴塑花卉纹饰。器型雄浑，釉彩交融流动，为盛唐三彩器之典型。',
+   material:'陶', technique:'模印贴花，低温铅釉烧成'},
+  /* —— 第 5 轮扩充：长沙窑 6 件 —— */
+  {id:'g12', name:'长沙窑褐绿彩花鸟纹注子', dynasty:'唐', kiln:'长沙窑', museum:'国家博物馆', country:'中国', cat:'瓷器', shape:'tangping', label:'唐·长沙窑',
+   period:'唐 618-907', size:'高 21.2cm 口径 6.8cm 足径 12.4cm', glaze:'青黄釉', foot:'无款，饼足露胎',
+   provenance:'国家博物馆征购入藏，长沙窑窑址出土。', records:'《长沙窑》图录及国家博物馆藏品著录。',
+   description:'喇叭口短颈，丰肩鼓腹，肩部置短流与双系。流下以褐绿彩绘花鸟纹，笔意流畅，为唐代釉下彩绘瓷之典范。长沙窑首创高温釉下彩，开后世彩瓷先河。',
+   material:'瓷', technique:'釉下褐绿彩绘，高温一次烧成', features:['釉下彩','褐绿斑','花鸟纹','诗文题记']},
+  {id:'g13', name:'长沙窑釉下彩诗文碗', dynasty:'唐', kiln:'长沙窑', museum:'湖南省博物馆', country:'中国', cat:'瓷器', shape:'bowl', label:'唐·长沙窑',
+   period:'唐 618-907', size:'高 4.6cm 口径 15.2cm 足径 6.1cm', glaze:'青黄釉', foot:'无款，玉璧底露胎',
+   provenance:'湖南省博物馆征购入藏，长沙窑窑址出土。', records:'《湖南省博物馆藏长沙窑瓷器》著录。',
+   description:'敞口弧腹，玉璧底。碗心以褐彩题写诗句，笔势遒劲。诗文题记是长沙窑最具特色的装饰之一，反映唐代市井生活与诗歌文化。',
+   material:'瓷', technique:'釉下褐彩诗文，高温一次烧成', features:['釉下彩','诗文题记']},
+  {id:'g14', name:'长沙窑贴塑人物纹罐', dynasty:'唐', kiln:'长沙窑', museum:'大都会艺术博物馆', country:'美国', cat:'瓷器', shape:'guan', label:'唐·长沙窑',
+   period:'唐 618-907', size:'高 18.6cm 口径 9.2cm 足径 11.8cm', glaze:'青黄釉', foot:'无款，平底露胎',
+   provenance:'大都会艺术博物馆 1913 年入藏，源自纽约私人旧藏。', records:'大都会艺术博物馆藏品图录著录。',
+   description:'直口丰肩，鼓腹平底，肩部置双系。腹壁模印贴塑人物纹并施褐斑，立体感强。贴花装饰结合褐斑点缀，为长沙窑典型工艺。',
+   material:'瓷', technique:'模印贴花，褐斑点彩，高温烧成', features:['釉下彩','贴花','褐绿斑']},
+  {id:'g15', name:'长沙窑褐斑贴花瓷枕', dynasty:'唐', kiln:'长沙窑', museum:'湖南省博物馆', country:'中国', cat:'瓷器', shape:'washer', label:'唐·长沙窑',
+   period:'唐 618-907', size:'长 17.8cm 宽 12.4cm 高 8.2cm', glaze:'青黄釉', foot:'无款，枕底露胎',
+   provenance:'湖南省博物馆征购入藏，长沙窑窑址出土。', records:'《湖南省博物馆藏长沙窑瓷器》著录。',
+   description:'长方形枕面微凹，四角圆润。枕面及侧面以褐斑贴花装饰，色彩对比鲜明。长沙窑瓷枕兼具实用与装饰，为唐代生活瓷之精品。',
+   material:'瓷', technique:'模印贴花，褐斑点彩，高温烧成', features:['釉下彩','褐绿斑','贴花']},
+  {id:'g16', name:'长沙窑绿彩云气纹碗', dynasty:'唐', kiln:'长沙窑', museum:'国家博物馆', country:'中国', cat:'瓷器', shape:'bowl', label:'唐·长沙窑',
+   period:'唐 618-907', size:'高 5.1cm 口径 16.4cm 足径 6.3cm', glaze:'青黄釉', foot:'无款，玉璧底露胎',
+   provenance:'国家博物馆征购入藏，长沙窑窑址出土。', records:'国家博物馆藏品著录。',
+   description:'敞口深腹，玉璧底。碗内外以绿彩绘云气纹，线条飘逸流动，绿彩呈色明丽。长沙窑绿彩为高温铜绿釉彩，是唐代绿彩瓷的代表。',
+   material:'瓷', technique:'釉下绿彩绘，高温一次烧成', features:['釉下彩','花鸟纹']},
+  {id:'g17', name:'长沙窑釉下彩花口盘', dynasty:'唐', kiln:'长沙窑', museum:'大英博物馆', country:'英国', cat:'瓷器', shape:'plate', label:'唐·长沙窑',
+   period:'唐 618-907', size:'高 4.2cm 口径 14.6cm 足径 7.2cm', glaze:'青黄釉', foot:'无款，圈足露胎',
+   provenance:'大英博物馆 1936 年入藏，源自考古发掘征集。', records:'大英博物馆藏品图录著录。',
+   description:'葵花口，浅腹平底。盘心以褐绿彩绘折枝花卉，构图疏朗，色彩明快。此盘为长沙窑外销瓷中的精品，见证了唐代海上丝绸之路的贸易盛况。',
+   material:'瓷', technique:'釉下褐绿彩绘，高温一次烧成', features:['釉下彩','褐绿斑','花鸟纹']},
+  /* —— 第 5 轮扩充：汝窑 +3 —— */
+  {id:'g18', name:'汝窑天青釉莲瓣碗', dynasty:'北宋', kiln:'汝窑', museum:'大英博物馆', country:'英国', cat:'瓷器', shape:'bowl', label:'北宋·汝窑',
+   period:'北宋 960-1127', size:'高 6.9cm 口径 16.8cm 足径 7.1cm', glaze:'天青釉', foot:'底部支钉痕五枚，露灰白胎',
+   provenance:'大英博物馆 1952 年入藏，源自 F. W. Fuller 旧藏。', records:'大英博物馆藏品图录著录。',
+   description:'敞口弧腹，外壁刻莲瓣纹，圈足。通体天青釉，釉面莹润如冰似玉，布满细碎开片。莲瓣造型清雅，为汝窑少见之碗类造型。',
+   material:'瓷', technique:'支钉满釉烧制，玛瑙末入釉', features:['天青釉','玛瑙入釉','支钉烧','冰裂纹']},
+  {id:'g19', name:'汝窑天青釉玉壶春瓶', dynasty:'北宋', kiln:'汝窑', museum:'故宫博物院', country:'中国', cat:'瓷器', shape:'vase', label:'北宋·汝窑',
+   period:'北宋 960-1127', size:'高 17.3cm 口径 5.1cm 足径 7.3cm', glaze:'天青釉', foot:'底部支钉痕五枚，露灰白胎',
+   provenance:'清宫旧藏，现藏故宫博物院。', records:'《故宫博物院藏文物珍品全集·两宋瓷器》著录。',
+   description:'撇口细颈，垂腹圈足，造型优美。通体天青釉，釉色天蓝中泛青，光泽内蕴。釉面开细碎冰裂纹片，底部支钉痕细小如芝麻花。汝窑玉壶春瓶存世极罕。',
+   material:'瓷', technique:'支钉满釉烧制，玛瑙末入釉', features:['天青釉','玛瑙入釉','支钉烧','冰裂纹']},
+  {id:'g20', name:'汝窑天青釉花口洗', dynasty:'北宋', kiln:'汝窑', museum:'上海博物馆', country:'中国', cat:'瓷器', shape:'washer', label:'北宋·汝窑',
+   period:'北宋 960-1127', size:'高 4.4cm 口径 13.6cm 足径 9.1cm', glaze:'天青釉', foot:'底部支钉痕五枚，露灰白胎',
+   provenance:'上海博物馆征购入藏。', records:'《上海博物馆藏瓷器》著录。',
+   description:'花口浅腹，弧壁下收，圈足外撇。通体天青釉，釉色温润如雨过天青，釉面满布细碎开片。洗内壁微有起伏，随花口起伏呈现光影变化，为汝窑文房名品。',
+   material:'瓷', technique:'支钉满釉烧制，玛瑙末入釉', features:['天青釉','支钉烧','冰裂纹']},
+  /* —— 第 5 轮扩充：钧窑 +3 —— */
+  {id:'g21', name:'钧窑天蓝釉玫瑰紫斑瓶', dynasty:'北宋', kiln:'钧窑', museum:'故宫博物院', country:'中国', cat:'瓷器', shape:'vase', label:'北宋·钧窑',
+   period:'北宋 960-1127', size:'高 27.4cm 口径 5.5cm 足径 8.7cm', glaze:'天蓝釉', foot:'无款，圈足施酱釉',
+   provenance:'清宫旧藏，现藏故宫博物院。', records:'《故宫博物院藏文物珍品全集·两宋瓷器》著录。',
+   description:'撇口束颈，溜肩垂腹，圈足。通体天蓝乳浊釉，腹侧缀玫瑰紫斑，蓝紫相映如云霞变幻。铜红釉窑变自然天成，为钧窑窑变之名品。',
+   material:'瓷', technique:'铜红釉窑变，乳浊釉厚施', features:['窑变','铜红斑','乳浊釉','天蓝釉']},
+  {id:'g22', name:'钧窑天蓝釉红斑罐', dynasty:'金', kiln:'钧窑', museum:'上海博物馆', country:'中国', cat:'瓷器', shape:'guan', label:'金·钧窑',
+   period:'金 1115-1234', size:'高 13.6cm 口径 9.4cm 足径 7.8cm', glaze:'天蓝釉', foot:'无款，圈足露胎',
+   provenance:'上海博物馆征购入藏。', records:'《上海博物馆藏瓷器》著录。',
+   description:'敛口鼓腹，圈足。通体天蓝乳浊釉，肩部大片红斑晕散如落日余晖。铜红釉在乳浊蓝釉中晕化，浑然天成，为钧窑窑变釉之典型器。',
+   material:'瓷', technique:'铜红釉窑变，乳浊釉厚施', features:['窑变','铜红斑','乳浊釉','天蓝釉']},
+  {id:'g23', name:'钧窑月白釉尊', dynasty:'北宋', kiln:'钧窑', museum:'台北故宫', country:'中国', cat:'瓷器', shape:'guan', label:'北宋·钧窑',
+   period:'北宋 960-1127', size:'高 18.2cm 口径 15.4cm 足径 10.6cm', glaze:'月白釉', foot:'无款，圈足施酱釉',
+   provenance:'原清宫旧藏，今藏台北故宫博物院。', records:'《故宫瓷器录》著录。',
+   description:'尊式造型，洗口束颈，鼓腹高圈足。通体月白釉，釉色乳浊失透，温润如玉，釉面微现兔丝纹。钧窑月白釉为其独有的乳浊釉色，含蓄素雅。',
+   material:'瓷', technique:'铜红釉窑变，乳浊釉厚施', features:['窑变','乳浊釉','天蓝釉']},
+  /* —— 第 5 轮扩充：定窑 +3 —— */
+  {id:'g24', name:'定窑白釉刻花萱草纹盘', dynasty:'北宋', kiln:'定窑', museum:'故宫博物院', country:'中国', cat:'瓷器', shape:'plate', label:'北宋·定窑',
+   period:'北宋 960-1127', size:'高 3.8cm 口径 19.6cm 足径 6.2cm', glaze:'白釉', foot:'无款，芒口，圈足露胎',
+   provenance:'清宫旧藏，现藏故宫博物院。', records:'《故宫博物院藏文物珍品全集·两宋瓷器》著录。',
+   description:'敞口浅腹，芒口，圈足。盘心刻萱草纹，刀法犀利，线条流畅劲挺。釉色白中微泛牙黄，质感温润。定窑刻花工艺在北宋达到巅峰，此盘为其代表作。',
+   material:'瓷', technique:'刻花装饰，覆烧芒口', features:['白釉','刻花','印花','覆烧芒口']},
+  {id:'g25', name:'定窑白釉印花牡丹纹碗', dynasty:'北宋', kiln:'定窑', museum:'上海博物馆', country:'中国', cat:'瓷器', shape:'bowl', label:'北宋·定窑',
+   period:'北宋 960-1127', size:'高 5.9cm 口径 18.4cm 足径 5.8cm', glaze:'白釉', foot:'无款，芒口，圈足露胎',
+   provenance:'上海博物馆征购入藏。', records:'《上海博物馆藏瓷器》著录。',
+   description:'敞口深腹，芒口，圈足。碗内印花牡丹纹，枝叶繁茂，模印清晰规整。印花工艺量产高效，纹饰繁丽，为北宋定窑特色工艺。',
+   material:'瓷', technique:'印花装饰，覆烧芒口', features:['白釉','印花','覆烧芒口']},
+  {id:'g26', name:'定窑白釉刻花龙纹瓶', dynasty:'北宋', kiln:'定窑', museum:'大英博物馆', country:'英国', cat:'瓷器', shape:'meiping', label:'北宋·定窑',
+   period:'北宋 960-1127', size:'高 24.8cm 口径 4.6cm 足径 8.9cm', glaze:'白釉', foot:'无款，圈足露胎',
+   provenance:'大英博物馆 1935 年入藏，源自中国瓷专项征集。', records:'大英博物馆藏品图录著录。',
+   description:'小口短颈，丰肩收腹，造型挺拔。肩腹部刻龙纹，刀法矫健有力，龙身盘旋于云气之间。定窑白瓷刻花技艺精湛，龙纹题材尤为珍贵。',
+   material:'瓷', technique:'刻花装饰，覆烧芒口', features:['白釉','刻花','覆烧芒口']},
+  /* —— 第 5 轮扩充：哥窑 +4 —— */
+  {id:'g27', name:'哥窑米黄釉百圾碎瓶', dynasty:'南宋', kiln:'哥窑', museum:'故宫博物院', country:'中国', cat:'瓷器', shape:'vase', label:'南宋·哥窑',
+   period:'南宋 1127-1279', size:'高 20.4cm 口径 6.8cm 足径 7.6cm', glaze:'米黄釉', foot:'无款，圈足露胎呈铁色',
+   provenance:'清宫旧藏，现藏故宫博物院。', records:'《故宫博物院藏文物珍品全集·两宋瓷器》著录。',
+   description:'撇口长颈，垂腹圈足。通体米黄釉，釉面失透温润，满布大小开片，大纹呈铁线色，小纹呈金丝色，俗称「金丝铁线」与「百圾碎」。为哥窑典型特征。',
+   material:'瓷', technique:'多次施釉，开片釉烧成', features:['米黄釉','紫口铁足','百圾碎','开片']},
+  {id:'g28', name:'哥窑米黄釉贯耳瓶', dynasty:'南宋', kiln:'哥窑', museum:'上海博物馆', country:'中国', cat:'瓷器', shape:'vase', label:'南宋·哥窑',
+   period:'南宋 1127-1279', size:'高 19.8cm 口径 5.6cm 足径 7.4cm', glaze:'米黄釉', foot:'无款，圈足露胎呈铁色',
+   provenance:'上海博物馆征购入藏。', records:'《上海博物馆藏瓷器》著录。',
+   description:'直口长颈，颈两侧附管状贯耳，垂腹圈足。通体米黄釉，釉面开片疏密相间，金丝铁线交织。口沿釉薄处微露紫褐，圈足铁色外露，紫口铁足特征显著。',
+   material:'瓷', technique:'多次施釉，开片釉烧成', features:['米黄釉','紫口铁足','开片']},
+  {id:'g29', name:'哥窑米黄釉鱼耳炉', dynasty:'南宋', kiln:'哥窑', museum:'大英博物馆', country:'英国', cat:'瓷器', shape:'cup', label:'南宋·哥窑',
+   period:'南宋 1127-1279', size:'高 9.4cm 口径 12.6cm 足径 9.2cm', glaze:'米黄釉', foot:'无款，圈足露胎呈铁色',
+   provenance:'大英博物馆 1926 年入藏，源自皇室旧藏流散。', records:'大英博物馆藏品图录著录。',
+   description:'侈口束颈，鼓腹圈足，腹部两侧饰鱼形双耳。通体米黄釉，釉面开片自然，大小纹片层叠，古意盎然。鱼耳炉为哥窑经典造型，仿青铜簋形制。',
+   material:'瓷', technique:'多次施釉，开片釉烧成', features:['米黄釉','紫口铁足','开片']},
+  {id:'g30', name:'哥窑米黄釉盘', dynasty:'南宋', kiln:'哥窑', museum:'台北故宫', country:'中国', cat:'瓷器', shape:'plate', label:'南宋·哥窑',
+   period:'南宋 1127-1279', size:'高 3.6cm 口径 16.8cm 足径 10.4cm', glaze:'米黄釉', foot:'无款，圈足露胎呈铁色',
+   provenance:'原清宫旧藏，今藏台北故宫博物院。', records:'《故宫瓷器录》著录。',
+   description:'敞口浅腹，圈足。通体米黄釉，釉面开片密布，百圾碎特征显著。盘心开片形成错落的网格纹理，别具金石韵致，为哥窑传世名品。',
+   material:'瓷', technique:'多次施釉，开片釉烧成', features:['米黄釉','百圾碎','开片']}
+];
+const ARCHIVE = [
+  {id:'a1', title:'清宫旧藏瓷器档案·乾隆朝', dynasty:'清', org:'内务府造办处', cat:'档案', shape:'document', read:'乾隆朝内务府造办处逐件登记宫廷旧藏瓷器，含名称、尺寸、釉色、陈设地点与收贮库房，为今日故宫藏瓷的重要著录依据。', meta:[['编号','故瓷·乾隆·〇三七'],['载体','黄绫写本'],['现存','故宫博物院']],
+   date:'清乾隆 1736-1795', format:'黄绫写本', size:'每册纵 28cm 横 18cm', condition:'保存完好，略有虫蛀', count:'共 3 册', keywords:'乾隆、瓷器、陈设、内务府'},
+  {id:'a2', title:'景德镇御窑厂进单·雍正十三年', dynasty:'清', org:'御窑厂', cat:'进单', shape:'document', read:'雍正十三年景德镇御窑厂呈进瓷器清册，列明品类、件数与烧造费用，反映御窑岁供制度与督陶官考核。', meta:[['编号','御窑·雍正·进单'],['载体','进单写本'],['现存','第一历史档案馆']],
+   date:'清雍正十三年 1735', format:'进单写本', size:'纵 26cm 横 17cm', condition:'纸本微黄，字迹清晰', count:'共 2 册', keywords:'雍正、御窑、进单、烧造'},
+  {id:'a3', title:'《宣和博古图》摹本·宋', dynasty:'宋', org:'宋廷', cat:'图谱', shape:'document', read:'宋代官方金石图谱，著录商周青铜器形制与铭文，开后世博古图录之先河，亦影响瓷器仿古造型。', meta:[['编号','博古·宋·摹'],['载体','绢本摹绘'],['现存','上海博物馆']],
+   date:'宋宣和年间 1119-1125', format:'绢本摹绘', size:'纵 32cm 横 22cm', condition:'绢面略有磨损，色彩保存尚可', count:'存 6 册', keywords:'博古、金石、摹本、商周'},
+  {id:'a4', title:'元大都出土器物著录·至正年间', dynasty:'元', org:'大都留守司', cat:'著录', shape:'document', read:'元大都（今北京）遗址出土瓷器与窖藏著录，记录龙泉、景德镇与外销瓷流通，补证元代都城用瓷面貌。', meta:[['编号','大都·至正·著'],['载体','著录写本'],['现存','首都博物馆']],
+   date:'元至正年间 1341-1368', format:'著录写本', size:'纵 24cm 横 15cm', condition:'纸本残损，部分页面缺佚', count:'存 1 册', keywords:'元大都、出土、龙泉、外销瓷'},
+  {id:'a5', title:'明万历御膳房用瓷簿', dynasty:'明', org:'司礼监', cat:'簿册', shape:'document', read:'万历朝司礼监御膳房日用瓷器簿册，记碗、碟、壶等日常用瓷数量与岁供，可见宫廷膳食用瓷规制。', meta:[['编号','司礼·万历·簿'],['载体','簿册写本'],['现存','故宫博物院']],
+   date:'明万历 1573-1620', format:'簿册写本', size:'纵 25cm 横 16cm', condition:'保存较好，字迹清晰', count:'共 5 册', keywords:'万历、御膳房、用瓷、岁供'}
+];
+/* 元藏图书馆：书目编目（TXT 带正文节选，PDF 为文档占位预览） */
+const LIBRARY = [
+  {id:'l1', title:'陶说', author:'朱琰', dynasty:'清', cat:'陶瓷研究', format:'TXT', pop:96,
+   desc:'清代陶瓷史论名著，分说今、说古、说明、说器四卷，系统考述历代窑器源流与窑器制度。',
+   chapters:[['说今上','卷一'],['说今下','卷二'],['说古','卷三'],['说明·说器','卷四']],
+   content:'陶器之兴，自虞舜始，至唐而渐备，宋元以来制作日精，窑器之美遂甲于天下。今之论陶者，必自历代窑器考其源流，明其制度，而后可以观器识真。\n\n汝窑，宋时汝州所烧，土细润如铜骨，色天青，为历代青瓷之冠。其釉汁莹厚，视之如碧玉，隐有细碎开片，底有芝麻花细小挣钉者，乃支钉支烧之迹。\n\n官窑，宋修内司烧者，土脉细润，色青带粉红，浓淡不一，釉面有蟹爪纹，紫口铁足为识。郊坛下新窑亦官窑之属，釉薄而色淡，与修内司微异。\n\n哥窑，本龙泉琉田窑，宋人章生一、章生二兄弟各主一窑，生一者为哥窑。其胎细性坚，釉多断纹，号百圾碎，色青浓淡不一，为世所珍。'},
+  {id:'l2', title:'景德镇陶录', author:'蓝浦', dynasty:'清', cat:'陶瓷研究', format:'PDF', pop:88, pageCount:96,
+   desc:'清代景德镇地方陶志，详记镇窑沿革、制瓷工艺与历代名窑，为研究景德镇瓷业之要籍。',
+   chapters:[['景德镇窑考','卷一'],['镇窑陶务','卷二'],['诸名窑考','卷三'],['历代窑考','卷四']]},
+  {id:'l3', title:'饮流斋说瓷', author:'许之衡', dynasty:'民国', cat:'陶瓷研究', format:'TXT', pop:92,
+   desc:'民国论瓷专著，以胎、釉、彩、纹、款为纲，辨析历代名瓷优劣，行文雅驯，颇见功力。',
+   chapters:[['概说','第一'],['色釉','第二'],['花纹','第三'],['款识','第四']],
+   content:'吾人论瓷，必先辨胎釉，次察彩绘，而后及于式样与款识。四者既明，则一器之真赝优劣，可以十得八九。\n\n青花之妙，端在发色。浓艳如黛而浑润者为上，若色浮而燥、蓝而近黑者，皆下乘也。永乐宣德之青花，晕散自然，深入釉骨，为后世所不能及。\n\n粉彩者，以其粉润如玉、彩绘妍丽而得名。创始于康熙之末，盛于雍正、乾隆之间。雍正粉彩淡雅清隽，乾隆则渐趋繁缛，工巧有余而气韵稍逊。'},
+  {id:'l4', title:'中国陶瓷史', author:'叶喆民', dynasty:'现当代', cat:'陶瓷研究', format:'PDF', pop:104, pageCount:128,
+   desc:'现代中国陶瓷通史，上起新石器时代陶器，下迄明清彩瓷，兼顾窑口分布与工艺流变。',
+   chapters:[['陶器之起源','第一章'],['汉唐陶瓷','第二章'],['宋元名窑','第三章'],['明清彩瓷','第四章']]},
+  {id:'l5', title:'宣和博古图', author:'王黼', dynasty:'宋', cat:'书画著录', format:'PDF', pop:78, pageCount:132,
+   desc:'宋代官修金石图谱，摹绘商周彝器形制铭文，开后世博古图录之先河，亦影响瓷器仿古造型。',
+   chapters:[['鼎彝总说','卷一'],['尊罍之属','卷三'],['卣之属','卷五'],['壶鉴之属','卷七']]},
+  {id:'l6', title:'格古要论', author:'曹昭', dynasty:'明', cat:'工艺典籍', format:'TXT', pop:71,
+   desc:'明代文物鉴定入门书，分窑器、铜器、书画、玉器等类，考订器物真赝与优劣。',
+   chapters:[['古窑器论','卷一'],['古铜器论','卷二'],['古画论','卷三'],['古玉器论','卷四']],
+   content:'古窑器论曰：柴、汝、官、哥、定，此五窑者，为古今名窑。柴窑出北地，世传周世宗所烧，其色天青，滋润细媚，为诸窑之冠，然传世甚罕。\n\n定窑出定州，白瓷细腻，其纹以划花为贵，芒口者多以铜镶之。釉色白中微黄者为佳，莹白而薄者次之。\n\n官窑宋修内司烧者，土脉细润，色青带粉红，浓淡不一。真者色青而釉厚，伪者色灰而釉薄，须细辨之。'},
+  {id:'l7', title:'南窑笔记', author:'佚名', dynasty:'清', cat:'陶瓷研究', format:'TXT', pop:64,
+   desc:'清代笔记体陶论，杂记柴、定、官、哥诸窑与景德镇制瓷掌故，语多亲历见闻。',
+   chapters:[['柴窑','上篇'],['定窑','中篇'],['官哥窑','下篇'],['景德镇','附篇']],
+   content:'柴窑者，周世宗之御窑也。相传当日请器色，世宗曰：雨过天青云破处，这般颜色做将来。故柴窑之色，天青为最。\n\n定窑，北定在定州，南定在饶州。北定白瓷，以乳白为佳，釉如堆脂，扣之声如磬。芒口器多以金银铜镶口，谓之金装定器。\n\n景德镇窑，宋真宗景德年间始置镇，因名。其土惟白壤，善承釉色，遂为天下窑器所宗。元明以降，青花五彩，皆出于是镇。'},
+  {id:'l8', title:'匋雅', author:'寂园叟', dynasty:'清', cat:'工艺典籍', format:'PDF', pop:59, pageCount:88,
+   desc:'清代论瓷笔记，品评窑品色釉，臧否各代名瓷，著者寂园叟为同光间瓷学名家。',
+   chapters:[['论窑品','卷上'],['论色釉','卷上'],['论纹饰','卷下'],['论款识','卷下']]},
+  {id:'l9', title:'明式家具珍赏', author:'王世襄', dynasty:'现当代', cat:'工艺典籍', format:'PDF', pop:112, pageCount:176,
+   desc:'明式家具研究经典，图文并茂，系统梳理明式家具品类、结构与审美意趣。',
+   chapters:[['明式家具的时代背景','第一章'],['家具的品类','第二章'],['结构与造型','第三章'],['用材与工艺','第四章']]},
+  {id:'l10', title:'营造法式', author:'李诫', dynasty:'宋', cat:'考古报告', format:'PDF', pop:83, pageCount:148,
+   desc:'宋代官方建筑规范，李诫奉敕编修，详定营造制度、功限料例，为古代营造之圭臬。',
+   chapters:[['总释','卷一'],['制度·壕寨','卷三'],['制度·大木作','卷四'],['功限·料例','卷十六']]}
+];
+const PUBLISHERS = {l1:'商务印书馆', l2:'江西人民出版社', l3:'中华书局', l4:'生活·读书·新知三联书店', l5:'浙江人民美术出版社', l6:'中华书局', l7:'江西美术出版社', l8:'上海古籍出版社', l9:'文物出版社', l10:'中华书局'};
+const MICRO_DYNASTIES = [
+  {d:'唐', kilns:['巩义窑']}, {d:'宋', kilns:['汝窑','官窑','哥窑','钧窑','定窑']},
+  {d:'元', kilns:['景德镇']}, {d:'明', kilns:['景德镇']}, {d:'清', kilns:['景德镇']}
+];
+/* 窑口库页：简介 + 核心特征字典 */
+const KILN_DESC = {
+  '官窑':'南宋官窑分修内司与郊坛下两处，胎骨深灰近黑，釉厚失透呈粉青。典型特征：紫口铁足、开片（冰裂 / 蟹爪纹）、釉光温润。',
+  '汝窑':'汝窑为宋代五大名窑之首，以玛瑙入釉，釉色天青。釉面莹润如冰似玉，布满细碎开片，芝麻花细支钉满釉支烧。',
+  '哥窑':'哥窑釉面失透呈米黄，开片独特称「百圾碎」，大纹铁线、小纹金丝交织，紫口铁足为识。',
+  '钧窑':'钧窑以铜红釉窑变闻名，天蓝乳浊釉上玫瑰紫斑晕散，蓝紫相映如云霞变幻，一器一色。',
+  '定窑':'定窑白釉刻花、印花著称，胎白釉润，刀法犀利流畅。覆烧芒口，多以金银铜镶口。',
+  '长沙窑':'长沙窑以釉下彩绘与诗文题记闻名，开唐代彩瓷先河。褐绿彩绘花鸟人物，唐风盎然。',
+  '景德镇':'景德镇自宋景德年间设镇，元明清三代官窑所在，青花、粉彩等釉彩工艺集大成。',
+  '巩义窑':'巩义窑为唐代重要窑场，三彩与白瓷并烧，低温铅釉绚丽多彩，具盛唐气象。'
+};
+const KILN_FEATURES = {
+  '官窑':{'紫口铁足':'口沿釉薄显紫，圈足露胎呈铁色','开片':'冰裂纹 / 蟹爪纹，大小开片相间','釉色':'粉青为主，釉层厚润失透','胎骨':'深灰近黑，质坚致'},
+  '汝窑':{'天青釉':'玛瑙入釉，釉色天青如雨过云开','开片':'细碎开片，釉面莹润如冰似玉','支钉烧':'芝麻花细支钉，满釉支烧','玛瑙入釉':'釉中玛瑙末，光泽温润含蓄'},
+  '哥窑':{'米黄釉':'釉面失透呈米黄，温润如玉','百圾碎':'大小开片交织如百圾碎','紫口铁足':'口沿显紫，圈足露铁色胎','开片':'金丝铁线，开片错落层叠'},
+  '钧窑':{'窑变':'铜红釉窑变，一器一色','铜红斑':'天蓝釉上玫瑰紫斑','乳浊釉':'厚润乳浊，失透含蓄','天蓝釉':'月白 / 天蓝乳浊釉'},
+  '定窑':{'白釉':'釉色白中微泛牙黄，温润','刻花':'刀法犀利，线条流畅','印花':'模印纹饰，清晰规整','覆烧芒口':'覆烧芒口，口沿无釉'},
+  '长沙窑':{'釉下彩':'釉下褐绿彩绘，开彩瓷先河','褐绿斑':'褐绿相间斑彩','花鸟纹':'花鸟人物纹饰生动','诗文题记':'器身题写唐人诗句'},
+  '景德镇':{'青花':'钴料釉下彩，发色浓艳','粉彩':'釉上彩绘，粉润妍丽','釉里红':'铜红釉下彩','玲珑':'镂空透光装饰'},
+  '巩义窑':{'三彩':'低温铅釉三彩，色彩交融','贴花':'模印贴花，立体华美','白瓷':'白胎白釉，质细润','褐绿彩':'褐绿彩绘点缀'}
+};
+const FAVORITES = [
+  {type:'treasure', id:'g1', name:'南宋官窑粉青釉葵口盘', sub:'南宋 · 官窑 · 故宫博物院', shape:'plate'},
+  {type:'treasure', id:'g2', name:'汝窑天青釉洗', sub:'北宋 · 汝窑 · 大英博物馆', shape:'washer'},
+  {type:'archive', id:'a1', name:'清宫旧藏瓷器档案·乾隆朝', sub:'清 · 内务府造办处', shape:'document'}
+];
+const HISTORY = [
+  {q:'南宋 官窑 粉青釉', t:'2026-08-19 10:24', n:3},
+  {q:'汝窑 天青釉 开片', t:'2026-08-18 21:10', n:1},
+  {q:'元青花 缠枝牡丹', t:'2026-08-17 09:02', n:2},
+  {q:'清宫旧藏 乾隆 瓷器', t:'2026-08-15 16:40', n:5}
+];
+
+/* ============================================================
+   渲染列表
+   ============================================================ */
+function treasureCardHTML(it){
+  return `<article class="treasure-card" onclick="openGlobal('${it.id}')">
+    <div class="thumb">${vesselSVG(it.shape, it.label)}
+      ${isMember?'':`<span class="thumb-lock">${lockSVG()}</span>`}
+    </div>
+    <div class="tc-body">
+      <h3 class="tc-title">${it.name}</h3>
+      <div class="tc-meta"><span class="tag tag-dynasty">${it.dynasty}</span><span class="tag tag-kiln">${it.kiln}</span></div>
+      <p class="micro-text">${it.museum} · ${it.country}</p>
+    </div>
+  </article>`;
+}
+function renderGlobalList(){
+  document.getElementById('globalList').innerHTML = GLOBAL.map(treasureCardHTML).join('');
+}
+function renderSearchLists(){
+  const q=(document.getElementById('searchInput').value||'').trim().toLowerCase();
+  const gres = q ? GLOBAL.filter(it=> (it.name+it.dynasty+it.kiln+it.museum+it.label).toLowerCase().includes(q)) : GLOBAL.slice();
+  const ares = q ? ARCHIVE.filter(it=> (it.title+it.dynasty+it.org).toLowerCase().includes(q)) : ARCHIVE.slice();
+  document.getElementById('searchGlobal').innerHTML = (gres.length?gres:GLOBAL).slice(0,8).map(it=>`
+    <div class="result-item" onclick="openGlobal('${it.id}')">
+      <div class="ri-thumb">${vesselSVG(it.shape,it.label)}</div>
+      <div class="grow"><div class="ri-title">${it.name}</div><div class="micro-text">${it.dynasty} · ${it.kiln} · ${it.museum}</div></div>
+    </div>`).join('');
+  document.getElementById('searchArchive').innerHTML = (ares.length?ares:ARCHIVE).slice(0,8).map(it=>`
+    <div class="result-item" onclick="openArchive('${it.id}')">
+      <div class="ri-thumb">${vesselSVG(it.shape,it.label)}</div>
+      <div class="grow"><div class="ri-title">${it.title}</div><div class="micro-text">${it.dynasty} · ${it.org}</div></div>
+    </div>`).join('');
+  const gN = gres.length||GLOBAL.length, aN = ares.length||ARCHIVE.length;
+  const tg=document.getElementById('searchTabGlobal'); if(tg) tg.textContent='全球馆藏 · '+gN;
+  const ta=document.getElementById('searchTabArchive'); if(ta) ta.textContent='宫廷档案 · '+aN;
+  const t1=document.getElementById('searchGlobalTitle'); if(t1) t1.textContent='全球馆藏 · '+gN+' 件';
+  const t2=document.getElementById('searchArchiveTitle'); if(t2) t2.textContent='宫廷档案 · '+aN+' 件';
+  switchSearchTab('global');
+}
+function reSearch(){ renderSearchLists(); toast('已为你重新检索'); }
+/* 搜索页 Tab：默认全球馆藏，切换显示对应结果区块 */
+let searchTab='global';
+function switchSearchTab(tab){
+  searchTab=tab;
+  const g=document.getElementById('searchTabGlobal'), a=document.getElementById('searchTabArchive');
+  if(g) g.classList.toggle('active', tab==='global');
+  if(a) a.classList.toggle('active', tab==='archive');
+  const gw=document.getElementById('searchGlobalWrap'), aw=document.getElementById('searchArchiveWrap');
+  if(gw) gw.style.display = tab==='global' ? '' : 'none';
+  if(aw) aw.style.display = tab==='archive' ? '' : 'none';
+}
+function renderArchiveList(){
+  document.getElementById('archiveList').innerHTML = ARCHIVE.map(it=>`
+    <div class="result-item" style="margin-bottom:var(--space-md)" onclick="openArchive('${it.id}')">
+      <div class="ri-thumb">${vesselSVG(it.shape,it.label)}</div>
+      <div class="grow"><div class="ri-title">${it.title}</div><div class="micro-text">${it.dynasty} · ${it.org} · ${it.cat}</div></div>
+    </div>`).join('');
+}
+/* 微痕详情页：动态渲染（藏品卡片 → 特征图 → 单个藏品微痕详情） */
+let curMicroArtifactId='g1';
+function favMicro(){
+  const g=GLOBAL.find(x=>x.id===curMicroArtifactId)||GLOBAL[0];
+  toggleFav('micro', curMicroArtifactId, {name:g.name+' · 微痕', sub:g.dynasty+' · '+g.kiln+' · '+(g.features||[]).slice(0,2).join(' / '), shape:g.shape});
+}
+function openMicroDetail(id){
+  const g=GLOBAL.find(x=>x.id===id)||GLOBAL[0];
+  curMicroArtifactId = g.id;
+  document.getElementById('mdBadges').innerHTML = `<span class="tag tag-dynasty">${g.dynasty}</span><span class="tag tag-kiln">${g.kiln}</span><span class="tag tag-cat">微痕索证</span>`;
+  document.getElementById('mdTitle').textContent = g.name;
+  document.getElementById('mdSub').textContent = (g.features||[]).slice(0,2).join(' / ') + ' · 微痕索证';
+  document.getElementById('microLineArt').innerHTML = vesselSVG(g.shape,g.label);
+  const featMap = KILN_FEATURES[g.kiln]||{};
+  document.getElementById('mdPanels').innerHTML = (g.features||[]).map((f,i)=>`
+    <div class="micro-panel" style="margin-bottom:var(--space-lg)">
+      <div class="mp-head"><h4>${f} · 微观特征</h4><span class="tag tag-kiln">${g.kiln}</span></div>
+      <div class="mp-img" style="position:relative;aspect-ratio:16/9;background:var(--color-surface-sunken);border-radius:var(--radius-sm);overflow:hidden">
+        ${vesselSVG(g.shape,g.label)}
+        <div class="unlock-veil" data-veil style="cursor:pointer" onclick="navigate(isLoggedIn?'member-purchase':'login')">
+          <span class="lock-mark">${lockSVG()}</span>
+          <span class="veil-pill">开通会员查看高清微观图</span>
+        </div>
+      </div>
+      <div class="mp-read" style="font-size:13px;line-height:1.7;color:var(--color-text-secondary);margin-top:var(--space-sm)">${featMap[f]||(f+'：'+(g.glaze||'')+'特征呈现，需微观影像佐证。')}</div>
+    </div>`).join('');
+  syncFavButtons();
+  navigate('micro-detail');
+}
+let microSearch='';
+function renderMicroTimeline(){
+  const wrap=document.getElementById('microTimeline');
+  if(!wrap) return;
+  // 从 GLOBAL 聚合朝代 → 窑口（北宋/南宋归并为「宋」）
+  const dyns=[];
+  GLOBAL.forEach(g=>{
+    if(!g.dynasty || !g.kiln) return;
+    const dynKey = g.dynasty.includes('宋')?'宋':g.dynasty.includes('唐')?'唐':g.dynasty.includes('金')?'金':g.dynasty.includes('元')?'元':g.dynasty.includes('明')?'明':g.dynasty.includes('清')?'清':g.dynasty;
+    let d=dyns.find(x=>x.d===dynKey);
+    if(!d){ d={d:dynKey, kilns:[]}; dyns.push(d); }
+    if(d.kilns.indexOf(g.kiln)===-1) d.kilns.push(g.kiln);
+  });
+  const DYN_ORDER={唐:1,宋:2,金:3,元:4,明:5,清:6};
+  dyns.sort((a,b)=>(DYN_ORDER[a.d]||9)-(DYN_ORDER[b.d]||9));
+  const q=(microSearch||'').trim();
+  let html = dyns.map(d=>{
+    const kilns = d.kilns.filter(k=>{
+      if(!q) return true;
+      return k.indexOf(q)>-1 || (k+'窑').indexOf(q)>-1 || d.d.indexOf(q)>-1;
+    });
+    if(kilns.length===0 && q) return '';
+    return `<div class="mt-dynasty-item">
+      <div class="mt-dynasty-name">${d.d}</div>
+      <div class="mt-dynasty-body">${kilns.map(mtKilnRowHTML).join('')}</div>
+    </div>`;
+  }).join('');
+  wrap.innerHTML = html || `<p class="micro-text">未找到匹配窑口</p>`;
+}
+function mtKilnRowHTML(k){
+  const list = GLOBAL.filter(g=>g.kiln===k);
+  const cells = [];
+  for(let i=0;i<6;i++){
+    const g = list[i];
+    cells.push(g
+      ? `<div class="mcc-cell">${vesselSVG(g.shape,g.label)}</div>`
+      : `<div class="mcc-cell"></div>`);
+  }
+  return `<div class="mt-kiln-row" onclick="curKiln='${k}';renderMicroKiln('${k}');navigate('micro-kiln')">
+    <div class="mcc-grid">${cells.join('')}</div>
+    <div class="mcc-label">${k} 微痕索证数据库</div>
+  </div>`;
+}
+function renderFav(){
+  const el = document.getElementById('favList');
+  if(!FAVORITES.length){
+    el.innerHTML = `<div class="empty-state" style="padding:var(--space-3xl) 0">
+      <div class="es-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 7h16v12H4z"/><path d="M4 7l3-3h10l3 3"/><path d="M9 12h6"/></svg></div>
+      <h3 style="font-size:15px">还没有收藏，去发现好物吧</h3>
+      <p class="muted" style="font-size:12px">藏品、档案与图书都可以在这里找到</p>
+      <button class="btn btn-primary btn-block" style="max-width:220px;margin-top:var(--space-lg)" onclick="navigate('global-list')">去逛逛馆藏</button>
+    </div>`;
+    return;
+  }
+  el.innerHTML = FAVORITES.map(f=>{
+    let act;
+    if(f.type==='micro') act="openMicroDetail('"+(f.id||'g1')+"')";
+    else if(f.type==='archive') act="openArchive('"+(f.id||'a1')+"')";
+    else if(f.type==='library') act="openLibraryBook('"+f.id+"')";
+    else act="openGlobal('"+(f.id||'g1')+"')";
+    const tagName = f.type==='treasure'?'藏品':f.type==='archive'?'档案':f.type==='library'?'图书':'微痕';
+    return `
+    <div class="result-item" style="margin-bottom:var(--space-md)" data-ftype="${f.type}" onclick="${act}">
+      <div class="ri-thumb">${vesselSVG(f.shape,f.sub.split(' ')[0])}</div>
+      <div class="grow">
+        <div class="ri-title">${f.name}</div>
+        <div class="micro-text">${f.sub}</div>
+        <span class="tag tag-kiln" style="margin-top:6px">${tagName}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   元藏图书馆：书目 / 阅读 / 书签
+   ============================================================ */
+let curBook=null;
+let libCat='all', libFormat='all', libSortKey='rec', libQuery='';
+const DYNASTY_ORDER = {宋:1,明:2,清:3,民国:4,现当代:5};
+function bookCoverSVG(title){
+  const chars = title.split('').slice(0,6);
+  const lines = chars.map((c,i)=>`<text x="32" y="${16+i*13}" text-anchor="middle" font-size="11" fill="#5B7B6F" font-family="'Noto Serif SC','Songti SC',serif">${c}</text>`).join('');
+  return `<svg viewBox="0 0 64 88" preserveAspectRatio="xMidYMid meet"><rect width="64" height="88" fill="#EDE8DC"/><rect x="9" y="6" width="46" height="76" rx="2" fill="none" stroke="#5B7B6F" stroke-width="1.3"/>${lines}</svg>`;
+}
+function libCardHTML(b){
+  return `<article class="lib-card" onclick="openLibraryBook('${b.id}')">
+    <div class="lc-cover">${bookCoverSVG(b.title)}</div>
+    <div class="lc-body">
+      <h3 class="lc-title">《${b.title}》</h3>
+      <div class="lc-author">${b.dynasty} · ${b.author}</div>
+      <div class="lc-tags"><span class="tag tag-cat">${b.cat}</span><span class="tag ${b.format==='TXT'?'tag-txt':'tag-pdf'}">${b.format}</span></div>
+      <p class="lc-desc">${b.desc}</p>
+    </div>
+  </article>`;
+}
+function renderLibraryList(){
+  let list = LIBRARY.slice();
+  if(libCat!=='all') list = list.filter(b=>b.cat===libCat);
+  if(libFormat!=='all') list = list.filter(b=>b.format===libFormat);
+  if(libQuery) list = list.filter(b=>b.title.includes(libQuery)||b.author.includes(libQuery)||b.desc.includes(libQuery)||b.dynasty.includes(libQuery));
+  if(libSortKey==='dynasty') list.sort((a,b)=>(DYNASTY_ORDER[a.dynasty]||9)-(DYNASTY_ORDER[b.dynasty]||9));
+  else if(libSortKey==='pop') list.sort((a,b)=>b.pop-a.pop);
+  document.getElementById('libraryList').innerHTML = list.map(libCardHTML).join('') || `<div class="empty-state" style="padding:var(--space-4xl) var(--space-lg)"><div class="es-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg></div><h3>未找到相关书目</h3><p>换一个关键词或清除筛选试试</p></div>`;
+}
+function libFilter(btn,key,val){
+  btn.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  if(key==='cat') libCat=val; else libFormat=val;
+  renderLibraryList();
+}
+function libSort(btn,key){
+  btn.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  libSortKey=key;
+  renderLibraryList();
+}
+/* 书籍详情 / 阅读 */
+function openLibraryBook(id){
+  curBook = LIBRARY.find(x=>x.id===id);
+  if(!curBook) return;
+  document.getElementById('lbCover').innerHTML = bookCoverSVG(curBook.title);
+  document.getElementById('lbTitle').textContent = '《'+curBook.title+'》';
+  document.getElementById('lbAuthor').textContent = curBook.dynasty + ' · ' + curBook.author;
+  document.getElementById('lbPub').textContent = '出版社：'+(curBook.pub||PUBLISHERS[curBook.id]||'—');
+  document.getElementById('lbTags').innerHTML = `<span class="tag tag-cat">${curBook.cat}</span><span class="tag ${curBook.format==='TXT'?'tag-txt':'tag-pdf'}">${curBook.format}</span>`;
+  document.getElementById('lbDesc').textContent = curBook.desc;
+  document.getElementById('lbChapters').innerHTML = curBook.chapters.map((ch,i)=>`
+    <button class="chapter-item" onclick="openReader('${curBook.id}')">
+      <span class="ch-name">${ch[0]}</span>
+      <span class="ch-go">${ch[1]}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg></span>
+    </button>`).join('');
+  navigate('library-book');
+}
+function openReaderCurrent(){ if(curBook) openReader(curBook.id); }
+function openReader(id){
+  curBook = LIBRARY.find(x=>x.id===id);
+  if(!curBook) return;
+  if(!isMember){ toast('开通会员后可在线阅读全书'); navigate('member-purchase'); return; }
+  META['library-reader'].title = '《'+curBook.title+'》';
+  const isTxt = curBook.format==='TXT';
+  document.getElementById('readerTxt').style.display = isTxt ? '' : 'none';
+  document.getElementById('readerPdf').style.display = isTxt ? 'none' : '';
+  if(isTxt){
+    document.getElementById('readerTitle').textContent = '《'+curBook.title+'》 · '+curBook.chapters[0][0];
+    document.getElementById('readerContent').innerHTML = curBook.content.split('\n\n').map(p=>`<p>${p}</p>`).join('');
+    document.getElementById('readerPos').textContent = '第 1 章 · 第 1/3 页';
+  } else {
+    const pages = curBook.pageCount||128;
+    document.getElementById('pdfPage').textContent = '1 / '+pages;
+    document.getElementById('readerPos').textContent = '第 1 章 · 第 1/'+pages+' 页';
+  }
+  navigate('library-reader');
+}
+/* 收藏 / 书签 */
+function isFav(type, id){
+  return FAVORITES.some(f=>f.type===type && f.id===id);
+}
+function toggleFav(type, id, payload){
+  if(!isLoggedIn){ showPermission('请先登录','登录后可收藏内容', 'login'); return; }
+  if(!payload) payload = {name:'', sub:'', shape:'document'};
+  const idx = FAVORITES.findIndex(f=>f.type===type && f.id===id);
+  if(idx>-1){
+    FAVORITES.splice(idx,1);
+    renderFav();
+    syncFavButtons();
+    toast('已取消收藏');
+  }else{
+    FAVORITES.unshift({type:type, id:id, name:payload.name, sub:payload.sub, shape:payload.shape||'document'});
+    renderFav();
+    syncFavButtons();
+    toast('已加入我的收藏');
+  }
+}
+function syncFavBtn(btnId, type, id){
+  const btn = document.getElementById(btnId);
+  if(!btn) return;
+  const fav = isFav(type, id);
+  btn.classList.toggle('fav-btn-active', fav);
+  const sp = btn.querySelector('span');
+  if(sp) sp.textContent = fav ? '已收藏' : '收藏';
+}
+function syncFavButtons(){
+  if(curGlobal) syncFavBtn('favGlobalBtn', 'treasure', curGlobal.id);
+  if(curArchive) syncFavBtn('favArchiveBtn', 'archive', curArchive.id);
+  syncFavBtn('favMicroBtn', 'micro', curMicroArtifactId);
+}
+function favBook(){
+  if(!isLoggedIn){ showPermission('请先登录','登录后可收藏书籍', 'login'); return; }
+  if(!curBook) return;
+  toggleFav('library', curBook.id, {name:'《'+curBook.title+'》', sub:curBook.dynasty+' · '+curBook.cat, shape:'document'});
+}
+let bookmarks=[
+  {id:'l4', book:'中国陶瓷史', chapter:'宋元名窑（第三章）', page:86, time:'8-21 14:30'},
+  {id:'l1', book:'陶说', chapter:'说古（卷三）', page:52, time:'8-19 21:08'},
+  {id:'l3', book:'饮流斋说瓷', chapter:'款识（第四）', page:78, time:'8-15 09:42'},
+  {id:'l2', book:'景德镇陶录', chapter:'诸名窑考（卷三）', page:64, time:'8-10 19:55'},
+  {id:'l6', book:'格古要论', chapter:'古窑器论（卷一）', page:18, time:'8-03 11:20'},
+  {id:'l9', book:'明式家具珍赏', chapter:'结构与造型（第三章）', page:92, time:'7-28 16:10'}
+];
+function addBookmark(){
+  if(!curBook) return;
+  if(!isLoggedIn){ showPermission('请先登录','登录后可添加书签', 'login'); return; }
+  const t=new Date();
+  const time = (t.getMonth()+1)+'-'+t.getDate()+' '+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');
+  bookmarks.unshift({id:curBook.id, book:curBook.title, chapter:curBook.chapters[0][0], page: curBook.pageCount ? 1 : 1, time});
+  renderBookmarks();
+  toast('书签已添加');
+}
+function renderBookmarks(){
+  const el=document.getElementById('bookmarkList');
+  if(!el) return;
+  if(bookmarks.length===0){
+    el.innerHTML = `<div class="empty-state">
+      <div class="es-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 3h12v18l-6-4-6 4z"/></svg></div>
+      <h3>暂无书签</h3>
+      <p>去图书馆找一本书开始阅读吧</p>
+      <button class="btn btn-primary btn-block" style="max-width:220px" onclick="navigate('library')">去图书馆</button>
+    </div>`;
+    return;
+  }
+  el.innerHTML = bookmarks.map(b=>`
+    <div class="result-item" style="margin-bottom:var(--space-md)">
+      <div class="ri-thumb" style="display:flex;align-items:center;justify-content:center;color:var(--color-primary)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12v18l-6-4-6 4z"/></svg></div>
+      <div class="grow">
+        <div class="ri-title">《${b.book}》</div>
+        <div class="micro-text">${b.chapter} · 第 ${b.page} 页</div>
+        <div class="bm-time">添加时间 ${b.time}</div>
+      </div>
+      <button class="btn btn-secondary" style="width:auto;height:32px;padding:0 var(--space-md);font-size:12px;white-space:nowrap" onclick="openReader('${b.id}')">继续阅读</button>
+    </div>`).join('');
+}
+function renderHistory(){
+  document.getElementById('histList').innerHTML = HISTORY.map(h=>`
+    <div class="result-item" style="margin-bottom:var(--space-md)" onclick="navigate('search')">
+      <div class="ri-thumb" style="display:flex;align-items:center;justify-content:center;color:var(--color-primary)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div>
+      <div class="grow"><div class="ri-title">${h.q}</div><div class="micro-text">${h.t} · ${h.n} 条结果</div></div>
+    </div>`).join('');
+}
+function favFilter(btn, type){
+  btn.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#favList .result-item').forEach(el=>{
+    el.style.display = (type==='all' || el.getAttribute('data-ftype')===type) ? '' : 'none';
+  });
+}
+
+/* ============================================================
+   详情渲染
+   ============================================================ */
+let curGlobal=null, curArchive=null;
+let metaMode='desc'; // 'desc' | 'meta'（藏品详情：中文 / 元数据 视图切换）
+/* 会员受限字段（guest 态下不展示原始值，共 8 项） */
+const LOCKED_META = ['size','glaze','foot','material','technique','provenance','records','description'];
+function openGlobal(id){
+  curGlobal = GLOBAL.find(x=>x.id===id);
+  if(!curGlobal) return;
+  document.getElementById('gdHero').querySelectorAll('.artifact').forEach(n=>n.remove());
+  const art = document.createElement('div');
+  art.className='artifact';
+  art.style.position='absolute';art.style.inset='0';
+  art.innerHTML = vesselSVG(curGlobal.shape, curGlobal.label);
+  document.getElementById('gdHero').insertBefore(art, document.getElementById('gdHero').firstChild);
+  document.getElementById('gdTitle').textContent = curGlobal.name;
+  document.getElementById('gdSub').textContent = `${curGlobal.dynasty} · ${curGlobal.kiln}`;
+  document.getElementById('gdBadges').innerHTML = '';
+  // 基本信息区整体渲染中文视图（点击「元数据」时整区切换为原文数据）
+  document.getElementById('gdMeta').innerHTML = zhMetaHTML();
+  // 每次打开重置「元数据」切换态
+  document.getElementById('metaToggleBtn').textContent='元数据';
+  metaMode='desc';
+  renderThumbs();
+  switchView(0);
+  syncFavButtons();
+  if(current!=='global-detail') navigate('global-detail');
+}
+/* 中文视图：著录字段按会员权限渲染（member 全量 12 行；guest 仅 馆藏地/品类/年代 + 会员占位） */
+function zhMetaHTML(){
+  const baseRows = [
+    ['馆藏地',`${curGlobal.museum}（${curGlobal.country}）`],
+    ['品类',curGlobal.cat],
+    ['来源',`${curGlobal.museum} 公开著录`],
+    ['年代',curGlobal.period],
+    ['尺寸',curGlobal.size],
+    ['釉色',curGlobal.glaze],
+    ['材质',curGlobal.material],
+    ['工艺',curGlobal.technique]
+  ];
+  const guestHidden = ['来源','尺寸','釉色','材质','工艺'];
+  const rows = isMember ? baseRows : baseRows.filter(r=>guestHidden.indexOf(r[0])===-1);
+  let h = rows.map(r=>`<div class="ml-row"><span class="ml-k">${r[0]}</span><span class="ml-v">${r[1]}</span></div>`).join('');
+  if(isMember){
+    h += `<div class="ml-row"><span class="ml-k">款识/底足</span><span class="ml-v">${curGlobal.foot}</span></div>`
+      + `<div class="ml-row"><span class="ml-k">流传经过</span><span class="ml-v">${curGlobal.provenance}</span></div>`
+      + `<div class="ml-row"><span class="ml-k">历代著录</span><span class="ml-v">${curGlobal.records}</span></div>`
+      + `<div class="ml-row" id="gdDescRow"><span class="ml-k">描述</span><span class="ml-v">${curGlobal.description}</span></div>`;
+  }else{
+    h += `<div class="ml-row" id="gdLockedRow" style="cursor:pointer" onclick="navigate('member-purchase')"><span class="ml-k">会员信息</span><span class="ml-v" style="color:var(--color-seal-red)">开通会员查看完整著录（9 项） →</span></div>`;
+  }
+  return h;
+}
+/* 原文视图：原始结构化字段（guest 剔除受限字段 + 会员提示） */
+function rawMetaHTML(){
+  if(!isMember){
+    const skip = ['museum','country','cat','period','name','id','dynasty','kiln','shape','label','features'].concat(LOCKED_META);
+    const rows = Object.entries(curGlobal).filter(([k])=>skip.indexOf(k)===-1)
+      .map(([k,v])=>`<div class="ml-row"><span class="ml-k" style="width:104px;flex:0 0 104px">${k}</span><span class="ml-v" style="word-break:break-all">${v}</span></div>`).join('');
+    return rows + `<div class="ml-row"><span class="ml-k" style="width:104px;flex:0 0 104px">会员</span><span class="ml-v" style="color:var(--color-seal-red)">完整元数据需开通会员查看</span></div>`;
+  }
+  return Object.entries(curGlobal).map(([k,v])=>`<div class="ml-row"><span class="ml-k" style="width:104px;flex:0 0 104px">${k}</span><span class="ml-v" style="word-break:break-all">${v}</span></div>`).join('');
+}
+function toggleMetadata(){
+  const btn=document.getElementById('metaToggleBtn');
+  const meta=document.getElementById('gdMeta');
+  if(!meta||!curGlobal) return;
+  if(metaMode==='desc'){
+    // 整区切换为原文数据
+    meta.innerHTML = rawMetaHTML();
+    btn.textContent='中文'; metaMode='meta';
+  }else{
+    // 整区切换回中文视图
+    meta.innerHTML = zhMetaHTML();
+    btn.textContent='元数据'; metaMode='desc';
+  }
+}
+/* 藏品详情多视图：4 张缩略图 + 主图切换 */
+let gdViews = [];
+function currentViews(){
+  const base = curGlobal.shape;
+  const tall = ['meiping','guan','tangping','cup','vase'].indexOf(base) > -1;
+  return [
+    {label:'整体', shape:base},
+    {label:'侧面', shape:tall?'vase':'bowl'},
+    {label:'底足', shape:'dish'},
+    {label:'釉面', shape:'plate'}
+  ];
+}
+function renderThumbs(){
+  gdViews = currentViews();
+  const wrap = document.getElementById('gdThumbs');
+  if(!wrap) return;
+  wrap.innerHTML = gdViews.map((v,i)=>`
+    <button class="gd-thumb${i===0?' active':''}" onclick="switchView(${i})">
+      ${vesselSVG(v.shape,'')}
+      <span class="gd-t-label">${v.label}</span>
+    </button>`).join('');
+}
+function switchView(i){
+  if(i<0 || i>=gdViews.length) return;
+  const v = gdViews[i];
+  const hero = document.getElementById('gdHero');
+  hero.querySelectorAll('.artifact').forEach(n=>n.remove());
+  const art = document.createElement('div');
+  art.className='artifact';
+  art.style.position='absolute';art.style.inset='0';
+  art.innerHTML = vesselSVG(v.shape, curGlobal.label);
+  hero.insertBefore(art, hero.firstChild);
+  document.getElementById('gdViewLabel').textContent = `图 ${i+1} · ${v.label}`;
+  document.querySelectorAll('#gdThumbs .gd-thumb').forEach((b,j)=>{ b.classList.toggle('active', j===i); });
+}
+function openArchive(id){
+  curArchive = ARCHIVE.find(x=>x.id===id);
+  if(!curArchive) return;
+  document.getElementById('adTitle').textContent = curArchive.title;
+  document.getElementById('adDynasty').textContent = curArchive.dynasty;
+  document.getElementById('adOrg').textContent = curArchive.org;
+  document.getElementById('adCat').textContent = curArchive.cat;
+  document.getElementById('adArt').innerHTML = vesselSVG(curArchive.shape, curArchive.cat);
+  document.getElementById('adRead').textContent = curArchive.read;
+  const extraMeta = [
+    ['年代',curArchive.date], ['形制',curArchive.format], ['尺寸',curArchive.size],
+    ['保管状态',curArchive.condition], ['件数',curArchive.count], ['关键词',curArchive.keywords]
+  ];
+  document.getElementById('adMeta').innerHTML = curArchive.meta.map(m=>`<div class="ml-row"><span class="ml-k">${m[0]}</span><span class="ml-v">${m[1]}</span></div>`).join('')
+    + extraMeta.map(m=>`<div class="ml-row"><span class="ml-k">${m[0]}</span><span class="ml-v">${m[1]}</span></div>`).join('');
+  syncFavButtons();
+  navigate('archive-detail');
+}
+let curKiln='', curFeature='全部';
+function renderMicroKiln(kiln){
+  curKiln = kiln;
+  META['micro-kiln'].title = kiln+'微痕库';
+  document.getElementById('mkTitle').textContent = kiln+' 微痕索证数据库';
+  document.getElementById('mkDesc').textContent = KILN_DESC[kiln] || (kiln+'窑微痕索证数据陆续上线。');
+  const featMap = KILN_FEATURES[kiln] || {};
+  document.getElementById('mkFeatures').innerHTML = Object.keys(featMap).length
+    ? Object.entries(featMap).map(([k,v])=>`<div class="ml-row"><span class="ml-k">${k}</span><span class="ml-v">${v}</span></div>`).join('')
+    : `<p class="micro-text">核心特征整理中</p>`;
+  renderMicroChips();
+  renderMicroKilnList();
+}
+function renderMicroChips(){
+  const wrap=document.getElementById('mkChips');
+  if(!wrap) return;
+  const feats=['全部'];
+  GLOBAL.filter(g=>g.kiln===curKiln).forEach(g=>(g.features||[]).forEach(f=>{ if(feats.indexOf(f)===-1) feats.push(f); }));
+  wrap.innerHTML = feats.map(f=>`<button class="chip${f===curFeature?' active':''}" onclick="curFeature='${f}';renderMicroChips();renderMicroKilnList()">${f}</button>`).join('');
+}
+function renderMicroKilnList(){
+  const wrap=document.getElementById('mkList');
+  if(!wrap) return;
+  const list=GLOBAL.filter(g=>g.kiln===curKiln && (curFeature==='全部' || (g.features||[]).includes(curFeature)));
+  if(!list.length){ wrap.innerHTML=`<p class="micro-text">该特征下暂无关联藏品</p>`; return; }
+  wrap.innerHTML = list.map(g=>{
+    const feats = curFeature==='全部' ? (g.features||[]).slice(0,3) : [curFeature];
+    const featCards = feats.map(f=>`
+      <div class="feat-card" onclick="event.stopPropagation();openMicroDetail('${g.id}')">
+        ${vesselSVG(g.shape,g.label)}
+        <span class="feat-tag">${f}</span>
+      </div>`).join('');
+    return `
+    <div class="mk-card">
+      <div class="mk-card-head" onclick="openGlobal('${g.id}')">
+        <div class="mk-thumb">${vesselSVG(g.shape,g.label)}</div>
+        <div class="mk-info"><div class="mk-name">${g.name}</div><div class="mk-meta">${g.museum} · ${g.country} · ${g.dynasty}</div></div>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-text-tertiary)" stroke-width="2"><polyline points="9 6 15 12 9 18"/></svg>
+      </div>
+      <div class="mk-feats">${featCards}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   视图元数据 + 路由
+   ============================================================ */
+const META = {
+  'login':{nav:false,tab:null,back:false,title:''},
+  'bind':{nav:true,tab:null,back:true,title:'绑定手机'},
+  'home':{nav:true,tab:'home',back:false,title:'元藏·博观'},
+  'search':{nav:true,tab:null,back:true,title:'搜索'},
+  'global-filter':{nav:true,tab:null,back:true,title:'全球馆藏'},
+  'global-list':{nav:true,tab:'global',back:false,title:'全球馆藏'},
+  'global-detail':{nav:true,tab:null,back:true,title:'藏品详情'},
+  'archive-filter':{nav:true,tab:null,back:true,title:'宫廷档案'},
+  'archive-list':{nav:true,tab:'archive',back:false,title:'宫廷档案'},
+  'archive-detail':{nav:true,tab:null,back:true,title:'档案详情'},
+  'micro-nav':{nav:true,tab:'micro',back:false,title:'微痕索证'},
+  'micro-kiln':{nav:true,tab:null,back:true,title:'南宋官窑'},
+  'micro-detail':{nav:true,tab:null,back:true,title:'微痕详情'},
+  'member-benefits':{nav:true,tab:null,back:true,title:'会员权益'},
+  'member-purchase':{nav:true,tab:null,back:true,title:'开通会员'},
+  'payment-confirm':{nav:true,tab:null,back:true,title:'支付确认'},
+  'payment-result':{nav:true,tab:null,back:true,title:'支付结果'},
+  'profile':{nav:true,tab:'mine',back:false,title:'我的'},
+  'settings':{nav:true,tab:null,back:true,title:'资料与设置'},
+  'favorites':{nav:true,tab:null,back:true,title:'我的收藏'},
+  'history':{nav:true,tab:null,back:true,title:'查询记录'},
+  'my-member':{nav:true,tab:null,back:true,title:'我的会员'},
+  'my-invite':{nav:true,tab:null,back:true,title:'我的邀请码'},
+  'library':{nav:true,tab:null,back:true,title:'元藏图书馆'},
+  'library-book':{nav:true,tab:null,back:true,title:'书籍详情'},
+  'library-reader':{nav:true,tab:null,back:true,title:'阅读'},
+  'bookmarks':{nav:true,tab:null,back:true,title:'我的书签'},
+  'permission':{nav:false,tab:null,back:true,title:'提示'},
+  'empty':{nav:true,tab:null,back:true,title:'空状态'}
+};
+const TAB_ROOT = {home:'home', global:'global-list', micro:'micro-nav', archive:'archive-list', mine:'profile'};
+
+let stack = ['login'];
+let current = 'login';
+let tabShownContext = null; // 当前 tab 根，用于返回 tab 时定位
+
+function render(){
+  const m = META[current];
+  // 顶栏
+  const topNav = document.getElementById('topNav');
+  if(m.nav===false){ topNav.classList.add('hidden'); }
+  else { topNav.classList.remove('hidden'); }
+  document.getElementById('navTitle').textContent = m.title;
+  document.getElementById('navBack').classList.toggle('hidden', !m.back);
+  // 底栏
+  const tabBar = document.getElementById('tabBar');
+  if(m.tab===null){ tabBar.classList.add('hidden'); }
+  else { tabBar.classList.remove('hidden'); }
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.toggle('active', t.dataset.tab===m.tab));
+  // 视图显隐
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+current).classList.add('active');
+  // 状态相关
+  applyState();
+  // 微痕详情固定免责条仅在该页显示
+  document.querySelector('.fixed-disclaimer').classList.toggle('show', current==='micro-detail');
+  // 滚动复位
+  document.getElementById('view-'+current).scrollTop = 0;
+}
+function navigate(id, reset){
+  if(reset){ stack=[id]; } else { stack.push(id); }
+  current = id;
+  render();
+}
+function back(){
+  if(stack.length>1){ stack.pop(); current = stack[stack.length-1]; render(); }
+  else { render(); }
+}
+function goTab(tab){
+  navigate(TAB_ROOT[tab], true);
+}
+
+/* 详情/子页跳转（带登录校验） */
+function requireLoginThen(target){
+  if(!isLoggedIn){ showPermission('请先登录','登录后查看收藏、查询记录与会员权益。', 'login'); return; }
+  navigate(target);
+}
+function showPermission(title, desc, go){
+  document.getElementById('pmTitle').textContent = title;
+  document.getElementById('pmDesc').textContent = desc;
+  // 改写登录按钮行为
+  document.querySelector('#view-permission .btn-primary').onclick = ()=> navigate('login');
+  navigate('permission');
+}
+
+/* ============================================================
+   状态应用（登录/会员/解锁）
+   ============================================================ */
+let detailRefreshing=false; // 登录态切换重渲染详情时的防死循环标记
+function applyState(){
+  document.querySelectorAll('[data-show]').forEach(el=>{
+    const c = el.getAttribute('data-show');
+    let ok=false;
+    if(c==='loggedin') ok=isLoggedIn;
+    else if(c==='guest') ok=!isLoggedIn;
+    else if(c==='member') ok=isMember;
+    else if(c==='nomember') ok=!isMember;
+    else if(c==='registered') ok=isLoggedIn && !isMember;
+    el.style.display = ok ? '' : 'none';
+  });
+  // 解锁薄纱：非会员显示
+  document.querySelectorAll('[data-veil]').forEach(el=>{ el.style.display = isMember ? 'none' : 'flex'; });
+  // 会员徽标
+  const p0 = isMember ? planInfo(memberType) : null;
+  const isYearCard = !!(p0 && p0.isYear);
+  document.getElementById('homeMemberPill').innerHTML = memberPillHTML();
+  document.getElementById('homeMemberTitle').textContent = '尊敬的会员';
+  const hme=document.getElementById('homeMemberExpire'); if(hme) hme.textContent = isMember ? (p0.isYear?'2027-08-19 到期':'2026-09-19 到期') : '—';
+  document.getElementById('pfPill').innerHTML = memberPillHTML();
+  document.getElementById('pfSub').textContent = isMember ? (p0.name+' · 权益全开') : '游客';
+  document.getElementById('mmPill').innerHTML = memberPillHTML();
+  document.getElementById('mmTitle').textContent = isMember ? (p0.name+' · 权益全开') : '我的会员';
+  document.getElementById('mmSub').textContent = isMember ? '高清大图 · 完整著录 · 微痕微观图已解锁' : '';
+  document.getElementById('mmType').textContent = isMember ? p0.name : '—';
+  document.getElementById('mmExpire').textContent = isMember ? (p0.isYear?'2027-08-19':'2026-09-19') : '—';
+  const hmc=document.getElementById('homeMemberCard'); if(hmc) hmc.classList.toggle('is-year', isYearCard);
+  const mmc=document.getElementById('mmCard'); if(mmc) mmc.classList.toggle('is-year', isYearCard);
+  // 我的会员：普通/连续会员按钮分支
+  const isCont = !!(p0 && p0.isCont);
+  const mnb=document.getElementById('mmNormalBtns'); if(mnb) mnb.style.display = isCont ? 'none' : '';
+  const mcb=document.getElementById('mmContBtns'); if(mcb) mcb.style.display = isCont ? '' : 'none';
+  const mar=document.getElementById('mmAutoRenew'); if(mar){ mar.textContent = isCont ? '开启中' : '未开启'; mar.style.color = isCont ? 'var(--color-success)' : 'var(--color-text-tertiary)'; }
+  // 重新渲染依赖会员态的列表（锁标）
+  if(document.getElementById('globalList')) renderGlobalList();
+  // 登录态切换后刷新详情字段权限（防死循环：openGlobal 内部 navigate 会触发 render->applyState）
+  if(curGlobal && current==='global-detail' && !detailRefreshing){
+    detailRefreshing=true;
+    try{ openGlobal(curGlobal.id); } finally { detailRefreshing=false; }
+  }
+  renderMyInvite();
+}
+
+/* ============================================================
+   交互
+   ============================================================ */
+function toggleCheck(el){ el.classList.toggle('checked'); }
+function sendCode(btn){ btn.textContent='60s'; btn.disabled=true; let n=60; const t=setInterval(()=>{n--;btn.textContent=n+'s';if(n<=0){clearInterval(t);btn.textContent='获取验证码';btn.disabled=false;}},1000); toast('验证码已发送（演示：123456）'); }
+function confirmBind(){
+  const invite=(document.getElementById('inviteInput').value||'').trim();
+  if(invite && !/^[A-Za-z0-9]{1,12}$/.test(invite)){
+    toast('请填写正确的邀请码');
+    return;
+  }
+  me.invitedBy = invite ? invite : null;
+  isLoggedIn=true;
+  navigate('home', true);
+  toast(invite ? '绑定成功 · 已通过邀请码「'+invite+'」与邀请人绑定' : '绑定成功');
+}
+document.getElementById('wechatLoginBtn').addEventListener('click', ()=>{
+  const ck=document.getElementById('privacyCheck');
+  if(!ck.classList.contains('checked')){ toast('请先勾选用户协议与隐私政策'); return; }
+  navigate('bind');
+});
+function chipToggle(el){ const g=el.parentElement; g.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); }
+
+/* 设置-用户信息编辑 */
+function toggleUserEdit(){
+  const p=document.getElementById('userEditPanel');
+  if(!p) return;
+  if(p.style.display==='none'){
+    const n=document.getElementById('stNick'); if(n && document.getElementById('ueNick')) document.getElementById('ueNick').value=n.textContent;
+    p.style.display='';
+  }else{
+    p.style.display='none';
+  }
+}
+function saveUserInfo(){
+  const nick=(document.getElementById('ueNick').value||'').trim();
+  if(!nick){ toast('昵称不能为空'); return; }
+  const bio=(document.getElementById('ueBio').value||'').trim();
+  const first = nick.charAt(0);
+  const apply=(id)=>{ const el=document.getElementById(id); if(el) el.textContent=nick; };
+  ['stNick','pfNick','bindNick'].forEach(apply);
+  const av=(id)=>{ const el=document.getElementById(id); if(el) el.textContent=first; };
+  ['stAvatar','pfAvatar','ueAvatar','bindAvatar'].forEach(av);
+  const bioEls=['stBio','pfBio'];
+  bioEls.forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=bio||'文博爱好者'; });
+  document.getElementById('userEditPanel').style.display='none';
+  toast('用户信息已保存');
+}
+
+/* 会员开通 */
+/* 会员套餐配置（文档 5.10：月/年/连续月/连续年） */
+function planInfo(type){
+  const M={
+    month:{name:'月会员', isYear:false, isCont:false, price:45, note:'月会员 · 到期后不自动续费'},
+    year:{name:'年会员', isYear:true, isCont:false, price:360, note:'年会员 · 到期后不自动续费'},
+    contmonth:{name:'连续月会员', isYear:false, isCont:true, price:30, note:'连续包月 · 可随时取消，取消后当期仍可用'},
+    contyear:{name:'连续年会员', isYear:true, isCont:true, price:298, note:'连续包年 · 可随时取消，取消后当期仍可用'}
+  };
+  return M[type]||M.contmonth;
+}
+function selectPlan(plan, btn){
+  memberType = plan;
+  document.querySelectorAll('#planSeg button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const p=planInfo(plan);
+  document.getElementById('planCard').innerHTML = `
+    <div class="between">
+      <div><div class="serif" style="font-size:16px">${p.name}</div><div class="micro-text">${p.isCont?'自动续费':'手动续费'}</div></div>
+      <div class="price-row"><span class="price-now"><span class="cny">¥</span>${p.price}</span></div>
+    </div>
+    <div class="divider"></div>
+    <ul style="font-size:13px;color:var(--color-text-secondary);line-height:2;padding-left:18px;margin:0">
+      <li>高清大图 + 完整著录</li>
+      <li>微痕微观图全开放</li>
+      <li>印章红 VIP 标识${p.isYear?' · 金描边年会员徽标':''}</li>
+      ${p.isYear?'<li>优先新品策展 + 年度检索报告</li>':''}
+    </ul>`;
+}
+let pendingPlan = 'contmonth';
+function goPay(){
+  pendingPlan = memberType;
+  const p=planInfo(pendingPlan);
+  document.getElementById('pcName').textContent = '元藏·博观 '+p.name;
+  document.getElementById('pcAmount').innerHTML = `<span class="cny">¥</span>${p.price}`;
+  document.getElementById('pcNote').textContent = p.note;
+  navigate('payment-confirm');
+}
+function payNow(){
+  payResult='success';
+  isMember=true;
+  const p=planInfo(pendingPlan);
+  document.getElementById('prPlan').innerHTML = memberPillHTML() + ' ' + p.name;
+  document.getElementById('prExpire').textContent = p.isYear ? '2027-08-19' : '2026-09-19';
+  document.getElementById('prSuccessSub').textContent = p.name + (p.isYear ? '权益已生效，金徽标已点亮' : '权益已生效，VIP 已点亮');
+  document.getElementById('prSuccess').style.display='block';
+  document.getElementById('prFail').style.display='none';
+  navigate('payment-result');
+}
+function togglePayResult(){
+  payResult = payResult==='success' ? 'fail' : 'success';
+  document.getElementById('prSuccess').style.display = payResult==='success'?'block':'none';
+  document.getElementById('prFail').style.display = payResult==='success'?'none':'block';
+}
+function cancelMember(){ isMember=false; toast('已取消连续续费（演示）'); navigate('my-member'); }
+function renewMember(){ toast('已进入支付流程（演示）：会员期限将延长'); }
+function shareTreasure(){
+  if(typeof wx!=='undefined' && wx.shareAppMessage){
+    try{ wx.shareAppMessage({title:'元藏·博观 · '+(curGlobal?curGlobal.name:''), path:'/pages/detail/detail?id='+(curGlobal?curGlobal.id:'')}); }catch(e){}
+  }
+  toast('已唤起微信分享（演示）');
+}
+
+/* Toast */
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),1600);
+}
+
+/* 演示控制 */
+function demoToggleLogin(){
+  if(!isLoggedIn){ isLoggedIn=true; toast('已登录（演示）'); }
+  else { isLoggedIn=false; isMember=false; toast('已退出登录（演示）'); }
+  if(!isLoggedIn && current==='profile'){ /* 留在 profile 展示游客态 */ }
+  render();
+}
+function demoToggleMember(){
+  if(!isLoggedIn){ isLoggedIn=true; }
+  isMember=true;
+  const _order=['contmonth','contyear','month','year'];
+  memberType = _order[(_order.indexOf(memberType)+1)%_order.length];
+  toast('会员态：'+planInfo(memberType).name);
+  render();
+}
+function demoLogout(){
+  isLoggedIn=false; isMember=false;
+  toast('已清除登录/会员态');
+  navigate('login',true);
+}
+
+/* ============================================================
+   首页 Banner 随机轮播（5 件藏品图 + 信息条 + 圆点）
+   ============================================================ */
+let bannerList=[], bannerIdx=0, bannerTimer=null;
+function startBannerCarousel(){
+  const pool = GLOBAL.slice();
+  // Fisher–Yates 随机打乱，再取形状各异的 5 件
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+  const shaped = pool.filter(g=>['plate','vase','bowl','cup','washer','meiping','guan','tangping'].indexOf(g.shape)>-1);
+  bannerList = shaped.slice(0,5);
+  if(bannerList.length<5) bannerList = bannerList.concat(pool.filter(g=>bannerList.indexOf(g)===-1)).slice(0,5);
+  if(bannerList.length===0) return;
+  const dots=document.getElementById('hbDots');
+  if(dots) dots.innerHTML = bannerList.map((_,i)=>`<button class="${i===0?'active':''}" onclick="bannerIdx=${i};showBanner(${i})"></button>`).join('');
+  showBanner(0);
+  bannerTimer = setInterval(nextBanner, 4500);
+}
+function showBanner(i){
+  if(!bannerList.length) return;
+  bannerIdx = i;
+  const it = bannerList[i];
+  const art=document.getElementById('hbArtWrap');
+  const info=document.getElementById('hbInfo');
+  if(!art) return;
+  art.style.opacity='0';
+  if(info) info.style.opacity='0';
+  clearTimeout(showBanner._t);
+  showBanner._t = setTimeout(()=>{
+    art.innerHTML = vesselSVG(it.shape, it.label).replace('fill="#EDE8DC"','fill="transparent"');
+    art.style.opacity='0.25';
+    if(info){
+      document.getElementById('hbInfoName').textContent = it.name;
+      document.getElementById('hbInfoSub').textContent = it.museum + ' · ' + it.country;
+      info.style.opacity='1';
+    }
+    const dots=document.getElementById('hbDots');
+    if(dots) dots.querySelectorAll('button').forEach((b,j)=>b.classList.toggle('active', j===i));
+  }, 260);
+}
+function nextBanner(){
+  if(!bannerList.length) return;
+  showBanner((bannerIdx+1)%bannerList.length);
+}
+
+/* ============================================================
+   初始化
+   ============================================================ */
+function init(){
+  renderGlobalList();
+  renderSearchLists();
+  renderArchiveList();
+  renderMicroTimeline();
+  renderFav();
+  renderHistory();
+  renderLibraryList();
+  renderBookmarks();
+  document.getElementById('librarySearch').addEventListener('input', function(){ libQuery=this.value.trim(); renderLibraryList(); });
+  document.getElementById('microSearchInput').addEventListener('input', function(){ microSearch=this.value; renderMicroTimeline(); });
+  startBannerCarousel();
+  document.getElementById('navBack').addEventListener('click', back);
+  render();
+}
+init();
+</script>
+</body>
+</html>
