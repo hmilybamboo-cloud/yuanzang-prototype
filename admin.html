@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<!-- 设计系统：元藏·典藏（青瓷雅集·冷调） | 原型构建师：筑原型(Zhu) | 类型：dashboard/admin-web -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>元藏·博观 · 后台管理</title>
+<style>
+/* ============ 设计令牌（元藏·典藏） ============ */
+:root{
+  --color-primary:#5B7B6F; --color-primary-hover:#4E6B5F; --color-primary-soft:rgba(91,123,111,0.12);
+  --color-action:#1A1A1A; --color-action-hover:#000000; /* 主按钮/登录印章填充：墨黑（对齐权威源 --yz-ink-900） */
+  --color-bg:#F5F1E8; --color-surface:#FBF9F3; --color-surface-sunken:#EDE8DC;
+  --color-overlay-veil:rgba(245,241,232,0.82); --color-overlay-dim:rgba(26,26,26,0.55);
+  --color-text-primary:#1A1A1A; --color-text-secondary:#6B6B63; --color-text-tertiary:#756E60; --color-text-on-primary:#FFFFFF;
+  --color-seal-red:#9E2B25; --color-seal-red-hover:#8A241F; --color-success:#446B47; --color-warning:#856127; --color-danger:#B4423A; --color-info:#6E8B82;
+  --color-gold:#B08D57; --color-gold-soft:rgba(176,141,87,0.16);
+  --color-border:#E4DECF; --color-border-strong:#D2C9B4; --border-width:1px;
+  --radius-sm:6px; --radius-md:10px; --radius-lg:16px; --radius-pill:999px;
+  --shadow-card:0 1px 2px rgba(26,26,26,0.04),0 2px 8px rgba(26,26,26,0.04);
+  --shadow-float:0 4px 16px rgba(26,26,26,0.08);
+  --shadow-overlay:0 8px 32px rgba(26,26,26,0.12);
+  --space-xs:4px; --space-sm:8px; --space-md:12px; --space-lg:16px; --space-xl:24px; --space-2xl:32px; --space-3xl:48px; --space-4xl:64px;
+  --font-heading:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  --font-mono:"SF Mono","JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+
+/* ============ 基础重置 ============ */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font-body);background:var(--color-bg);color:var(--color-text-primary);
+  font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+h1,h2,h3,h4{font-family:var(--font-heading);font-weight:600;color:var(--color-text-primary);line-height:1.35}
+a{color:inherit;text-decoration:none}
+svg{display:block}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--color-border-strong);border-radius:var(--radius-pill)}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ============ 登录页（独立居中布局） ============ */
+#login-view{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:var(--color-bg);
+  padding:24px}
+.login-card{width:100%;max-width:392px;background:var(--color-surface);border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-float);padding:44px 40px 40px;position:relative}
+.login-brand{text-align:center;margin-bottom:30px}
+.login-seal{width:54px;height:54px;margin:0 auto 16px;border-radius:var(--radius-md);
+  background:var(--color-seal-red);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 10px rgba(158,43,37,0.28)}
+.login-seal span{font-family:var(--font-heading);color:var(--color-text-on-primary);font-size:24px;font-weight:600;letter-spacing:1px}
+.login-title{font-size:22px;letter-spacing:2px}
+.login-sub{font-size:13px;color:var(--color-text-tertiary);margin-top:6px;letter-spacing:1px}
+.login-form .field{margin-bottom:16px}
+.login-form label{display:block;font-size:13px;color:var(--color-text-secondary);margin-bottom:7px;letter-spacing:.5px}
+.login-form input{width:100%;padding:11px 13px;border:1px solid var(--color-border-strong);border-radius:var(--radius-sm);
+  background:var(--color-surface);font-family:var(--font-body);font-size:14px;color:var(--color-text-primary);transition:border-color .15s,box-shadow .15s}
+.login-form input:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px var(--color-primary-soft)}
+.captcha-row{display:flex;gap:10px;align-items:stretch}
+.captcha-row input{flex:1}
+.captcha-box{width:116px;height:42px;border:1px solid var(--color-border-strong);border-radius:var(--radius-sm);
+  cursor:pointer;background:var(--color-surface-sunken);flex-shrink:0;overflow:hidden}
+.login-tip{font-size:12px;color:var(--color-text-tertiary);text-align:center;margin-top:14px}
+.login-tip b{color:var(--color-primary)}
+
+/* ============ 应用外壳 ============ */
+#app-view{display:flex;min-height:100vh}
+.sidebar{position:fixed;top:0;bottom:0;left:0;width:220px;background:var(--color-surface);
+  border-right:1px solid var(--color-border);display:flex;flex-direction:column;z-index:30;transition:width .22s ease}
+.sidebar.collapsed{width:64px}
+.sidebar-brand{height:60px;display:flex;align-items:center;gap:11px;padding:0 18px;border-bottom:1px solid var(--color-border);overflow:hidden}
+.sidebar-brand .mark{width:30px;height:30px;border-radius:var(--radius-sm);background:var(--color-seal-red);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidebar-brand .mark span{font-family:var(--font-heading);color:var(--color-text-on-primary);font-size:15px}
+.sidebar-brand .name{font-family:var(--font-heading);font-size:16px;letter-spacing:1px;white-space:nowrap}
+.sidebar-brand .name small{display:block;font-family:var(--font-body);font-size:10px;color:var(--color-text-tertiary);letter-spacing:2px;font-weight:400}
+.sidebar.collapsed .brand-text{opacity:0}
+.nav{flex:1;overflow-y:auto;padding:12px 0;display:flex;flex-direction:column;gap:2px}
+.nav-section{font-size:11px;color:var(--color-text-tertiary);letter-spacing:1px;padding:14px 20px 6px;white-space:nowrap;overflow:hidden}
+.sidebar.collapsed .nav-section{opacity:0;padding:8px 0 4px;text-align:center}
+.nav-item{display:flex;align-items:center;gap:13px;padding:10px 18px;color:var(--color-text-secondary);
+  cursor:pointer;border-left:3px solid transparent;font-size:14px;transition:background .15s,color .15s;white-space:nowrap}
+.nav-item svg{width:19px;height:19px;flex-shrink:0}
+.nav-item:hover{background:var(--color-primary-soft);color:var(--color-text-primary)}
+.nav-item.active{background:var(--color-primary-soft);color:var(--color-primary);border-left-color:var(--color-primary);font-weight:600}
+.sidebar.collapsed .nav-item span{opacity:0;width:0;overflow:hidden}
+.sidebar-foot{border-top:1px solid var(--color-border);padding:12px}
+.collapse-btn{display:flex;align-items:center;gap:13px;width:100%;padding:9px 18px;background:none;border:none;
+  color:var(--color-text-tertiary);cursor:pointer;font-size:13px;font-family:var(--font-body);border-radius:var(--radius-sm)}
+.collapse-btn:hover{color:var(--color-primary)}
+.collapse-btn svg{width:18px;height:18px;flex-shrink:0}
+.sidebar.collapsed .collapse-btn span{opacity:0;width:0;overflow:hidden}
+
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin-left .22s ease;min-width:0}
+.sidebar.collapsed ~ .main{margin-left:64px}
+
+/* ============ 顶栏 ============ */
+.topbar{position:sticky;top:0;z-index:20;height:60px;background:var(--color-overlay-veil);
+  border-bottom:1px solid var(--color-border);
+  display:flex;align-items:center;gap:18px;padding:0 24px}
+.breadcrumb{font-size:13px;color:var(--color-text-tertiary);white-space:nowrap}
+.breadcrumb b{color:var(--color-text-primary);font-family:var(--font-heading);font-weight:600;font-size:14px}
+.breadcrumb .sep{margin:0 8px;color:var(--color-border-strong)}
+.topbar-search{flex:1;max-width:420px;position:relative}
+.topbar-search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--color-text-tertiary)}
+.topbar-search input{width:100%;padding:8px 12px 8px 36px;border:1px solid var(--color-border);border-radius:var(--radius-pill);
+  background:var(--color-surface);font-size:13px;color:var(--color-text-primary);font-family:var(--font-body);transition:border-color .15s}
+.topbar-search input:focus{outline:none;border-color:var(--color-primary)}
+.topbar-search input::placeholder{color:var(--color-text-tertiary)}
+.topbar-actions{display:flex;align-items:center;gap:14px;margin-left:auto}
+.icon-btn{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;
+  color:var(--color-text-secondary);cursor:pointer;position:relative;border:none;background:none;transition:background .15s,color .15s}
+.icon-btn:hover{background:var(--color-primary-soft);color:var(--color-primary)}
+.icon-btn svg{width:19px;height:19px}
+.icon-btn .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--color-seal-red);border:1.5px solid var(--color-surface)}
+.admin{display:flex;align-items:center;gap:10px;padding-left:14px;border-left:1px solid var(--color-border)}
+.admin .ava{width:32px;height:32px;border-radius:50%;background:var(--color-primary);color:var(--color-text-on-primary);
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:14px;flex-shrink:0}
+.admin .meta{line-height:1.25}
+.admin .meta .nm{font-size:13px;font-weight:600}
+.admin .meta .rl{font-size:11px;color:var(--color-text-tertiary)}
+
+/* ============ 内容区 ============ */
+.content{flex:1;padding:var(--space-xl);max-width:1320px;width:100%}
+.view{display:block}
+.view[hidden]{display:none}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:var(--space-xl);flex-wrap:wrap}
+.page-head .ttl{font-size:22px;font-family:var(--font-heading);letter-spacing:1px}
+.page-head .desc{font-size:13px;color:var(--color-text-secondary);margin-top:4px}
+.section-title{font-family:var(--font-heading);font-size:15px;color:var(--color-text-primary);margin-bottom:14px;display:flex;align-items:center;gap:9px}
+.section-title::before{content:"";width:3px;height:15px;background:var(--color-primary);border-radius:2px}
+
+/* ============ 卡片/看板 ============ */
+.card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-card)}
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-xl);margin-bottom:var(--space-xl)}
+.metric-card{padding:var(--space-xl)}
+.metric-card .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.metric-card .label{font-size:13px;color:var(--color-text-secondary);letter-spacing:.5px}
+.metric-card .icn{width:38px;height:38px;border-radius:var(--radius-sm);background:var(--color-primary-soft);
+  color:var(--color-primary);display:flex;align-items:center;justify-content:center}
+.metric-card .icn svg{width:20px;height:20px}
+.metric-card .value{font-family:var(--font-heading);font-size:30px;font-weight:600;letter-spacing:.5px;line-height:1.1}
+.metric-card .value .unit{font-size:15px;color:var(--color-text-tertiary);font-family:var(--font-body);margin-left:2px}
+.metric-card .trend{margin-top:9px;font-size:12px;display:flex;align-items:center;gap:5px;color:var(--color-text-tertiary)}
+.trend.up{color:var(--color-success)}
+.trend.down{color:var(--color-danger)}
+.trend svg{width:13px;height:13px}
+
+/* ============ 图表面板 ============ */
+.charts-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:var(--space-xl);margin-bottom:var(--space-xl)}
+.chart-card{padding:var(--space-xl)}
+.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.chart-head .ct{font-family:var(--font-heading);font-size:15px}
+.chart-head .cs{font-size:12px;color:var(--color-text-tertiary)}
+.chart-wrap{width:100%}
+.chart-wrap svg{width:100%;height:auto;display:block}
+
+/* ============ 数据表格 ============ */
+.table-wrap{overflow-x:auto;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-card)}
+.table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
+.table thead th{background:var(--color-surface-sunken);text-align:left;padding:11px 16px;font-weight:600;
+  color:var(--color-text-secondary);border-bottom:1px solid var(--color-border);font-size:12px;letter-spacing:.04em;white-space:nowrap}
+.table tbody td{padding:12px 16px;border-bottom:1px solid var(--color-border);color:var(--color-text-primary);vertical-align:middle}
+.table tbody tr:last-child td{border-bottom:none}
+.table tbody tr:hover{background:var(--color-primary-soft)}
+.table .mono{font-family:var(--font-mono);font-size:12.5px;color:var(--color-text-secondary)}
+.table .sub{display:block;font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+.thum{width:40px;height:40px;border-radius:var(--radius-sm);flex-shrink:0;border:1px solid var(--color-border)}
+.thum-row{display:flex;align-items:center;gap:11px}
+.ava-sm{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--color-text-on-primary);flex-shrink:0;font-family:var(--font-body)}
+.row-actions{display:flex;gap:8px;flex-wrap:nowrap}
+
+/* ============ 筛选条 ============ */
+.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:var(--space-lg)}
+.search-inline{position:relative;flex:1;min-width:200px;max-width:320px}
+.search-inline svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--color-text-tertiary)}
+.search-inline input{width:100%;padding:8px 12px 8px 33px;border:1px solid var(--color-border-strong);border-radius:var(--radius-sm);
+  background:var(--color-surface);font-size:13px;font-family:var(--font-body);color:var(--color-text-primary)}
+.search-inline input:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px var(--color-primary-soft)}
+.select{position:relative}
+.select select{padding:8px 30px 8px 12px;border:1px solid var(--color-border-strong);border-radius:var(--radius-sm);
+  background:var(--color-surface);font-size:13px;font-family:var(--font-body);color:var(--color-text-primary);cursor:pointer;appearance:none}
+.select::after{content:"";position:absolute;right:11px;top:50%;width:7px;height:7px;border-right:1.5px solid var(--color-text-tertiary);
+  border-bottom:1.5px solid var(--color-text-tertiary);transform:translateY(-65%) rotate(45deg);pointer-events:none}
+.select select:focus{outline:none;border-color:var(--color-primary)}
+
+/* ============ 按钮 ============ */
+.btn{font-family:var(--font-body);font-size:13px;padding:8px 15px;border-radius:var(--radius-sm);border:1px solid transparent;
+  cursor:pointer;transition:background .15s,border-color .15s,color .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn svg{width:15px;height:15px}
+.btn-primary{background:var(--color-action);color:var(--color-text-on-primary)}
+.btn-primary:hover{background:var(--color-action-hover)}
+.btn-seal{background:var(--color-seal-red);color:#fff}
+.btn-seal:hover{background:var(--color-seal-red-hover)}
+.btn-ghost{background:transparent;border-color:var(--color-border-strong);color:var(--color-text-secondary)}
+.btn-ghost:hover{border-color:var(--color-primary);color:var(--color-primary)}
+.btn-danger{background:transparent;border-color:var(--color-danger);color:var(--color-danger)}
+.btn-danger:hover{background:var(--color-danger);color:#fff}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-sm svg{width:13px;height:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ============ 徽章 / 标签 ============ */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:var(--radius-pill);font-size:12px;font-weight:500;white-space:nowrap}
+.badge-on{background:var(--color-primary-soft);color:var(--color-primary)}
+.badge-off{background:var(--color-surface-sunken);color:var(--color-text-tertiary)}
+.badge-review{background:var(--color-primary-soft);color:var(--color-primary)}
+.badge-success{background:rgba(78,122,91,0.14);color:var(--color-success)}
+.badge-warning{background:rgba(176,125,46,0.14);color:var(--color-warning)}
+.badge-danger{background:rgba(180,66,58,0.14);color:var(--color-danger)}
+.badge-info{background:rgba(110,139,130,0.16);color:var(--color-info)}
+.pill-year{background:var(--color-gold-soft);color:var(--color-gold);border:1px solid var(--color-gold);padding:2px 10px;border-radius:var(--radius-pill);font-size:12px;font-weight:500}
+.pill-month{background:var(--color-primary-soft);color:var(--color-primary);padding:2px 10px;border-radius:var(--radius-pill);font-size:12px;font-weight:500}
+
+/* ============ 待审队列（概览） ============ */
+.queue-card{padding:0;overflow:hidden}
+.queue-item{display:flex;align-items:center;gap:13px;padding:14px var(--space-xl);border-bottom:1px solid var(--color-border);cursor:pointer;transition:background .15s}
+.queue-item:last-child{border-bottom:none}
+.queue-item:hover{background:var(--color-primary-soft)}
+.queue-badge{flex-shrink:0}
+.queue-main{flex:1;min-width:0}
+.queue-main .qt{font-size:13.5px;font-weight:500}
+.queue-main .qm{font-size:12px;color:var(--color-text-tertiary);margin-top:2px}
+.queue-arrow{color:var(--color-text-tertiary);flex-shrink:0}
+.queue-arrow svg{width:16px;height:16px}
+.queue-empty{padding:32px;text-align:center;color:var(--color-text-tertiary);font-size:13px}
+
+
+/* ============ 微痕索证库 / 通用卡片网格 ============ */
+.db-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(264px,1fr));gap:18px;margin-top:6px}
+.db-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;display:flex;flex-direction:column}
+.db-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card);border-color:var(--color-primary)}
+.db-cover{height:134px;background:var(--color-surface-sunken);display:flex;align-items:center;justify-content:center;color:var(--color-text-tertiary);border-bottom:1px solid var(--color-border);overflow:hidden;font-size:13px}
+.db-cover img{width:100%;height:100%;object-fit:cover}
+.db-body{padding:14px 15px 16px;flex:1;display:flex;flex-direction:column;gap:8px}
+.db-name{font-family:var(--font-heading);font-size:15px;font-weight:600;color:var(--color-primary);line-height:1.4}
+.db-intro{font-size:12.5px;color:var(--color-text-secondary);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.db-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.db-rel{font-size:12px;color:var(--color-text-tertiary)}
+.kw{display:inline-block;background:var(--color-primary-soft);color:var(--color-primary);font-size:11px;padding:2px 9px;border-radius:var(--radius-pill);margin:2px 6px 0 0;line-height:1.7}
+.feat-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.feat-row input{flex:1;min-width:0}
+.feat-row .mf-name{max-width:44%}
+.mt-img{width:42px;height:30px;border-radius:var(--radius-sm);border:1px solid var(--color-border);overflow:hidden;display:inline-flex;align-items:center;justify-content:center;color:var(--color-text-tertiary);font-size:11px;background:var(--color-surface-sunken);margin-right:5px;vertical-align:middle}
+.mt-img img{width:100%;height:100%;object-fit:cover}
+.mt-imgs{white-space:nowrap}
+.feat-list{display:flex;flex-direction:column;gap:8px}
+.feat-item{background:var(--color-surface-sunken);border-radius:var(--radius-sm);padding:9px 12px}
+.fi-name{font-weight:600;color:var(--color-primary);font-size:13px}
+.fi-desc{display:block;color:var(--color-text-secondary);font-size:12.5px;margin-top:2px;line-height:1.6}
+.feat-imgs{display:flex;flex-direction:column;gap:10px}
+.fi-block{display:flex;flex-direction:column;gap:3px;padding:6px 0;border-bottom:1px dashed var(--color-border)}
+.fi-block:last-child{border-bottom:none}
+.mf-imgs{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
+.mf-imgs .mf-img{flex:1;min-width:140px}
+.mini-stat{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:15px 17px}
+.mini-stat .ms-label{font-size:12px;color:var(--color-text-tertiary)}
+.mini-stat .ms-val{font-size:22px;font-weight:700;color:var(--color-primary);font-family:var(--font-heading);margin-top:5px}
+/* ============ 微痕数据管理：条目表格 ============ */
+/* 微痕特征缩略图（纯 token 线描容器，无外链图片） */
+.mt-thumb{width:56px;height:40px;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-surface-sunken);display:flex;align-items:center;justify-content:center;color:var(--color-primary);flex-shrink:0;overflow:hidden}
+.mt-thumb svg{width:42px;height:32px}
+.mt-desc-cell{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--color-text-tertiary)}
+/* 单元格长文本省略 */
+.cell-ellipsis{max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* 缩略图占位（纯 token 单色块，无渐变、无外链） */
+.ph{position:relative;overflow:hidden}
+.ph-celadon{background:var(--color-primary)}
+.ph-glaze{background:var(--color-info)}
+.ph-rice{background:var(--color-surface-sunken)}
+.ph-seal{background:var(--color-seal-red)}
+.ph-gold{background:var(--color-gold)}
+
+/* ============ 抽屉 Drawer ============ */
+.drawer-overlay{position:fixed;inset:0;background:var(--color-overlay-dim);z-index:50;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.drawer-overlay.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100%;width:360px;max-width:92vw;background:var(--color-surface);
+  border-top-left-radius:var(--radius-lg);border-bottom-left-radius:var(--radius-lg);box-shadow:var(--shadow-overlay);
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:51;display:flex;flex-direction:column}
+.drawer-overlay.open .drawer{transform:translateX(0)}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--color-border)}
+.drawer-head .dt{font-family:var(--font-heading);font-size:17px}
+.drawer-head .ds{font-size:12px;color:var(--color-text-tertiary);margin-top:2px}
+.drawer-close{width:34px;height:34px;border-radius:var(--radius-sm);border:none;background:none;cursor:pointer;color:var(--color-text-tertiary);display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}
+.drawer-close:hover{background:var(--color-primary-soft);color:var(--color-primary)}
+.drawer-close svg{width:18px;height:18px}
+.drawer-body{flex:1;overflow-y:auto;padding:22px}
+.drawer-foot{padding:16px 22px;border-top:1px solid var(--color-border);display:flex;gap:10px;justify-content:flex-end;background:var(--color-surface)}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:13px;color:var(--color-text-secondary);margin-bottom:7px}
+.field label .req{color:var(--color-seal-red);margin-left:2px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--color-border-strong);border-radius:var(--radius-sm);
+  background:var(--color-surface);font-family:var(--font-body);font-size:14px;color:var(--color-text-primary);transition:border-color .15s,box-shadow .15s}
+.field textarea{resize:vertical;min-height:84px;line-height:1.6}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px var(--color-primary-soft)}
+.field .hint{font-size:11.5px;color:var(--color-text-tertiary);margin-top:5px}
+.field-row{display:flex;gap:12px}.field-row .field{flex:1}
+.detail-line{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--color-border)}
+.detail-line:last-child{border-bottom:none}
+.detail-line .k{font-size:13px;color:var(--color-text-secondary);white-space:nowrap}
+.detail-line .v{font-size:13px;color:var(--color-text-primary);text-align:right;font-weight:500}
+.detail-block{padding:13px 0;border-bottom:1px solid var(--color-border)}
+.detail-block:last-child{border-bottom:none}
+.detail-block .k{font-size:12px;color:var(--color-text-tertiary);margin-bottom:5px}
+.detail-block .v{font-size:13.5px;line-height:1.7}
+.gallery-edit{display:flex;gap:8px;flex-wrap:wrap}
+.gallery-edit .g{width:58px;height:58px;border-radius:var(--radius-sm);border:1px solid var(--color-border);position:relative}
+.gallery-edit .g.add{display:flex;align-items:center;justify-content:center;color:var(--color-text-tertiary);cursor:pointer;background:var(--color-surface-sunken)}
+.gallery-edit .g.add:hover{color:var(--color-primary);border-color:var(--color-primary)}
+
+/* ============ 设置 ============ */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-xl)}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--color-border)}
+.set-row:last-child{border-bottom:none}
+.set-row .sl{font-size:13.5px;font-weight:500}
+.set-row .sd{font-size:12px;color:var(--color-text-tertiary);margin-top:2px;max-width:340px}
+.switch{position:relative;width:42px;height:24px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.switch .track{position:absolute;inset:0;background:var(--color-border-strong);border-radius:var(--radius-pill);transition:background .2s;cursor:pointer}
+.switch .track::before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.switch input:checked + .track{background:var(--color-primary)}
+.switch input:checked + .track::before{transform:translateX(18px)}
+
+/* ============ 内容审核 Tab ============ */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--color-border);margin-bottom:var(--space-lg)}
+.tab{padding:9px 16px;font-size:13.5px;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s}
+.tab:hover{color:var(--color-primary)}
+.tab.active{color:var(--color-primary);border-bottom-color:var(--color-primary);font-weight:600}
+.tab .cnt{font-size:11px;background:var(--color-surface-sunken);color:var(--color-text-tertiary);padding:1px 7px;border-radius:var(--radius-pill);margin-left:6px}
+.tab.active .cnt{background:var(--color-primary-soft);color:var(--color-primary)}
+.review-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);box-shadow:var(--shadow-card);padding:var(--space-xl);margin-bottom:var(--space-lg)}
+.review-card .rc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
+.review-card .rc-title{font-family:var(--font-heading);font-size:16px}
+.review-card .rc-meta{font-size:12px;color:var(--color-text-tertiary);margin-top:4px}
+.review-card .rc-body{font-size:13.5px;line-height:1.7;color:var(--color-text-secondary);background:var(--color-surface-sunken);padding:13px 15px;border-radius:var(--radius-sm);margin-bottom:16px}
+.review-card .rc-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ============ Toast ============ */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--color-text-primary);color:var(--color-bg);
+  padding:11px 20px;border-radius:var(--radius-pill);font-size:13px;opacity:0;transition:all .25s ease;z-index:90;box-shadow:var(--shadow-float);pointer-events:none;display:flex;align-items:center;gap:9px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast svg{width:16px;height:16px;color:var(--color-success)}
+</style>
+<script>
+function renderMicroDbs(){
+  const k=$('#db-search').value.trim().toLowerCase();
+  let rows=MICRO_DBS;
+  if(k)rows=rows.filter(d=>(d.name+' '+d.dynasty+' '+d.keywords.join(' ')).toLowerCase().includes(k));
+  $('#db-count').textContent=rows.length+' 个';
+  $('#db-grid').innerHTML=rows.map(d=>`
+    <div class="db-card" onclick="openMicroDb('${d.id}')">
+      <div class="db-cover">${d.cover?`<img src="${esc(d.cover)}" onerror="this.style.display='none'">`:'库封面'}</div>
+      <div class="db-body">
+        <div class="db-name">${esc(d.name)}</div>
+        <div class="db-meta"><span class="badge badge-info">${esc(d.dynasty)}</span><span class="db-rel">关联藏品 ${d.rel} 件</span></div>
+        <div class="db-intro">${esc(d.intro)}</div>
+        <div>${d.keywords.slice(0,4).map(kw=>`<span class="kw">${esc(kw)}</span>`).join('')}</div>
+      </div>
+    </div>`).join('') || `<div class="empty-state" style="grid-column:1/-1;padding:56px 24px;text-align:center;color:var(--color-text-tertiary)"><div style="font-size:15px;color:var(--color-text-secondary);margin-bottom:6px">暂无微痕索证库</div><div style="font-size:13px;margin-bottom:18px">创建专题数据库，系统化收录窑口的微观特征与鉴定标尺</div><button class="btn btn-primary" type="button" onclick="openMicroDbForm()">+ 新增库</button></div>`;
+}
+function openMicroDb(id){const d=MICRO_DBS.find(x=>x.id===id);if(!d)return;
+  openDrawer('库详情 · '+d.name,`
+    <div class="db-cover" style="height:150px;border-radius:var(--radius-md);margin-bottom:14px">${d.cover?`<img src="${esc(d.cover)}" onerror="this.style.display='none'">`:'库封面'}</div>
+    <div class="detail-line"><span class="k">名称</span><span class="v">${esc(d.name)}</span></div>
+    <div class="detail-line"><span class="k">朝代</span><span class="v"><span class="badge badge-info">${esc(d.dynasty)}</span></span></div>
+    <div class="detail-line"><span class="k">简介</span><span class="v" style="line-height:1.7">${esc(d.intro)}</span></div>
+    <div class="detail-line"><span class="k">关联藏品</span><span class="v mono">${d.rel} 件</span></div>
+    <div style="margin:14px 0 6px;font-size:13px;color:var(--color-text-secondary);font-weight:600">核心特征</div>
+    <div class="feat-list">${d.features.map(f=>`<div class="feat-item"><span class="fi-name">${esc(f.name)}</span><span class="fi-desc">${esc(f.desc)}</span></div>`).join('')}</div>
+    <div style="margin:14px 0 6px;font-size:13px;color:var(--color-text-secondary);font-weight:600">核心特征关键词</div>
+    <div>${d.keywords.map(kw=>`<span class="kw">${esc(kw)}</span>`).join('')}</div>`,
+    `<button class="btn btn-primary" onclick="openMicroDbForm('${d.id}')">编辑</button><button class="btn btn-danger" onclick="delMicroDb('${d.id}')">删除</button><button class="btn btn-ghost" onclick="closeDrawer()">关闭</button>`);
+}
+function openMicroDbForm(id){
+  const d=id?MICRO_DBS.find(x=>x.id===id):null;
+  const dys=['唐','五代','北宋','南宋','元','明','清','民国','当代'];
+  const feats=d?d.features:[{name:'',desc:''}];
+  const kws=d?d.keywords:[];
+  openDrawer(id?'编辑库':'新增库',`
+    <div class="field"><label>名称<span class="req">*</span></label><input id="db-name" value="${esc(d?d.name:'')}" placeholder="如 长沙窑微痕索证库"></div>
+    <div class="field"><label>封面</label><div class="cover-zone"><div class="cv" onclick="toast('原型演示：此处为封面上传占位')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></div><div><div style="font-size:13px;color:var(--color-text-secondary)">点击上传封面</div><div class="hint" style="margin-top:2px">建议 16:9，PNG / JPG</div></div></div></div>
+    <div class="field"><label>朝代</label><select id="db-dy">${dys.map(x=>`<option ${d&&d.dynasty===x?'selected':''}>${x}</option>`).join('')}</select></div>
+    <div class="field"><label>简介</label><textarea id="db-intro" placeholder="库的定位、收录范围与研究价值">${esc(d?d.intro:'')}</textarea></div>
+    <div class="field"><label>核心特征（分条目）</label>
+      <div id="db-feats">${feats.map(f=>`<div class="feat-row"><input class="db-fname" placeholder="特征名称，如 釉下彩" value="${esc(f.name)}"><input class="db-fdesc" placeholder="说明，如 釉下褐绿彩绘，开彩瓷先河" value="${esc(f.desc)}"><button class="btn btn-ghost btn-sm" type="button" onclick="this.parentNode.remove()">×</button></div>`).join('')}</div>
+      <button class="btn btn-ghost btn-sm" type="button" onclick="addDbFeatRow()" style="margin-top:6px">+ 添加特征</button>
+    </div>
+    <div class="field"><label>核心特征关键词</label>
+      <div class="tag-input" id="db-kw">${kws.map(t=>`<span class="tag-chip">${esc(t)}<span class="rm" onclick="this.parentNode.remove()">×</span></span>`).join('')}<input type="text" placeholder="回车添加关键词" onkeydown="addDbKw(event)"></div>
+      <div class="hint">回车添加关键词，点击 × 移除</div>
+    </div>`,
+    `<button class="btn btn-ghost" onclick="closeDrawer()">取消</button><button class="btn btn-primary" onclick="saveMicroDb('${d?d.id:''}')">保存</button>`,
+    id?'编辑微痕索证库':'新增一个微痕索证库');
+}
+function addDbFeatRow(){const c=document.getElementById('db-feats');if(!c)return;const d=document.createElement('div');d.className='feat-row';d.innerHTML=`<input class="db-fname" placeholder="特征名称，如 釉下彩"><input class="db-fdesc" placeholder="说明，如 釉下褐绿彩绘，开彩瓷先河"><button class="btn btn-ghost btn-sm" type="button" onclick="this.parentNode.remove()">×</button>`;c.appendChild(d);}
+function addDbKw(ev){if(ev.key!=='Enter')return;ev.preventDefault();const v=ev.target.value.trim();if(!v){toast('请输入关键词');return;}ev.target.insertAdjacentHTML('beforebegin',`<span class="tag-chip">${esc(v)}<span class="rm" onclick="this.parentNode.remove()">×</span></span>`);ev.target.value='';}
+function saveMicroDb(id){
+  const name=$('#db-name').value.trim();
+  if(!name){toast('请填写库名称');return;}
+  const feats=[...document.querySelectorAll('#db-feats .feat-row')].map(r=>({name:r.querySelector('.db-fname').value.trim(),desc:r.querySelector('.db-fdesc').value.trim()})).filter(f=>f.name);
+  const kws=[...document.querySelectorAll('#db-kw .tag-chip')].map(t=>t.firstChild.textContent.trim()).filter(Boolean);
+  const rec={name:name, dynasty:$('#db-dy').value, intro:$('#db-intro').value.trim(), rel:id?(MICRO_DBS.find(x=>x.id===id)||{}).rel||0:0, features:feats, keywords:kws};
+  if(id){const i=MICRO_DBS.findIndex(x=>x.id===id);if(i>=0)MICRO_DBS[i]=rec;}
+  else{MICRO_DBS.unshift(Object.assign({id:'db'+Date.now().toString(36)},rec));}
+  closeDrawer();renderMicroDbs();toast(id?'库已保存':'库已新增');
+}
+function delMicroDb(id){const i=MICRO_DBS.findIndex(x=>x.id===id);if(i<0)return;const nm=MICRO_DBS[i].name;MICRO_DBS.splice(i,1);renderMicroDbs();toast('已删除库：'+nm);}
+</script>
+<style>
+/* ============ 图书馆管理：书目 / 分类 ============ */
+.chips{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{padding:6px 14px;border:1px solid var(--color-border-strong);border-radius:var(--radius-pill);font-size:12.5px;color:var(--color-text-secondary);cursor:pointer;background:var(--color-surface);transition:background .15s,color .15s,border-color .15s;font-family:var(--font-body);user-select:none}
+.chip:hover{border-color:var(--color-primary);color:var(--color-primary)}
+.chip.active{background:var(--color-primary-soft);border-color:var(--color-primary);color:var(--color-primary);font-weight:600}
+.fmt-txt{background:rgba(110,139,130,0.16);color:var(--color-info);font-family:var(--font-mono);letter-spacing:.05em}
+.fmt-pdf{background:var(--color-gold-soft);color:var(--color-gold);font-family:var(--font-mono);letter-spacing:.05em}
+.seg{display:flex;gap:8px}
+.seg-opt{flex:1;text-align:center;padding:9px 0;border:1px solid var(--color-border-strong);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--color-text-secondary);transition:background .15s,color .15s,border-color .15s;font-family:var(--font-mono)}
+.seg-opt:hover{border-color:var(--color-primary)}
+.seg-opt.active{background:var(--color-primary-soft);border-color:var(--color-primary);color:var(--color-primary);font-weight:600}
+.upload-zone{border:1px dashed var(--color-border-strong);border-radius:var(--radius-md);padding:20px 14px;text-align:center;color:var(--color-text-tertiary);cursor:pointer;transition:border-color .15s,color .15s;font-size:13px;background:var(--color-surface-sunken)}
+.upload-zone:hover{border-color:var(--color-primary);color:var(--color-primary)}
+.upload-zone svg{width:26px;height:26px;margin:0 auto 7px}
+.upload-zone .uz-main{font-size:13px}
+.tag-input{display:flex;flex-wrap:wrap;gap:7px;padding:8px;border:1px solid var(--color-border-strong);border-radius:var(--radius-sm);background:var(--color-surface)}
+.tag-input input{border:none;background:transparent;padding:3px 4px;font-size:13px;flex:1;min-width:80px;width:auto;box-shadow:none}
+.tag-input input:focus{outline:none;box-shadow:none}
+.tag-chip{display:inline-flex;align-items:center;gap:5px;background:var(--color-primary-soft);color:var(--color-primary);font-size:12px;padding:4px 10px;border-radius:var(--radius-pill);font-family:var(--font-body)}
+.tag-chip .rm{cursor:pointer;opacity:.55;line-height:1}
+.tag-chip .rm:hover{opacity:1}
+.cover-zone{display:flex;align-items:center;gap:13px}
+.cover-zone .cv{width:66px;height:88px;border:1px dashed var(--color-border-strong);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--color-text-tertiary);cursor:pointer;background:var(--color-surface-sunken);transition:border-color .15s,color .15s;flex-shrink:0}
+.cover-zone .cv:hover{border-color:var(--color-primary);color:var(--color-primary)}
+.cover-zone .cv svg{width:20px;height:20px}
+#view-books .table{min-width:960px}
+
+/* ============ 响应式 ============ */
+@media (max-width:1080px){
+  .charts-grid{grid-template-columns:1fr}
+  .settings-grid{grid-template-columns:1fr}
+  .metric-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:820px){
+  .sidebar{width:64px}
+  .sidebar .brand-text,.sidebar .nav-item span,.sidebar .nav-section,.sidebar .collapse-btn span{opacity:0;width:0;overflow:hidden}
+  .main{margin-left:64px}
+}
+@media (max-width:560px){
+  .metric-grid{grid-template-columns:1fr}
+  .content{padding:var(--space-lg)}
+  .topbar-search{display:none}
+}
+</style>
+</head>
+<body>
+<!-- ═══════════════ 登录页 ═══════════════ -->
+<!-- ═══════════════ 应用外壳 ═══════════════ -->
+<div id="app-view">
+  <!-- 侧边栏 -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="mark"><span>元</span></div>
+      <div class="name brand-text">元藏·博观<small>ADMIN CONSOLE</small></div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-section brand-text">运营管理</div>
+      <div class="nav-item active" data-view="archives"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3h9l4 4v14H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg><span>档案管理</span></div>
+      <div class="nav-item" data-view="microtrace"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 14c3 0 3-5 6-5s3 5 6 5 3-5 6-5"/><path d="M3 19c3 0 3-4 6-4s3 4 6 4 3-4 6-4"/></svg><span>微痕数据管理</span></div>
+      <div class="nav-item" data-view="microdbs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6h16v14H4z"/><path d="M4 10h16M9 6v14M15 6v14"/></svg><span>微痕索证库</span></div>
+      <div class="nav-section brand-text">用户与交易</div>
+      <div class="nav-item" data-view="users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 6.5a3 3 0 0 1 0 5.8M16.5 19a5.2 5.2 0 0 0-2.5-4.3"/></svg><span>用户管理</span></div>
+      <div class="nav-section brand-text">图书馆管理</div>
+      <div class="nav-item" data-view="books"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19a2 2 0 0 1 2-2h13"/></svg><span>书目管理</span></div>
+
+    </nav>
+    <div class="sidebar-foot">
+      <button class="collapse-btn" id="collapse-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 7l-5 5 5 5"/><path d="M19 7l-5 5 5 5" opacity=".4"/></svg>
+        <span>收起菜单</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <!-- 顶栏 -->
+    <header class="topbar">
+      <div class="breadcrumb">后台管理 <span class="sep">/</span> <b id="crumb-current">档案管理</b></div>
+      <div class="topbar-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg>
+        <input type="text" placeholder="搜索藏品 / 用户 / 订单号…">
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" title="通知"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M10.5 21a2 2 0 0 0 3 0"/></svg><span class="dot"></span></button>
+        <button class="icon-btn" title="帮助"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M9.2 9.5a2.8 2.8 0 0 1 5.4 1c0 1.8-2.6 2.2-2.6 3.7M12 17.2v.2"/></svg></button>
+        <div class="admin">
+          <div class="ava">馆</div>
+          <div class="meta"><div class="nm">馆管理员</div><div class="rl">超级管理员</div></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- ░░░ 档案管理 ░░░ -->
+      <section class="view" id="view-archives">
+        <div class="page-head">
+          <div><div class="ttl">档案管理</div><div class="desc">宫廷档案条目管理：来源册 / 年号 / 条目内容 / 分类，支持 Excel 批量导入</div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="$('#arc-file').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>导入 Excel</button>
+            <button class="btn btn-primary btn-sm" onclick="openArchiveForm(-1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>新增档案</button>
+          </div>
+          <input type="file" id="arc-file" accept=".xlsx,.xls,.csv" hidden onchange="importArchive()">
+        </div>
+        <div class="toolbar">
+          <div class="search-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg><input id="arc-search" type="text" placeholder="搜索条目内容 / 年号 / 来源册"></div>
+          <div class="select"><select id="arc-era"><option value="">全部年号</option><option>雍正</option><option>乾隆</option><option>嘉庆</option><option>宣统</option></select></div>
+          <div class="select"><select id="arc-cat"><option value="">全部分类</option><option>清檔簿冊</option><option>貢檔進單</option><option>奏折文稿</option></select></div>
+        </div>
+        <div class="table-wrap"><table class="table" style="min-width:1080px"><thead><tr><th style="text-align:right">ID</th><th>年号</th><th>日期原文</th><th>条目内容</th><th style="text-align:right">公元年</th><th>公历日期</th><th>一级分类</th><th>二级分类</th><th style="text-align:right">操作</th></tr></thead><tbody id="arc-body"></tbody></table></div>
+      </section>
+
+      <!-- ░░░ 微痕数据管理 ░░░ -->
+      <section class="view" id="view-microtrace" hidden>
+        <div class="page-head">
+          <div><div class="ttl">微痕数据管理</div><div class="desc">微痕特征条目：采集机构 / 藏品ID / 特征名称 + 图片地址（可添加多条），支持 Excel 批量导入</div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="$('#mt-file').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>导入 Excel</button>
+            <button class="btn btn-primary btn-sm" onclick="openMicroForm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>新增条目</button>
+          </div>
+          <input type="file" id="mt-file" accept=".xlsx,.xls,.csv" hidden onchange="importMicro()">
+        </div>
+        <div class="toolbar">
+          <div class="search-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg><input id="mt-search" type="text" placeholder="搜索特征名 / 采集机构 / 藏品ID / 朝代 / 窑口"></div>
+          <span class="badge badge-on" id="mt-count">— 条</span>
+        </div>
+        <div class="table-wrap"><table class="table" style="min-width:900px"><thead><tr><th>采集机构</th><th style="text-align:right">藏品ID</th><th>朝代</th><th>窑口</th><th>特征名称与对应图片（一一对应）</th><th style="text-align:right">操作</th></tr></thead><tbody id="mt-list"></tbody></table></div>
+      </section>
+
+      <!-- ░░░ 微痕索证库管理 ░░░ -->
+      <section class="view" id="view-microdbs" hidden>
+        <div class="page-head">
+          <div><div class="ttl">微痕索证库</div><div class="desc">管理微痕索证专题数据库：封面 / 朝代 / 简介 / 核心特征 / 核心特征关键词，支持新增、编辑与删除</div></div>
+          <button class="btn btn-primary btn-sm" onclick="openMicroDbForm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>新增库</button>
+        </div>
+        <div class="toolbar">
+          <div class="search-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg><input id="db-search" type="text" placeholder="搜索库名称 / 朝代 / 关键词"></div>
+          <span class="badge badge-on" id="db-count">— 个</span>
+        </div>
+        <div class="db-grid" id="db-grid"></div>
+      </section>
+
+      <!-- ░░░ 用户管理 ░░░ -->
+      <section class="view" id="view-users" hidden>
+        <div class="page-head">
+          <div><div class="ttl">用户管理</div><div class="desc">查看注册用户、会员等级、到期状态与账号操作</div></div>
+        </div>
+        <div class="toolbar">
+          <div class="search-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg><input id="usr-search" type="text" placeholder="搜索微信昵称 / 用户ID / 邀请码 / 邀请人"></div>
+          <div class="select"><select id="usr-level"><option value="">全部会员</option><option value="year">年会员</option><option value="month">月会员</option><option value="none">非会员</option></select></div>
+          <div class="select"><select id="usr-status"><option value="">全部状态</option><option value="normal">正常</option><option value="banned">已封禁</option></select></div>
+        </div>
+        <div class="stat-row" id="usr-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px"></div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>用户</th><th>会员等级</th><th>到期日</th><th>邀请码</th><th>邀请人</th><th>状态</th><th style="text-align:right">操作</th></tr></thead><tbody id="usr-body"></tbody></table></div>
+      </section>
+
+      <!-- ░░░ 会员订单管理 ░░░ -->
+      <!-- ░░░ 图书馆管理：书目管理 ░░░ -->
+      <section class="view" id="view-books" hidden>
+        <div class="page-head">
+          <div><div class="ttl">书目管理</div><div class="desc">管理元藏图书馆书目，支持在线阅读、上下架与 Excel 批量导入</div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="$('#bk-file').click()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>导入 Excel</button>
+            <button class="btn btn-primary btn-sm" onclick="editBook(null)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>新增书目</button>
+          </div>
+          <input type="file" id="bk-file" accept=".xlsx,.xls,.csv" hidden onchange="importBooks()">
+        </div>
+        <div class="toolbar">
+          <div class="chips" id="bk-fmt">
+            <span class="chip active" data-fmt="all" onclick="setBookFormat('all')">全部</span>
+            <span class="chip" data-fmt="txt" onclick="setBookFormat('txt')">TXT</span>
+            <span class="chip" data-fmt="pdf" onclick="setBookFormat('pdf')">PDF</span>
+          </div>
+          <div class="select"><select id="bk-cat"><option value="">全部分类</option><option>陶瓷研究</option><option>书画著录</option><option>考古报告</option><option>工艺典籍</option><option>其他</option></select></div>
+          <div class="search-inline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg><input id="bk-search" type="text" placeholder="搜索书名 / 作者"></div>
+          <span class="badge badge-on" id="bk-count">— 本</span>
+        </div>
+        <div class="table-wrap"><table class="table"><thead><tr><th style="text-align:right">序号</th><th>书名</th><th>作者</th><th>朝代 / 年代</th><th>格式</th><th>分类</th><th>上传时间</th><th>状态</th><th style="text-align:right">操作</th></tr></thead><tbody id="bk-body"></tbody></table></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- 抽屉 -->
+  <div class="drawer-overlay" id="drawer-overlay">
+    <div class="drawer" id="drawer">
+      <div class="drawer-head">
+        <div><div class="dt" id="drawer-title">标题</div><div class="ds" id="drawer-sub">副标题</div></div>
+        <button class="drawer-close" id="drawer-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="drawer-body" id="drawer-body"></div>
+      <div class="drawer-foot" id="drawer-foot"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg><span id="toast-msg"></span></div>
+
+<script>
+/* ============ 设计令牌（与 :root 同源，供 JS 取色） ============ */
+const C = {primary:'#5B7B6F',seal:'#9E2B25',gold:'#B08D57',success:'#446B47',warning:'#856127',danger:'#B4423A',muted:'#756E60',text:'#1A1A1A',surf:'#FBF9F3',sunken:'#EDE8DC',border:'#E4DECF'};
+
+/* ============ Mock 数据 ============ */
+const palettes = ['ph-celadon','ph-glaze','ph-rice','ph-seal','ph-gold'];
+function ph(cls,n){let s='';for(let i=0;i<n;i++)s+=`<span class="g ph ${cls}"></span>`;return s;}
+function ava(name){const colors=['#5B7B6F','#B08D57','#9E2B25','#6E8B82','#7a988c'];const c=colors[name.charCodeAt(0)%colors.length];return `<span class="ava-sm" style="background:${c}">${name.slice(0,1)}</span>`;}
+
+const collections = [
+  {id:'C2026-0018', name:'汝窑天青釉洗', dynasty:'北宋', museum:'故宫博物院', status:'on', desc:'天青色釉面温润，为汝窑典型器。'},
+  {id:'C2026-0021', name:'南宋官窑粉青釉纸槌瓶', dynasty:'南宋', museum:'上海博物馆', status:'on', desc:'粉青釉肥厚，紫口铁足特征明显。'},
+  {id:'C2026-0034', name:'钧窑玫瑰紫釉花盆', dynasty:'北宋', museum:'河南博物院', status:'review', desc:'窑变玫瑰紫，乳浊釉流动感强。'},
+  {id:'C2026-0042', name:'哥窑米黄釉葵口碗', dynasty:'南宋', museum:'故宫博物院', status:'on', desc:'金丝铁线开片，米黄釉雅致。'},
+  {id:'C2026-0055', name:'定窑白釉刻花莲瓣纹碗', dynasty:'北宋', museum:'定州博物馆', status:'off', desc:'覆烧芒口，刻花流畅。'},
+  {id:'C2026-0061', name:'元青花缠枝牡丹纹梅瓶', dynasty:'元', museum:'景德镇陶瓷馆', status:'on', desc:'进口钴料发色浓艳，缠枝牡丹。'},
+  {id:'C2026-0073', name:'唐三彩贴花执壶', dynasty:'唐', museum:'陕西历史博物馆', status:'on', desc:'黄绿白三彩交融，贴花工艺。'},
+  {id:'C2026-0088', name:'明永乐青花压手杯', dynasty:'明', museum:'故宫博物院', status:'review', desc:'青花浓重，握之贴手。'}
+];
+/* 档案全集 CSV：id, 来源册, 年号, 日期原文, 条目内容, 年号内年份, 月份, 日, 公元年, 公历日期, 所属清册, 条目类型, 一级分类, 二级分类 */
+const ARCHIVE_ROWS=[
+ ['1','提要一','雍正','雍正元年九月初七日','查康熙六十一年光禄寺取用盛清酱粗瓷瓶五百个，每个开销银五钱亦属浮多，应令核减事','1','9','7','1723','1723-10-05','','普通','奏折文稿',''],
+ ['3','提要一','雍正','雍正元年正月十六日','怡亲王交黄瓷盘六十个，碗八十个，王谕配做铜果托，果罩等事','1','1','16','1723','1723-02-20','','普通','清檔簿冊','各作成做活計清檔'],
+ ['400','提要一','雍正','雍正十年三月初六日','赏钱斗保等二十余人瓷器事','10','3','6','1732','1732-03-31','','普通','清檔簿冊','庫檔'],
+ ['1800','提要一','乾隆','乾隆十二年五月二十五日','总管刘沧洲交钧釉盘四件，传旨配座做木瓜盘事','12','5','25','1747','1747-07-02','','普通','清檔簿冊','各作成做活計清檔'],
+ ['9006','提要一','乾隆','乾隆四十九年闰三月初一日','福海进瓷渣斗，鼎炉，笔洗，花浇各一件及其他物品','49','3','1','1784','1784-04-20','','普通','貢檔進單','宮中進單'],
+ ['12714','提要二','嘉庆','嘉庆十五年五月初二日','庆桂进霁红瓶、定窑水壶，钧窑笔洗各一件及其他物品','15','5','2','1810','1810-06-03','','普通','貢檔進單','宮中進單'],
+ ['15446','提要二','宣统','宣统十四年十一月十二日','由御茶房要来黄地紫龙瓷三寸碟二十件，白地蓝龙瓷茶盅七件，白地蓝西番莲茶盅十三件…宣统十四年立敬事房赏用瓷器实存','14','11','12','1922','1922-12-29','','普通','清檔簿冊',''],
+ ['16800','提要二','嘉庆','嘉庆二十五年六月','御茶房交瓷器清单事','25','6','','1820','','','普通','貢檔進單','宮中進單']
+];
+const MICRO_ROWS=[
+{id:'m1', org:'故宫博物院', objId:'g1', shape:'plate', dynasty:'南宋', kiln:'南宋官窑', features:[{name:'紫口铁足',imgs:['https://cdn.yuanzang.cc/micro/g1-zikou-1.jpg','https://cdn.yuanzang.cc/micro/g1-zikou-2.jpg']},{name:'开片',imgs:['https://cdn.yuanzang.cc/micro/g1-kaipian.jpg']},{name:'粉青釉',imgs:['https://cdn.yuanzang.cc/micro/g1-fenqing.jpg']}]},
+{id:'m2', org:'上海博物馆', objId:'g9', shape:'vase', dynasty:'南宋', kiln:'哥窑', features:[{name:'米黄釉',imgs:['https://cdn.yuanzang.cc/micro/g9-mihuang.jpg']}]},
+{id:'m3', org:'湖南省博物馆', objId:'g12', shape:'bowl', dynasty:'唐', kiln:'长沙窑', features:[{name:'釉下彩',imgs:['https://cdn.yuanzang.cc/micro/g12-youxia-1.jpg','https://cdn.yuanzang.cc/micro/g12-youxia-2.jpg']}]},
+{id:'m4', org:'大英博物馆', objId:'g18', shape:'bowl', dynasty:'北宋', kiln:'汝窑', features:[{name:'天青釉',imgs:['https://cdn.yuanzang.cc/micro/g18-tianqing.jpg']}]}
+];
+const MICRO_DBS=[
+ {id:'db1', name:'长沙窑微痕索证库', cover:'', dynasty:'唐', intro:'聚焦长沙窑釉下彩绘工艺，系统收录褐绿彩、诗词题记等微观特征，构建唐代外销瓷索证体系。', rel:312, features:[{name:'釉下彩',desc:'釉下褐绿彩绘，开彩瓷先河'},{name:'诗词题记',desc:'釉下书诗文于器物，题材广及唐诗民谣'},{name:'模印贴花',desc:'褐斑贴花装饰，纹样凸出于器表'}], keywords:['釉下彩','褐绿彩绘','长沙窑','唐代外销瓷']},
+ {id:'db2', name:'南宋官窑微痕索证库', cover:'', dynasty:'南宋', intro:'南宋官窑分修内司与郊坛下两处，胎骨深灰近黑，釉厚失透呈粉青。典型特征：紫口铁足、开片（冰裂/蟹爪纹）、釉光温润。', rel:156, features:[{name:'紫口铁足',desc:'口沿釉薄显紫，圈足露胎呈铁色'},{name:'开片',desc:'冰裂纹/蟹爪纹，大小开片相间'},{name:'釉色',desc:'粉青为主，釉层厚润失透'},{name:'胎骨',desc:'深灰近黑，质坚致'}], keywords:['紫口铁足','开片','粉青釉','支钉垫烧','米黄釉','厚釉失透']},
+ {id:'db3', name:'汝窑微痕索证库', cover:'', dynasty:'北宋', intro:'以天青釉、香灰胎、蟹爪纹为核心特征，建立汝窑微观鉴定标尺。', rel:88, features:[{name:'天青釉',desc:'玛瑙入釉，天青莹润，釉面蕴润'},{name:'香灰胎',desc:'胎色似香灰，质细坚致'},{name:'蟹爪纹',desc:'开片细密如蟹爪，隐现于釉下'}], keywords:['汝窑','天青釉','香灰胎','蟹爪纹']},
+ {id:'db4', name:'钧窑微痕索证库', cover:'', dynasty:'宋', intro:'聚焦钧窑铜红釉窑变，系统收录天蓝釉、月白、玫瑰紫等乳浊釉微观特征，构建窑变鉴定标尺。', rel:120, features:[{name:'窑变',desc:'铜红釉入窑一色、出窑万彩，釉色交融流淌'},{name:'铜红斑',desc:'红斑缀于天蓝釉面，聚散自然'},{name:'乳浊釉',desc:'釉层乳浊失透，光若蛋白'},{name:'天蓝釉',desc:'蓝中泛灰，温润如天空'}], keywords:['钧窑','窑变','铜红斑','乳浊釉','天蓝釉']},
+ {id:'db5', name:'定窑微痕索证库', cover:'', dynasty:'宋—金', intro:'收录定窑白釉刻花、印花与覆烧芒口等典型工艺特征，服务宋金白瓷辨伪。', rel:96, features:[{name:'白釉',desc:'釉白莹润，微泛牙黄'},{name:'刻花',desc:'竹刀斜刻，线条流畅有层次'},{name:'印花',desc:'模印繁密纹样，布局规整'},{name:'覆烧芒口',desc:'覆烧口沿无釉，镶金属扣'}], keywords:['定窑','白釉','刻花','印花','覆烧芒口']},
+ {id:'db6', name:'哥窑微痕索证库', cover:'', dynasty:'南宋', intro:'以米黄釉、紫口铁足、百圾碎与金丝铁线为核心特征，建立哥窑微观鉴定体系。', rel:74, features:[{name:'米黄釉',desc:'釉色米黄温润，开片层叠'},{name:'紫口铁足',desc:'口沿釉薄显紫，圈足露胎呈铁色'},{name:'百圾碎',desc:'开片细碎如百圾，纹路交错'},{name:'金丝铁线',desc:'大纹深褐、小纹金黄，层次分明'}], keywords:['哥窑','米黄釉','紫口铁足','百圾碎','金丝铁线']},
+ {id:'db7', name:'龙泉窑微痕索证库', cover:'', dynasty:'南宋—元', intro:'聚焦龙泉粉青、梅子青厚釉之美，收录朱砂底、冰裂纹等微观特征，服务青瓷断代。', rel:210, features:[{name:'粉青釉',desc:'青中泛蓝，釉如凝脂'},{name:'梅子青',desc:'青翠如梅，釉厚莹润'},{name:'厚釉',desc:'多次素烧施釉，釉层丰厚'},{name:'朱砂底',desc:'圈足露胎呈赭红，俗称朱砂底'}], keywords:['龙泉窑','粉青釉','梅子青','厚釉','朱砂底']},
+ {id:'db8', name:'耀州窑微痕索证库', cover:'', dynasty:'宋', intro:'收录耀州橄榄青刻花、剔花工艺，建立北方青瓷微观特征索引。', rel:68, features:[{name:'橄榄青',desc:'釉色青中偏绿，如橄榄'},{name:'刻花',desc:'刀锋犀利，纹饰立体半浮雕'},{name:'剔花',desc:'剔地留花，对比强烈'},{name:'姜黄釉',desc:'晚期釉色姜黄，釉层稍薄'}], keywords:['耀州窑','橄榄青','刻花','剔花','姜黄釉']}
+];
+
+const users = [
+  {id:'U8821', name:'藏友_明轩', level:'year', expire:'2027-03-12', status:'normal', inviteCode:'YZ-MX-9C1T', inviter:{name:'青瓷研究会·林先生', phone:'137****3300'}},
+  {id:'U7734', name:'青瓷爱好者', level:'month', expire:'2026-09-20', status:'normal', inviteCode:'YZ-LIN-3X9P', inviter:null},
+  {id:'U6510', name:'汴京旧梦', level:'year', expire:'2026-12-01', status:'normal', inviteCode:'YZ-GUGONG-7Q2K', inviter:{name:'故宫博物院', phone:'138****0001'}},
+  {id:'U9043', name:'釉色观察员', level:'none', expire:'—', status:'normal', inviteCode:'—', inviter:null},
+  {id:'U5129', name:'古窑寻踪', level:'month', expire:'2026-08-30', status:'banned', inviteCode:'YZ-GY-8B4W', inviter:{name:'河南博物院', phone:'139****0002'}}
+];
+const orders = [
+  {no:'MC2026081900123', user:'藏友_明轩', plan:'年会员', price:'¥298.00', pay:'paid', time:'2026-08-19 10:24'},
+  {no:'MC2026081900890', user:'青瓷爱好者', plan:'月会员', price:'¥30.00', pay:'paid', time:'2026-08-19 11:08'},
+  {no:'MC2026081815522', user:'古窑寻踪', plan:'月会员', price:'¥30.00', pay:'refunded', time:'2026-08-18 09:33'},
+  {no:'MC2026081722310', user:'釉色观察员', plan:'年会员', price:'¥298.00', pay:'pending', time:'2026-08-17 22:10'},
+  {no:'MC2026081608841', user:'汴京旧梦', plan:'年会员', price:'¥298.00', pay:'paid', time:'2026-08-16 14:51'},
+  {no:'MC2026081507342', user:'青瓷爱好者', plan:'年会员', price:'¥298.00', pay:'paid', time:'2026-08-15 20:02'},
+  {no:'MC2026081406671', user:'藏友_明轩', plan:'月会员', price:'¥30.00', pay:'refunded', time:'2026-08-14 08:47'}
+];
+let reviews = [
+  {id:'RV-01', type:'微痕条目', title:'钧窑·元·天蓝釉窑变', user:'釉色观察员', time:'2026-08-19 09:12', body:'提交一条元代钧窑天蓝釉窑变微痕，特征标注为"蓝紫交融窑变"，附 3 张图集。', status:'pending'},
+  {id:'RV-02', type:'藏品编辑', title:'元青花缠枝牡丹纹梅瓶·信息补录', user:'内容编辑·李', time:'2026-08-19 08:40', body:'补充梅瓶尺寸、重量与出土信息，请求复核后上架。', status:'pending'},
+  {id:'RV-03', type:'微痕条目', title:'定窑·宋·刻花泪痕', user:'汴京旧梦', time:'2026-08-18 21:05', body:'提交定窑白釉刻花碗泪痕微痕，标注迎光可见条状痕。', status:'pending'},
+  {id:'RV-04', type:'微痕条目', title:'汝窑·北宋·香灰胎', user:'青瓷爱好者', time:'2026-08-18 16:30', body:'标注汝窑胎色似香灰，附断面图。', status:'approved'},
+  {id:'RV-05', type:'藏品编辑', title:'明永乐青花压手杯·断代修正', user:'内容编辑·王', time:'2026-08-17 14:20', body:'修正此前断代为永乐，依据青花发色与款识。', status:'approved'},
+  {id:'RV-06', type:'微痕条目', title:'哥窑·南宋·百圾碎', user:'古窑寻踪', time:'2026-08-16 11:00', body:'提交"百圾碎"开片标注，但图集清晰度不足。', status:'rejected', reason:'图集分辨率不足，无法确认开片形态，请补充高清图后重新提交。'}
+];
+const logs = [
+  {t:'2026-08-19 11:08', who:'馆管理员', act:'通过订单退款', obj:'MC2026081815522'},
+  {t:'2026-08-19 09:40', who:'审核员·张', act:'通过微痕条目', obj:'RV-04 汝窑香灰胎'},
+  {t:'2026-08-19 08:55', who:'内容编辑·李', act:'上架藏品', obj:'C2026-0061 元青花梅瓶'},
+  {t:'2026-08-18 22:10', who:'馆管理员', act:'封禁用户', obj:'U5129 古窑寻踪'},
+  {t:'2026-08-18 17:30', who:'审核员·陈', act:'驳回微痕条目', obj:'RV-06 哥窑百圾碎'}
+];
+const books = [
+  {id:'BK-0001', name:'陶说', author:'朱琰', era:'清·乾隆', format:'txt', cat:'陶瓷研究', time:'2026-08-18 10:24', status:'on', desc:'清乾隆年间朱琰撰陶瓷专书，分说今、说古、说明等六卷，论窑器源流与仿古辨伪。'},
+  {id:'BK-0002', name:'景德镇陶录', author:'蓝浦', era:'清·嘉庆', format:'pdf', cat:'陶瓷研究', time:'2026-08-17 16:40', status:'on', desc:'系统记述景德镇窑业制度、御窑厂制与各镇窑口，为研究清代制瓷之重要文献。'},
+  {id:'BK-0003', name:'饮流斋说瓷', author:'许之衡', era:'民国', format:'txt', cat:'陶瓷研究', time:'2026-08-16 14:22', status:'on', desc:'民国许之衡著，述瓷器概说、胎釉、彩色、窑口与款识，辨析历代名瓷特征。'},
+  {id:'BK-0004', name:'中国陶瓷史', author:'叶喆民', era:'当代', format:'pdf', cat:'陶瓷研究', time:'2026-08-15 09:18', status:'on', desc:'叶喆民综合考古发掘与文献撰写的通史性著作，系统梳理中国陶瓷发展脉络。'},
+  {id:'BK-0005', name:'宣和博古图', author:'王黼', era:'宋·宣和', format:'pdf', cat:'考古报告', time:'2026-08-14 20:05', status:'on', desc:'北宋徽宗敕撰古器物图录，录彝器图式八百余件，附释文与考订。'},
+  {id:'BK-0006', name:'格古要论', author:'曹昭', era:'明·洪武', format:'txt', cat:'工艺典籍', time:'2026-08-13 11:36', status:'off', desc:'明初曹昭撰，分古铜器、古画、古墨迹、古窑器诸门，为鉴藏辨伪要籍。'},
+  {id:'BK-0007', name:'南窑笔记', author:'佚名', era:'清', format:'txt', cat:'工艺典籍', time:'2026-08-12 17:50', status:'on', desc:'清代笔记体窑业文献，杂记景德镇窑务、釉色与烧造工艺细节。'},
+  {id:'BK-0008', name:'匋雅', author:'寂园叟', era:'清·宣统', format:'pdf', cat:'陶瓷研究', time:'2026-08-11 08:12', status:'on', desc:'清末寂园叟撰，以随笔方式品评历代名瓷之釉色、款识与真伪。'},
+  {id:'BK-0009', name:'长物志·器用', author:'文震亨', era:'明·崇祯', format:'txt', cat:'工艺典籍', time:'2026-08-10 15:44', status:'off', desc:'明文震亨著生活美学杂录，其中「器用」「位置」等卷论及香炉、花瓶诸器陈设。'},
+  {id:'BK-0010', name:'西清古鉴', author:'梁诗正', era:'清·乾隆', format:'pdf', cat:'考古报告', time:'2026-08-09 10:30', status:'on', desc:'清乾隆敕撰青铜器图录，录内府所藏古器物千五百余件，附铭文摹本与释文。'}
+];
+
+/* ============ 工具 ============ */
+function $(s,root){return (root||document).querySelector(s);}
+function $all(s,root){return Array.from((root||document).querySelectorAll(s));}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function toast(msg){const t=$('#toast');$('#toast-msg').textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2300);}
+
+/* ============ 视图切换 ============ */
+const CRUMB={overview:'概览看板',collections:'藏品管理',archives:'档案管理',microtrace:'微痕数据管理',users:'用户管理',orders:'会员订单',review:'内容审核',settings:'设置',books:'书目管理'};
+function showView(id){
+  $all('.view').forEach(v=>v.hidden=true);
+  $('#view-'+id).hidden=false;
+  $all('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===id));
+  $('#crumb-current').textContent=CRUMB[id];
+  if(id==='books') renderBooks();
+  if(id==='microdbs') renderMicroDbs();
+  window.scrollTo(0,0);
+}
+$('#nav').addEventListener('click',e=>{const it=e.target.closest('.nav-item');if(it)showView(it.dataset.view);});
+$('#collapse-btn').addEventListener('click',()=>{$('#sidebar').classList.toggle('collapsed');});
+
+/* ============ 表格渲染 ============ */
+function badgeFor(status){
+  return {on:'<span class="badge badge-on">已上架</span>',off:'<span class="badge badge-off">已下架</span>',review:'<span class="badge badge-review">待审核</span>',
+    done:'<span class="badge badge-success">已归档</span>',ing:'<span class="badge badge-warning">整理中</span>'}[status]||'';
+}
+function renderUsrStats(){
+  $('#usr-stats').innerHTML=`<div class="mini-stat"><div class="ms-label">用户总数</div><div class="ms-val">${users.length}</div></div><div class="mini-stat"><div class="ms-label">年会员</div><div class="ms-val">${users.filter(u=>u.level==='year').length}</div></div><div class="mini-stat"><div class="ms-label">月会员</div><div class="ms-val">${users.filter(u=>u.level==='month').length}</div></div><div class="mini-stat"><div class="ms-label">已封禁</div><div class="ms-val">${users.filter(u=>u.status==='banned').length}</div></div>`;
+}
+function renderArchives(){
+  const k=$('#arc-search').value.trim().toLowerCase();
+  const era=$('#arc-era').value, cat=$('#arc-cat').value;
+  const rows=ARCHIVE_ROWS.filter(r=>{
+    if(era&&r[2]!==era)return false;
+    if(cat&&r[12]!==cat)return false;
+    if(k){const hay=(r[4]+' '+r[2]+' '+r[1]).toLowerCase();if(!hay.includes(k))return false;}
+    return true;
+  });
+  $('#arc-body').innerHTML = rows.map(r=>`
+    <tr>
+      <td class="mono" style="text-align:right">${esc(r[0])}</td>
+      <td>${esc(r[2])}</td>
+      <td>${esc(r[3])}</td>
+      <td><div class="cell-ellipsis" title="${esc(r[4])}">${esc(r[4])}</div></td>
+      <td class="mono" style="text-align:right">${esc(r[8])||'—'}</td>
+      <td class="mono">${esc(r[9])||'—'}</td>
+      <td>${esc(r[12])}</td>
+      <td>${esc(r[13])||'—'}</td>
+      <td><div class="row-actions" style="justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="openArchiveForm(ARCHIVE_ROWS.findIndex(x=>x[0]==='${r[0]}'))">编辑</button>
+        <button class="btn btn-danger btn-sm" onclick="delArchive('${r[0]}')">删除</button>
+      </div></td>
+    </tr>`).join('') || `<tr><td colspan="9" style="text-align:center;color:var(--color-text-tertiary);padding:32px">无匹配档案</td></tr>`;
+}
+function renderUsers(){
+  renderUsrStats();
+  const k=$('#usr-search').value.trim().toLowerCase();
+  const lv=$('#usr-level').value, st=$('#usr-status').value;
+  const rows=users.filter(u=>(!k||u.name.toLowerCase().includes(k)||u.id.toLowerCase().includes(k)||(u.inviteCode&&u.inviteCode.toLowerCase().includes(k))||(u.inviter&&(u.inviter.name.toLowerCase().includes(k)||u.inviter.phone.includes(k))))&&(!lv||u.level===lv)&&(!st||u.status===st));
+  const lvBadge=u=>u.level==='year'?'<span class="pill-year">年会员</span>':u.level==='month'?'<span class="pill-month">月会员</span>':'<span class="badge badge-off">非会员</span>';
+  $('#usr-body').innerHTML = rows.map(u=>`
+    <tr>
+      <td><div class="thum-row">${ava(u.name)}<div><div>${esc(u.name)}</div><div class="sub mono">${u.id}</div></div></div></td>
+      <td>${lvBadge(u)}</td><td class="mono">${u.expire}</td>
+      <td class="mono">${u.inviteCode||'—'}</td>
+      <td>${u.inviter?`<div class="thum-row">${ava(u.inviter.name)}<div><div style="font-size:13px">${esc(u.inviter.name)}</div><div class="sub mono">${u.inviter.phone}</div></div></div>`:'<span class="muted">自主注册</span>'}</td>
+      <td>${u.status==='normal'?'<span class="badge badge-on">正常</span>':'<span class="badge badge-danger">已封禁</span>'}</td>
+      <td><div class="row-actions" style="justify-content:flex-end"><button class="btn btn-ghost btn-sm" onclick="userDetail('${u.id}')">详情</button></div></td>
+    </tr>`).join('') || `<tr><td colspan="7" style="text-align:center;color:var(--color-text-tertiary);padding:32px">无匹配用户</td></tr>`;
+}
+
+/* 筛选绑定 */
+['arc-search','arc-era','arc-cat'].forEach(id=>$('#'+id).addEventListener('input',renderArchives));
+['usr-search','usr-level','usr-status'].forEach(id=>$('#'+id).addEventListener('input',renderUsers));
+['bk-search','bk-cat'].forEach(id=>$('#'+id).addEventListener('input',renderBooks));
+$('#mt-search').addEventListener('input',renderMicrotrace);
+
+/* ============ 微痕树 + 列表 ============ */
+/* 微痕特征缩略图：按器物器型绘制行内 SVG 线描（无外链、纯 token 色） */
+function mtThumb(shape){
+  const paths={
+    plate:'<circle cx="26" cy="20" r="10" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M16 20h20" stroke="currentColor" stroke-width="1.5"/>',
+    vase:'<path d="M18 3h16l-2 8c0 6-4 8-6 12v14h-4V23c-2-4-6-6-6-12z" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M16 3h12" stroke="currentColor" stroke-width="1.5"/>',
+    bowl:'<path d="M8 22c2 10 8 15 18 15s16-5 18-15H8z" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M8 22h36" stroke="currentColor" stroke-width="1.5"/>'
+  }[shape]||'<circle cx="26" cy="20" r="10" stroke="currentColor" stroke-width="1.5" fill="none"/>';
+  return `<div class="mt-thumb"><svg viewBox="0 0 52 40" preserveAspectRatio="xMidYMid meet">${paths}</svg></div>`;
+}
+function renderMicrotrace(){
+  const k=$('#mt-search').value.trim().toLowerCase();
+  let rows=MICRO_ROWS;
+  if(k)rows=rows.filter(m=>(m.org+' '+m.objId+' '+(m.dynasty||'')+' '+(m.kiln||'')+' '+m.features.map(f=>f.name).join(' ')).toLowerCase().includes(k));
+  $('#mt-count').textContent=rows.length+' 条';
+  $('#mt-list').innerHTML=rows.map(m=>`
+    <tr>
+      <td>${esc(m.org)}</td>
+      <td class="mono" style="text-align:right">${esc(m.objId)}</td>
+      <td>${esc(m.dynasty||'—')}</td>
+      <td>${esc(m.kiln||'—')}</td>
+      <td><div class="feat-imgs">${m.features.map(f=>`<div class="fi-block"><div class="fi-name">${esc(f.name)}</div><div class="mt-imgs">${(f.imgs||[]).map(img=>`<span class="mt-img" title="${esc(img)}"><img src="${esc(img)}" onerror="this.remove()">图</span>`).join('')}</div></div>`).join('')}</div></td>
+      <td><div class="row-actions" style="justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="openMicroForm('${m.id}')">编辑</button>
+        <button class="btn btn-danger btn-sm" onclick="delMicro('${m.id}')">删除</button>
+      </div></td>
+    </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;color:var(--color-text-tertiary);padding:32px">暂无微痕条目</td></tr>`;
+}
+
+/* ============ 概览待审队列 ============ */
+
+/* ============ 内容审核 ============ */
+
+/* ============ 操作日志 ============ */
+
+/* ============ 抽屉表单 ============ */
+function openDrawer(title,bodyHTML,footHTML,sub){
+  $('#drawer-title').textContent=title;
+  $('#drawer-sub').textContent=sub||'';
+  $('#drawer-body').innerHTML=bodyHTML||'';
+  $('#drawer-foot').innerHTML=footHTML||'';
+  $('#drawer-overlay').classList.add('open');
+}
+function closeDrawer(){$('#drawer-overlay').classList.remove('open');}
+$('#drawer-close').addEventListener('click',closeDrawer);
+$('#drawer-overlay').addEventListener('click',e=>{if(e.target===$('#drawer-overlay'))closeDrawer();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+
+function editCollection(id){const c=collections.find(x=>x.id===id);if(!c)return;
+  openDrawer('编辑藏品',`
+    <div class="thum-row" style="margin-bottom:18px"><span class="thum ph ${palettes[0]}" style="width:56px;height:56px"></span><div><div style="font-family:var(--font-heading);font-size:15px">${esc(c.name)}</div><div class="sub mono">${c.id}</div></div></div>
+    <div class="field"><label>藏品名称<span class="req">*</span></label><input value="${esc(c.name)}"></div>
+    <div class="field-row"><div class="field"><label>朝代</label><select><option ${c.dynasty==='北宋'?'selected':''}>北宋</option><option ${c.dynasty==='南宋'?'selected':''}>南宋</option><option ${c.dynasty==='元'?'selected':''}>元</option><option ${c.dynasty==='唐'?'selected':''}>唐</option><option ${c.dynasty==='明'?'selected':''}>明</option></select></div>
+    <div class="field"><label>状态</label><select><option value="on" ${c.status==='on'?'selected':''}>已上架</option><option value="off" ${c.status==='off'?'selected':''}>已下架</option><option value="review" ${c.status==='review'?'selected':''}>待审核</option></select></div></div>
+    <div class="field"><label>收藏机构</label><input value="${esc(c.museum)}"></div>
+    <div class="field"><label>简介</label><textarea>${esc(c.desc)}</textarea></div>`,
+    `<button class="btn btn-ghost" onclick="closeDrawer()">取消</button><button class="btn btn-primary" onclick="closeDrawer();toast('藏品信息已保存')">保存修改</button>`);
+}
+function openArchiveForm(i){
+  const r=i>=0&&i<ARCHIVE_ROWS.length?ARCHIVE_ROWS[i]:Array(14).fill('');
+  const isEdit=i>=0;
+  openDrawer(isEdit?'编辑档案条目':'新增档案条目',`
+    <div class="field-row">
+      <div class="field"><label>档案 ID</label><input value="${esc(r[0])}" ${isEdit?'disabled style="background:var(--color-surface-sunken)"':''} placeholder="留空自动编号"></div>
+      <div class="field"><label>来源册</label><input value="${esc(r[1])}" placeholder="如 提要一 / 提要二"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>年号</label><input value="${esc(r[2])}" placeholder="如 雍正 / 乾隆"></div>
+      <div class="field"><label>年号内年份</label><input value="${esc(r[5])}" placeholder="如 1 / 49"></div>
+    </div>
+    <div class="field"><label>日期原文</label><input value="${esc(r[3])}" placeholder="如 雍正元年九月初七日"></div>
+    <div class="field"><label>条目内容<span class="req">*</span></label><textarea>${esc(r[4])}</textarea><div class="hint">来自档案全集 CSV 的原文条目</div></div>
+    <div class="field-row">
+      <div class="field"><label>月份</label><input value="${esc(r[6])}" placeholder="如 9"></div>
+      <div class="field"><label>日</label><input value="${esc(r[7])}" placeholder="如 7"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>公元年</label><input value="${esc(r[8])}" placeholder="如 1723"></div>
+      <div class="field"><label>公历日期</label><input value="${esc(r[9])}" placeholder="如 1723-10-05"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>所属清册</label><input value="${esc(r[10])}" placeholder="如 各作成做活計清檔"></div>
+      <div class="field"><label>条目类型</label><input value="${esc(r[11])}" placeholder="如 普通"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>一级分类</label><select>${['','清檔簿冊','貢檔進單','奏折文稿'].map(c=>`<option value="${c}" ${r[12]===c?'selected':''}>${c||'未分类'}</option>`).join('')}</select></div>
+      <div class="field"><label>二级分类</label><input value="${esc(r[13])}" placeholder="如 宮中進單"></div>
+    </div>`,
+    `<button class="btn btn-ghost" onclick="closeDrawer()">取消</button><button class="btn btn-primary" onclick="closeDrawer();toast('${isEdit?'档案条目已保存':'档案条目已新增'}')">保存</button>`,
+    isEdit?'编辑档案全集条目（14 字段）':'新增一条档案全集条目');
+}
+function delArchive(id){
+  const i=ARCHIVE_ROWS.findIndex(r=>r[0]===id);if(i<0)return;
+  const txt=ARCHIVE_ROWS[i][4].slice(0,14);
+  ARCHIVE_ROWS.splice(i,1);
+  renderArchives();
+  toast('已删除档案：'+txt+'…');
+}
+function importArchive(){
+  const demo=[
+    ['16801','提要二','乾隆','乾隆五十年六月初四日','磁器库呈览各色瓷器清单事','50','6','4','1785','1785-07-09','','普通','清檔簿冊','各作成做活計清檔'],
+    ['16802','提要一','宣统','宣统三年闰六月初十日','奏请将圆明园瓷器归并办理由','3','6','10','1911','1911-08-04','','普通','奏折文稿','']
+  ];
+  ARCHIVE_ROWS.unshift(...demo);
+  $('#arc-file').value='';
+  renderArchives();
+  toast('已导入 '+demo.length+' 条档案记录（演示）');
+}
+function userDetail(id){const u=users.find(x=>x.id===id);if(!u)return;
+  const lv=u.level==='year'?'<span class="pill-year">年会员</span>':u.level==='month'?'<span class="pill-month">月会员</span>':'<span class="badge badge-off">非会员</span>';
+  openDrawer('用户详情',`
+    <div style="display:flex;align-items:center;gap:13px;margin-bottom:20px">${ava(u.name)}<div><div style="font-family:var(--font-heading);font-size:17px">${esc(u.name)}</div><div class="sub mono">${u.id}</div></div></div>
+    <div class="detail-line"><span class="k">会员等级</span><span class="v">${lv}</span></div>
+    <div class="detail-line"><span class="k">到期日</span><span class="v mono">${u.expire}</span></div>
+    <div class="detail-line"><span class="k">邀请码</span><span class="v mono">${u.inviteCode||'—'}</span></div>
+    <div class="detail-line"><span class="k">邀请人</span><span class="v">${u.inviter?`<div class="thum-row" style="justify-content:flex-start">${ava(u.inviter.name)}<div><div style="font-size:13px">${esc(u.inviter.name)}</div><div class="sub mono">${u.inviter.phone}</div></div></div>`:'<span class="muted">自主注册</span>'}</span></div>
+    <div class="detail-line"><span class="k">账号状态</span><span class="v">${u.status==='normal'?'<span class="badge badge-on">正常</span>':'<span class="badge badge-danger">已封禁</span>'}</span></div>
+    <div class="detail-line"><span class="k">检索历史</span><span class="v mono">— 条</span></div>
+    <div class="detail-line"><span class="k">收藏藏品</span><span class="v mono">— 件</span></div>`,
+    `<button class="btn ${u.status==='normal'?'btn-danger':'btn-primary'}" onclick="toggleBan('${u.id}')">${u.status==='normal'?'封禁账号':'解封账号'}</button><button class="btn btn-ghost" onclick="closeDrawer()">关闭</button>`);
+}
+function toggleBan(id){const u=users.find(x=>x.id===id);if(u){u.status=u.status==='normal'?'banned':'normal';renderUsers();toast(u.status==='banned'?'已封禁：'+u.name:'已解封：'+u.name);closeDrawer();}}
+function orderDetail(no){const o=orders.find(x=>x.no===no);if(!o)return;
+  const pay=o.pay==='paid'?'<span class="badge badge-success">已支付</span>':o.pay==='pending'?'<span class="badge badge-warning">待支付</span>':'<span class="badge badge-danger">已退款</span>';
+  openDrawer('订单详情',`
+    <div class="detail-line"><span class="k">订单号</span><span class="v mono">${o.no}</span></div>
+    <div class="detail-line"><span class="k">用户</span><span class="v">${esc(o.user)}</span></div>
+    <div class="detail-line"><span class="k">商品</span><span class="v">${esc(o.plan)}</span></div>
+    <div class="detail-line"><span class="k">金额</span><span class="v mono" style="color:var(--color-seal-red)">${o.price}</span></div>
+    <div class="detail-line"><span class="k">支付状态</span><span class="v">${pay}</span></div>
+    <div class="detail-line"><span class="k">下单时间</span><span class="v mono" style="font-size:12px">${o.time}</span></div>
+    <div class="detail-block"><div class="k">支付方式</div><div class="v">微信支付</div></div>`,
+    `<button class="btn btn-ghost" onclick="closeDrawer()">关闭</button>${o.pay==='paid'?`<button class="btn btn-danger" onclick="refundOrder('${o.no}')">发起退款</button>`:''}`);
+}
+function refundOrder(no){const o=orders.find(x=>x.no===no);if(!o)return;
+  openDrawer('退款确认',`<div class="detail-block"><div class="k">订单号</div><div class="v mono">${o.no}</div></div><div class="detail-block"><div class="k">退款金额</div><div class="v mono" style="color:var(--color-seal-red);font-size:16px">${o.price}</div></div><div class="detail-block"><div class="k">退款说明</div><div class="v" style="color:var(--color-text-secondary)">退款将原路退回到用户微信，处理后订单状态变更为「已退款」。</div></div>`,
+    `<button class="btn btn-ghost" onclick="closeDrawer()">取消</button><button class="btn btn-seal" onclick="confirmRefund('${no}')">确认退款</button>`);
+}
+function openMicroForm(id){
+  const m=id?MICRO_ROWS.find(x=>x.id===id):null;
+  const dynasties=['唐','五代','北宋','南宋','元','明','清','民国','当代'];
+  const orgs=['故宫博物院','上海博物馆','湖南省博物馆','大英博物馆','河南博物院','陕西历史博物馆'];
+  const feats=m?m.features:[{name:'',imgs:['']}];
+  openDrawer(m?'编辑微痕条目':'新增微痕条目',`
+    <div class="field"><label>采集机构<span class="req">*</span></label><select id="mf-org">${orgs.map(o=>`<option ${m&&m.org===o?'selected':''}>${o}</option>`).join('')}</select></div>
+    <div class="field"><label>藏品ID<span class="req">*</span></label><input id="mf-obj" value="${esc(m?m.objId:'')}" placeholder="如 g1 / g18"><div class="hint">对应前台藏品库全局 ID，用于关联微痕特征</div></div>
+    <div class="field"><label>朝代</label><select id="mf-dynasty">${dynasties.map(d=>`<option ${m&&m.dynasty===d?'selected':''}>${d}</option>`).join('')}</select></div>
+    <div class="field"><label>窑口</label><input id="mf-kiln" value="${esc(m?m.kiln:'')}" placeholder="如 南宋官窑 / 龙泉窑 / 汝窑"></div>
+    <div class="field"><label>特征名称 + 图片地址<span class="req">*</span></label>
+      <div id="mf-feats">${feats.map(f=>`<div class="feat-row"><input class="mf-name" placeholder="特征名称，如 紫口铁足" value="${esc(f.name)}"><div class="mf-imgs">${(f.imgs&&f.imgs.length?f.imgs:['']).map(img=>`<input class="mf-img" placeholder="图片地址 https://…" value="${esc(img)}">`).join('')}</div><button class="btn btn-ghost btn-sm" type="button" onclick="addImgToFeat(this)">+图片</button><button class="btn btn-ghost btn-sm" type="button" onclick="this.closest('.feat-row').remove()">×</button></div>`).join('')}</div>
+      <button class="btn btn-ghost btn-sm" type="button" onclick="addFeatRow()" style="margin-top:8px">+ 添加特征</button>
+      <div class="hint" style="margin-top:6px">每个特征可添加一张或多张图片，图片严格归属于该特征</div>
+    </div>`,
+    `<button class="btn btn-ghost" onclick="closeDrawer()">取消</button><button class="btn btn-primary" onclick="saveMicro('${m?m.id:''}')">保存</button>`,
+    m?'编辑微痕特征条目':'新增一条微痕特征条目');
+}
+function addFeatRow(){const c=document.getElementById('mf-feats');if(!c)return;const d=document.createElement('div');d.className='feat-row';d.innerHTML=`<input class="mf-name" placeholder="特征名称，如 紫口铁足"><div class="mf-imgs"><input class="mf-img" placeholder="图片地址 https://…"></div><button class="btn btn-ghost btn-sm" type="button" onclick="addImgToFeat(this)">+图片</button><button class="btn btn-ghost btn-sm" type="button" onclick="this.closest('.feat-row').remove()">×</button>`;c.appendChild(d);}
+function addImgToFeat(btn){const row=btn.closest('.feat-row');if(!row)return;const box=row.querySelector('.mf-imgs');if(!box)return;const i=document.createElement('input');i.className='mf-img';i.placeholder='图片地址 https://…';box.appendChild(i);}
+function saveMicro(id){
+  const org=$('#mf-org').value, obj=$('#mf-obj').value.trim();
+  const dynasty=$('#mf-dynasty').value, kiln=$('#mf-kiln').value.trim();
+  const feats=[...document.querySelectorAll('#mf-feats .feat-row')].map(r=>({name:r.querySelector('.mf-name').value.trim(), imgs:[...r.querySelectorAll('.mf-img')].map(x=>x.value.trim()).filter(Boolean)})).filter(f=>f.name);
+  if(!obj){toast('请填写藏品ID');return;}
+  if(!feats.length){toast('请至少填写一条特征名称');return;}
+  const old=id?MICRO_ROWS.find(x=>x.id===id):null;
+  const rec={id:id||('m'+Date.now().toString(36)), org:org, objId:obj, dynasty:dynasty, kiln:kiln, shape:old?old.shape:'plate', features:feats};
+  if(old){const i=MICRO_ROWS.findIndex(x=>x.id===id);if(i>=0)MICRO_ROWS[i]=rec;}
+  else{MICRO_ROWS.unshift(rec);}
+  closeDrawer();
+  renderMicrotrace();
+  toast(id?'微痕条目已保存':'微痕条目已新增');
+}
+function delMicro(id){
+  const i=MICRO_ROWS.findIndex(x=>x.id===id);if(i<0)return;
+  MICRO_ROWS.splice(i,1);
+  renderMicrotrace();
+  toast('已删除微痕条目：'+id);
+}
+function importMicro(){
+  const demo=[
+    {id:'m7', org:'故宫博物院', objId:'g4', shape:'bowl', dynasty:'南宋', kiln:'哥窑', features:[{name:'金丝铁线',imgs:['https://cdn.yuanzang.cc/micro/g4-jsxt.jpg']},{name:'大开片',imgs:['https://cdn.yuanzang.cc/micro/g4-dkp.jpg']}]},
+    {id:'m8', org:'上海博物馆', objId:'g9', shape:'vase', dynasty:'南宋', kiln:'南宋官窑', features:[{name:'薄胎厚釉',imgs:['https://cdn.yuanzang.cc/micro/g9-bthy.jpg']}]}
+  ];
+  MICRO_ROWS.unshift(...demo);
+  $('#mt-file').value='';
+  renderMicrotrace();
+  toast('已导入 '+demo.length+' 条微痕记录（演示）');
+}
+
+
+/* ============ 图书馆管理：书目 / 分类 ============ */
+let bookFormat='all';
+function renderBooks(){
+  const k=$('#bk-search').value.trim().toLowerCase();
+  const cat=$('#bk-cat').value;
+  const rows=books.filter(b=>(bookFormat==='all'||b.format===bookFormat)&&(!cat||b.cat===cat)&&(!k||b.name.toLowerCase().includes(k)||b.author.toLowerCase().includes(k)));
+  $('#bk-count').textContent=rows.length+' 本';
+  $('#bk-body').innerHTML=rows.map((b,i)=>`
+    <tr>
+      <td class="mono" style="text-align:right">${String(i+1).padStart(2,'0')}</td>
+      <td><div class="thum-row"><span class="thum ph ${palettes[i%palettes.length]}"></span><div><div>${esc(b.name)}</div><div class="sub mono">${b.id}</div></div></div></td>
+      <td>${esc(b.author)}</td>
+      <td>${esc(b.era)}</td>
+      <td>${b.format==='txt'?'<span class="badge fmt-txt">TXT</span>':'<span class="badge fmt-pdf">PDF</span>'}</td>
+      <td>${esc(b.cat)}</td>
+      <td class="mono" style="font-size:12px">${b.time}</td>
+      <td>${b.status==='on'?'<span class="badge badge-on">上架</span>':'<span class="badge badge-off">下架</span>'}</td>
+      <td><div class="row-actions" style="justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="editBook('${b.id}')">编辑</button>
+        ${b.status==='on'?`<button class="btn btn-danger btn-sm" onclick="toggleBookShelf('${b.id}')">下架</button>`:`<button class="btn btn-primary btn-sm" onclick="toggleBookShelf('${b.id}')">上架</button>`}
+      </div></td>
+    </tr>`).join('') || `<tr><td colspan="9" style="text-align:center;color:var(--color-text-tertiary);padding:32px">无匹配书目</td></tr>`;
+}
+function setBookFormat(f){
+  bookFormat=f;
+  $all('#bk-fmt .chip').forEach(c=>c.classList.toggle('active',c.dataset.fmt===f));
+  renderBooks();
+}
+
+function editBook(id){
+  const b=id?books.find(x=>x.id===id):{name:'',author:'',era:'',desc:'',cat:'陶瓷研究',format:'txt',status:'on'};
+  openDrawer(id?'编辑书目':'新增书目',`
+    <div class="field"><label>书名<span class="req">*</span></label><input id="bk-name" value="${esc(b.name||'')}" placeholder="如《陶说》"></div>
+    <div class="field-row"><div class="field"><label>作者</label><input id="bk-author" value="${esc(b.author||'')}" placeholder="如 朱琰"></div><div class="field"><label>朝代 / 年代</label><input id="bk-era" value="${esc(b.era||'')}" placeholder="如 清·乾隆"></div></div>
+    <div class="field"><label>简介</label><textarea id="bk-desc">${esc(b.desc||'')}</textarea></div>
+    <div class="field"><label>分类<span class="req">*</span></label><select id="bk-cat-f">${['陶瓷研究','书画著录','考古报告','工艺典籍','其他'].map(c=>`<option ${b.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="field"><label>格式<span class="req">*</span></label>
+      <div class="seg">
+        <span class="seg-opt ${b.format==='txt'?'active':''}" onclick="pickBookFormat('txt',this)">TXT</span>
+        <span class="seg-opt ${b.format==='pdf'?'active':''}" onclick="pickBookFormat('pdf',this)">PDF</span>
+      </div>
+    </div>
+    <div class="field"><label>书目文件</label>
+      <div class="upload-zone" onclick="toast('原型演示：此处为文件上传占位')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M5 20h14"/></svg>
+        <div class="uz-main">上传 TXT / PDF 文件</div>
+        <div style="font-size:11px;margin-top:2px;color:var(--color-text-tertiary)">支持 .txt / .pdf，单个文件不超过 50MB</div>
+      </div>
+    </div>
+    <div class="field"><label>标签</label>
+      <div class="tag-input">
+        ${(b.tags||['陶瓷史','工艺文献']).map(t=>`<span class="tag-chip">${esc(t)}<span class="rm" onclick="this.parentNode.remove()">×</span></span>`).join('')}
+        <input type="text" placeholder="回车添加标签" onkeydown="addTag(event)">
+      </div>
+      <div class="hint">回车添加标签，点击 × 移除</div>
+    </div>
+    <div class="field"><label>封面</label>
+      <div class="cover-zone">
+        <div class="cv" onclick="toast('原型演示：此处为封面上传占位')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></div>
+        <div><div style="font-size:13px;color:var(--color-text-secondary)">点击上传封面</div><div class="hint" style="margin-top:2px">建议 3:4 竖版，PNG / JPG</div></div>
+      </div>
+    </div>`,
+    `<button class="btn btn-ghost" onclick="closeDrawer()">取消</button><button class="btn btn-primary" onclick="closeDrawer();toast('书目已保存')">保存</button>`,
+    id?'编辑已有书目信息':'为馆藏文献新增一条书目');
+}
+function pickBookFormat(f,el){$all('.seg-opt').forEach(x=>x.classList.remove('active'));el.classList.add('active');}
+function addTag(ev){
+  if(ev.key!=='Enter')return;
+  ev.preventDefault();
+  const inp=ev.target,v=inp.value.trim();
+  if(!v){toast('请输入标签内容');return;}
+  inp.insertAdjacentHTML('beforebegin',`<span class="tag-chip">${esc(v)}<span class="rm" onclick="this.parentNode.remove()">×</span></span>`);
+  inp.value='';toast('标签已添加');
+}
+function toggleBookShelf(id){
+  const b=books.find(x=>x.id===id);if(!b)return;
+  b.status=b.status==='on'?'off':'on';
+  renderBooks();
+  toast(b.status==='off'?'已下架：《'+b.name+'》':'已上架：《'+b.name+'》');
+}
+function importBooks(){
+  const demo=[
+    {id:'BK-0011', name:'陶說', author:'朱琰', era:'清·乾隆', format:'txt', cat:'陶瓷研究', time:'2026-08-20 09:00', status:'on', desc:'清朱琰撰陶瓷专书，分说今、说古、说明等六卷，论窑器源流与仿古辨伪。'},
+    {id:'BK-0012', name:'江西陶瓷沿革', author:'佚名', era:'民国', format:'pdf', cat:'陶瓷研究', time:'2026-08-20 09:01', status:'on', desc:'民国时期江西陶瓷产业沿革与窑业概况文献。'}
+  ];
+  books.unshift(...demo);
+  $('#bk-file').value='';
+  renderBooks();
+  toast('已导入 '+demo.length+' 本图书（演示）');
+}
+
+
+
+
+/* ============ 验证码 ============ */
+let captchaCode='';
+
+
+/* ============ 初始化 ============ */
+/* 页面加载即渲染各模块数据（避免渲染被关在登录回调里导致未登录态表格空白） */
+renderArchives();renderUsers();renderMicrotrace();
+renderBooks();renderMicroDbs();
+showView('archives');
+</script>
+</body>
+</html>
