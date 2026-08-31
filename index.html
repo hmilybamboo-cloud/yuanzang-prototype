@@ -160,6 +160,31 @@ img{display:block;max-width:100%;}
 .fav-btn svg{width:12px;height:12px;flex:0 0 12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;}
 .fav-btn-active{background:var(--color-primary-soft);border-color:var(--color-action);color:var(--color-action);}
 .fav-btn-active svg{fill:currentColor;stroke:var(--color-action);}
+/* 档案列表卡片：默认 3 行截断，点击卡片就地展开至全部 */
+.arc-card{background:var(--color-surface);border:var(--border-width) solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-md) var(--space-md) var(--space-sm);margin-bottom:var(--space-md);cursor:pointer;transition:border-color .15s;}
+.arc-card:hover{border-color:var(--color-border-strong);}
+/* 档案来源 + 年号纪年月日 一行：左源右年 */
+.arc-source-row{display:flex;justify-content:space-between;align-items:center;gap:var(--space-sm);font-size:12px;color:var(--color-text-secondary);margin-bottom:var(--space-xs);}
+.arc-source{display:inline-flex;align-items:center;gap:5px;min-width:0;}
+.arc-src-icon{display:inline-flex;width:14px;height:14px;flex:0 0 14px;color:var(--color-text-tertiary);}
+.arc-src-icon svg{width:14px;height:14px;}
+.arc-src-name{font-weight:500;color:var(--color-text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.arc-reign{font-size:11px;color:var(--color-text-tertiary);white-space:nowrap;flex:0 0 auto;}
+/* 标题行：标题占主，收藏按钮贴右上 */
+.arc-title-row{display:flex;align-items:flex-start;gap:var(--space-sm);margin-bottom:var(--space-xs);}
+.arc-title{font-size:17px;font-family:var(--font-heading);font-weight:600;color:var(--color-text-primary);line-height:1.45;flex:1;min-width:0;margin:0;}
+.arc-fav{flex:0 0 auto;align-self:flex-start;margin-top:2px;}
+/* 详情：默认 3 行截断，展开后全文 */
+.arc-read{margin-top:2px;font-size:13px;line-height:1.75;color:var(--color-text-secondary);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;}
+.arc-card.expanded .arc-read{-webkit-line-clamp:unset;display:block;}
+/* 展开 / 收起 */
+.arc-foot{margin-top:6px;}
+.arc-toggle{font-size:12px;color:var(--color-primary);cursor:pointer;font-weight:500;}
+/* 底部元数据行：仅展示有内容的前 3 项 */
+.arc-meta-row{display:flex;flex-wrap:wrap;gap:6px var(--space-lg);margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px dashed var(--color-border);font-size:11px;line-height:1.5;}
+.arc-meta-item{display:inline-flex;align-items:baseline;gap:4px;max-width:100%;}
+.arc-meta-key{color:var(--color-text-tertiary);flex:0 0 auto;}
+.arc-meta-val{color:var(--color-text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;}
 
 /* ============================================================
    标签 / 徽章
@@ -906,27 +931,7 @@ img{display:block;max-width:100%;}
       <div class="pad-x"><div id="archiveList"></div></div>
     </section>
 
-    <!-- ===== 10. 宫廷档案-详情页 ===== -->
-    <section class="view" id="view-archive-detail">
-      <div class="pad">
-        <div class="between" style="align-items:flex-start;gap:var(--space-md)">
-          <h2 class="serif" id="adTitle" style="font-size:19px"></h2>
-          <button class="fav-btn" id="favArchiveBtn" onclick="toggleFav('archive', curArchive.id, {name:curArchive.title, sub:curArchive.dynasty+' · '+curArchive.org, shape:'document'})"><svg viewBox="0 0 24 24"><path d="M12 21s-8-4.9-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.1-8 11-8 11z"/></svg><span>收藏</span></button>
-        </div>
-        <div class="row" style="margin-top:var(--space-sm)">
-          <span class="tag tag-dynasty" id="adDynasty"></span>
-          <span class="tag tag-kiln" id="adOrg"></span>
-          <span class="tag tag-cat" id="adCat"></span>
-        </div>
-        <div class="card" style="margin-top:var(--space-lg);padding:var(--space-md);background:var(--color-surface-sunken)">
-          <div class="label-xs">文献 / 影像预览</div>
-          <div id="adArt" style="margin-top:var(--space-sm)"></div>
-        </div>
-        <h3 class="serif" style="font-size:15px;margin-top:var(--space-xl)">释读</h3>
-        <p class="muted" id="adRead" style="font-size:13px;line-height:1.7;margin-top:var(--space-sm)"></p>
-        <div class="meta-list" id="adMeta" style="margin-top:var(--space-lg)"></div>
-      </div>
-    </section>
+    <!-- ===== 10. 宫廷档案-详情页（已移除：改用列表卡片就地展开） ===== -->
 
     <!-- ===== 11. 微痕索证-年代窑口导航页 ===== -->
     <section class="view" id="view-micro-nav">
@@ -1254,6 +1259,7 @@ img{display:block;max-width:100%;}
         <button class="chip active" onclick="favFilter(this,'all')">全部</button>
         <button class="chip" onclick="favFilter(this,'treasure')">藏品</button>
         <button class="chip" onclick="favFilter(this,'archive')">档案</button>
+        <button class="chip" onclick="favFilter(this,'library')">图书</button>
       </div>
       <div class="pad-x"><div id="favList"></div></div>
     </section>
@@ -1774,16 +1780,56 @@ const GLOBAL = [
    material:'瓷', technique:'多次施釉，开片釉烧成', features:['米黄釉','百圾碎','开片']}
 ];
 const ARCHIVE = [
-  {id:'a1', title:'清宫旧藏瓷器档案·乾隆朝', dynasty:'清', org:'内务府造办处', cat:'档案', shape:'document', read:'乾隆朝内务府造办处逐件登记宫廷旧藏瓷器，含名称、尺寸、釉色、陈设地点与收贮库房，为今日故宫藏瓷的重要著录依据。', meta:[['编号','故瓷·乾隆·〇三七'],['载体','黄绫写本'],['现存','故宫博物院']],
-   date:'清乾隆 1736-1795', format:'黄绫写本', size:'每册纵 28cm 横 18cm', condition:'保存完好，略有虫蛀', count:'共 3 册', keywords:'乾隆、瓷器、陈设、内务府'},
-  {id:'a2', title:'景德镇御窑厂进单·雍正十三年', dynasty:'清', org:'御窑厂', cat:'进单', shape:'document', read:'雍正十三年景德镇御窑厂呈进瓷器清册，列明品类、件数与烧造费用，反映御窑岁供制度与督陶官考核。', meta:[['编号','御窑·雍正·进单'],['载体','进单写本'],['现存','第一历史档案馆']],
-   date:'清雍正十三年 1735', format:'进单写本', size:'纵 26cm 横 17cm', condition:'纸本微黄，字迹清晰', count:'共 2 册', keywords:'雍正、御窑、进单、烧造'},
-  {id:'a3', title:'《宣和博古图》摹本·宋', dynasty:'宋', org:'宋廷', cat:'图谱', shape:'document', read:'宋代官方金石图谱，著录商周青铜器形制与铭文，开后世博古图录之先河，亦影响瓷器仿古造型。', meta:[['编号','博古·宋·摹'],['载体','绢本摹绘'],['现存','上海博物馆']],
-   date:'宋宣和年间 1119-1125', format:'绢本摹绘', size:'纵 32cm 横 22cm', condition:'绢面略有磨损，色彩保存尚可', count:'存 6 册', keywords:'博古、金石、摹本、商周'},
-  {id:'a4', title:'元大都出土器物著录·至正年间', dynasty:'元', org:'大都留守司', cat:'著录', shape:'document', read:'元大都（今北京）遗址出土瓷器与窖藏著录，记录龙泉、景德镇与外销瓷流通，补证元代都城用瓷面貌。', meta:[['编号','大都·至正·著'],['载体','著录写本'],['现存','首都博物馆']],
-   date:'元至正年间 1341-1368', format:'著录写本', size:'纵 24cm 横 15cm', condition:'纸本残损，部分页面缺佚', count:'存 1 册', keywords:'元大都、出土、龙泉、外销瓷'},
-  {id:'a5', title:'明万历御膳房用瓷簿', dynasty:'明', org:'司礼监', cat:'簿册', shape:'document', read:'万历朝司礼监御膳房日用瓷器簿册，记碗、碟、壶等日常用瓷数量与岁供，可见宫廷膳食用瓷规制。', meta:[['编号','司礼·万历·簿'],['载体','簿册写本'],['现存','故宫博物院']],
-   date:'明万历 1573-1620', format:'簿册写本', size:'纵 25cm 横 16cm', condition:'保存较好，字迹清晰', count:'共 5 册', keywords:'万历、御膳房、用瓷、岁供'}
+  {id:'a1', title:'清宫旧藏瓷器档案',
+   source:'造办处活计档', reignDate:'乾隆四十六年四月', reignYear:'乾隆', solar:'1781 年 5 月',
+   gDept:'内务府', mDept:'造办处', ref:'故瓷·乾隆·〇三七',
+   pages:'共 56 页', count:'共 3 册',
+   database:'故宫博物院清宫旧藏档案', level1:'宫廷典藏', level2:'陈设档',
+   dynasty:'清', org:'内务府造办处', cat:'档案', shape:'document',
+   read:'乾隆朝内务府造办处逐件登记宫廷旧藏瓷器，含名称、尺寸、釉色、陈设地点与收贮库房，为今日故宫藏瓷的重要著录依据。',
+   meta:[['编号','故瓷·乾隆·〇三七'],['载体','黄绫写本'],['现存','故宫博物院']],
+   date:'清乾隆 1736-1795', format:'黄绫写本', size:'每册纵 28cm 横 18cm',
+   condition:'保存完好，略有虫蛀', keywords:'乾隆、瓷器、陈设、内务府'},
+  {id:'a2', title:'景德镇御窑厂进单',
+   source:'御窑厂进单', reignDate:'雍正十三年八月', reignYear:'雍正', solar:'1735 年 9 月',
+   gDept:'督陶官年希尧', mDept:'景德镇御窑厂', ref:'御窑·雍正·进单',
+   pages:'共 24 页', count:'共 2 册',
+   database:'第一历史档案馆藏清代文书', level1:'官府文书', level2:'进单',
+   dynasty:'清', org:'御窑厂', cat:'进单', shape:'document',
+   read:'雍正十三年景德镇御窑厂呈进瓷器清册，列明品类、件数与烧造费用，反映御窑岁供制度与督陶官考核。',
+   meta:[['编号','御窑·雍正·进单'],['载体','进单写本'],['现存','第一历史档案馆']],
+   date:'清雍正十三年 1735', format:'进单写本', size:'纵 26cm 横 17cm',
+   condition:'纸本微黄，字迹清晰', keywords:'雍正、御窑、进单、烧造'},
+  {id:'a3', title:'《宣和博古图》摹本·宋',
+   source:'宣和博古图', reignDate:'宣和三年五月', reignYear:'宣和', solar:'1121 年 6 月',
+   gDept:'礼部', mDept:'宣和殿', ref:'博古·宋·摹',
+   pages:'共 320 页', count:'存 6 册',
+   database:'上海博物馆古籍部', level1:'金石图谱', level2:'博古图',
+   dynasty:'宋', org:'宋廷', cat:'图谱', shape:'document',
+   read:'宋代官方金石图谱，著录商周青铜器形制与铭文，开后世博古图录之先河，亦影响瓷器仿古造型。',
+   meta:[['编号','博古·宋·摹'],['载体','绢本摹绘'],['现存','上海博物馆']],
+   date:'宋宣和年间 1119-1125', format:'绢本摹绘', size:'纵 32cm 横 22cm',
+   condition:'绢面略有磨损，色彩保存尚可', keywords:'博古、金石、摹本、商周'},
+  {id:'a4', title:'元大都出土器物著录',
+   source:'大都著录', reignDate:'至正二十一年七月', reignYear:'至正', solar:'1361 年 8 月',
+   gDept:'工部', mDept:'大都留守司', ref:'大都·至正·著',
+   pages:'共 86 页', count:'存 1 册',
+   database:'首都博物馆藏元代文献', level1:'出土文献', level2:'遗址著录',
+   dynasty:'元', org:'大都留守司', cat:'著录', shape:'document',
+   read:'元大都（今北京）遗址出土瓷器与窖藏著录，记录龙泉、景德镇与外销瓷流通，补证元代都城用瓷面貌。',
+   meta:[['编号','大都·至正·著'],['载体','著录写本'],['现存','首都博物馆']],
+   date:'元至正年间 1341-1368', format:'著录写本', size:'纵 24cm 横 15cm',
+   condition:'纸本残损，部分页面缺佚', keywords:'元大都、出土、龙泉、外销瓷'},
+  {id:'a5', title:'明御膳房用瓷簿',
+   source:'司礼监簿册', reignDate:'万历二十三年三月', reignYear:'万历', solar:'1595 年 4 月',
+   gDept:'司礼监', mDept:'御膳房', ref:'司礼·万历·簿',
+   pages:'共 5 册 130 页', count:'共 5 册',
+   database:'故宫博物院明代宫廷档案', level1:'内廷用度', level2:'用度簿册',
+   dynasty:'明', org:'司礼监', cat:'簿册', shape:'document',
+   read:'万历朝司礼监御膳房日用瓷器簿册，记碗、碟、壶等日常用瓷数量与岁供，可见宫廷膳食用瓷规制。',
+   meta:[['编号','司礼·万历·簿'],['载体','簿册写本'],['现存','故宫博物院']],
+   date:'明万历 1573-1620', format:'簿册写本', size:'纵 25cm 横 16cm',
+   condition:'保存较好，字迹清晰', keywords:'万历、御膳房、用瓷、岁供'}
 ];
 /* 元藏图书馆：书目编目（TXT 带正文节选，PDF 为文档占位预览） */
 const LIBRARY = [
@@ -1851,7 +1897,8 @@ const KILN_FEATURES = {
 const FAVORITES = [
   {type:'treasure', id:'g1', name:'南宋官窑粉青釉葵口盘', sub:'南宋 · 官窑 · 故宫博物院', shape:'plate'},
   {type:'treasure', id:'g2', name:'汝窑天青釉洗', sub:'北宋 · 汝窑 · 大英博物馆', shape:'washer'},
-  {type:'archive', id:'a1', name:'清宫旧藏瓷器档案·乾隆朝', sub:'清 · 内务府造办处', shape:'document'}
+  {type:'archive', id:'a1', name:'清宫旧藏瓷器档案', sub:'清 · 内务府造办处', shape:'document'},
+  {type:'library', id:'l1', name:'《陶说》', sub:'清 · 工艺典籍', shape:'document'}
 ];
 const HISTORY = [
   {q:'南宋 官窑 粉青釉', t:'2026-08-19 10:24', n:3},
@@ -1911,12 +1958,54 @@ function switchSearchTab(tab){
   if(gw) gw.style.display = tab==='global' ? '' : 'none';
   if(aw) aw.style.display = tab==='archive' ? '' : 'none';
 }
+/* 档案小图标：古卷/档册 */
+function archiveIconSVG(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M16 4v3h3"/><path d="M8 11h8M8 15h6"/></svg>`;
+}
+/* 档案卡片候选字段：按内容筛选出有值的前 3 项展示在卡片底部 */
+const ARCHIVE_META_FIELDS = [
+  {k:'gDept',   label:'官司'},
+  {k:'mDept',   label:'乘作单位'},
+  {k:'ref',     label:'出处'},
+  {k:'reignYear',label:'年号'},
+  {k:'solar',   label:'公历日期'},
+  {k:'count',   label:'册数'},
+  {k:'pages',   label:'页数'},
+  {k:'database',label:'资料库'},
+  {k:'level1',  label:'一级分类'},
+  {k:'level2',  label:'二级分类'}
+];
 function renderArchiveList(){
-  document.getElementById('archiveList').innerHTML = ARCHIVE.map(it=>`
-    <div class="result-item" style="margin-bottom:var(--space-md)" onclick="openArchive('${it.id}')">
-      <div class="ri-thumb">${vesselSVG(it.shape,it.label)}</div>
-      <div class="grow"><div class="ri-title">${it.title}</div><div class="micro-text">${it.dynasty} · ${it.org} · ${it.cat}</div></div>
-    </div>`).join('');
+  document.getElementById('archiveList').innerHTML = ARCHIVE.map(it=>{
+    const meta = ARCHIVE_META_FIELDS
+      .map(f=>({label:f.label, val:it[f.k]}))
+      .filter(x=>x.val)
+      .slice(0,3);
+    return `
+    <div class="arc-card" data-aid="${it.id}" onclick="toggleArchiveExpand('${it.id}')">
+      <div class="arc-source-row">
+        <span class="arc-source"><span class="arc-src-icon">${archiveIconSVG()}</span><span class="arc-src-name">${it.source||it.org||'档案'}</span></span>
+        <span class="arc-reign">${it.reignDate||it.date||''}</span>
+      </div>
+      <div class="arc-title-row">
+        <h3 class="arc-title">${it.title}</h3>
+        <button class="fav-btn arc-fav" onclick="event.stopPropagation();toggleFav('archive','${it.id}',{name:'${esc(it.title)}', sub:'${it.dynasty} · ${it.org}', shape:'document'})" aria-label="收藏">
+          <svg viewBox="0 0 24 24"><path d="M12 21s-8-4.9-8-11a4.5 4.5 0 0 1 8-3 4.5 4.5 0 0 1 8 3c0 6.1-8 11-8 11z"/></svg>
+          <span>收藏</span>
+        </button>
+      </div>
+      <div class="arc-read">${it.read}</div>
+      <div class="arc-foot"><span class="arc-toggle">展开原文 ▾</span></div>
+      ${meta.length?`<div class="arc-meta-row">${meta.map(m=>`<span class="arc-meta-item"><span class="arc-meta-key">${m.label}</span><span class="arc-meta-val" title="${m.val}">${m.val}</span></span>`).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function toggleArchiveExpand(id){
+  const t = document.querySelector(`.arc-card[data-aid="${id}"]`);
+  if(!t) return;
+  const ex = t.classList.toggle('expanded');
+  const btn = t.querySelector('.arc-toggle');
+  if(btn) btn.textContent = ex ? '收起 ▴' : '展开全文 ▾';
 }
 /* 微痕详情页：动态渲染（藏品卡片 → 特征图 → 单个藏品微痕详情） */
 let curMicroArtifactId='g1';
@@ -2309,20 +2398,16 @@ function switchView(i){
 function openArchive(id){
   curArchive = ARCHIVE.find(x=>x.id===id);
   if(!curArchive) return;
-  document.getElementById('adTitle').textContent = curArchive.title;
-  document.getElementById('adDynasty').textContent = curArchive.dynasty;
-  document.getElementById('adOrg').textContent = curArchive.org;
-  document.getElementById('adCat').textContent = curArchive.cat;
-  document.getElementById('adArt').innerHTML = vesselSVG(curArchive.shape, curArchive.cat);
-  document.getElementById('adRead').textContent = curArchive.read;
-  const extraMeta = [
-    ['年代',curArchive.date], ['形制',curArchive.format], ['尺寸',curArchive.size],
-    ['保管状态',curArchive.condition], ['件数',curArchive.count], ['关键词',curArchive.keywords]
-  ];
-  document.getElementById('adMeta').innerHTML = curArchive.meta.map(m=>`<div class="ml-row"><span class="ml-k">${m[0]}</span><span class="ml-v">${m[1]}</span></div>`).join('')
-    + extraMeta.map(m=>`<div class="ml-row"><span class="ml-k">${m[0]}</span><span class="ml-v">${m[1]}</span></div>`).join('');
-  syncFavButtons();
-  navigate('archive-detail');
+  navigate('archive-list');
+  setTimeout(()=>{
+    const t = document.querySelector(`.arc-card[data-aid="${id}"]`);
+    if(t){
+      t.classList.add('expanded');
+      const btn = t.querySelector('.arc-toggle');
+      if(btn) btn.textContent='收起 ▴';
+      t.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+  }, 40);
 }
 let curKiln='', curFeature='全部';
 function renderMicroKiln(kiln){
@@ -2381,7 +2466,6 @@ const META = {
   'global-detail':{nav:true,tab:null,back:true,title:'藏品详情'},
   'archive-filter':{nav:true,tab:null,back:true,title:'宫廷档案'},
   'archive-list':{nav:true,tab:'archive',back:false,title:'宫廷档案'},
-  'archive-detail':{nav:true,tab:null,back:true,title:'档案详情'},
   'micro-nav':{nav:true,tab:'micro',back:false,title:'微痕索证'},
   'micro-kiln':{nav:true,tab:null,back:true,title:'南宋官窑'},
   'micro-detail':{nav:true,tab:null,back:true,title:'微痕详情'},
