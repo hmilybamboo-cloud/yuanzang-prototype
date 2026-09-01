@@ -1372,11 +1372,6 @@ img{display:block;max-width:100%;}
         <button class="chip" onclick="libFilter(this,'format','TXT')">TXT</button>
         <button class="chip" onclick="libFilter(this,'format','PDF')">PDF</button>
       </div>
-      <div class="filter-bar" style="padding-top:0">
-        <button class="chip active" onclick="libSort(this,'rec')">推荐</button>
-        <button class="chip" onclick="libSort(this,'dynasty')">年代</button>
-        <button class="chip" onclick="libSort(this,'pop')">人气</button>
-      </div>
       <div class="pad-x"><div id="libraryList"></div></div>
     </section>
 
@@ -1393,9 +1388,9 @@ img{display:block;max-width:100%;}
           </div>
         </div>
         <h3 class="serif" style="font-size:15px;margin-top:var(--space-xl)">简介</h3>
-        <p class="muted" id="lbDesc" style="font-size:13px;line-height:1.7;margin-top:var(--space-sm)"></p>
-        <h3 class="serif" style="font-size:15px;margin-top:var(--space-xl)">目录</h3>
-        <div id="lbChapters" style="margin-top:var(--space-sm)"></div>
+        <div class="card" style="margin-top:var(--space-sm);padding:var(--space-lg)">
+          <p class="muted" id="lbDesc" style="font-size:13px;line-height:1.8"></p>
+        </div>
         <button class="btn btn-primary btn-block" style="margin-top:var(--space-xl)" id="lbReadBtn" onclick="openReaderCurrent()">开始阅读</button>
         <button class="btn btn-secondary btn-block" style="margin-top:var(--space-md)" onclick="favBook()">收藏此书</button>
       </div>
@@ -2155,11 +2150,6 @@ function openLibraryBook(id){
   document.getElementById('lbPub').textContent = '出版社：'+(curBook.pub||PUBLISHERS[curBook.id]||'—');
   document.getElementById('lbTags').innerHTML = `<span class="tag tag-cat">${curBook.cat}</span><span class="tag ${curBook.format==='TXT'?'tag-txt':'tag-pdf'}">${curBook.format}</span>`;
   document.getElementById('lbDesc').textContent = curBook.desc;
-  document.getElementById('lbChapters').innerHTML = curBook.chapters.map((ch,i)=>`
-    <button class="chapter-item" onclick="openReader('${curBook.id}')">
-      <span class="ch-name">${ch[0]}</span>
-      <span class="ch-go">${ch[1]}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg></span>
-    </button>`).join('');
   navigate('library-book');
 }
 function openReaderCurrent(){ if(curBook) openReader(curBook.id); }
