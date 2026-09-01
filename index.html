@@ -1043,15 +1043,13 @@ img{display:block;max-width:100%;}
       <div class="pad">
         <h2 class="serif" style="font-size:20px">开通会员</h2>
         <div class="seg" id="planSeg" style="margin-top:var(--space-lg);flex-wrap:wrap">
-          <button data-plan="month" onclick="selectPlan('month',this)">月会员 ¥45</button>
-          <button data-plan="year" onclick="selectPlan('year',this)">年会员 ¥360</button>
-          <button class="active" data-plan="contmonth" onclick="selectPlan('contmonth',this)">连续月会员 ¥30</button>
-          <button data-plan="contyear" onclick="selectPlan('contyear',this)">连续年会员 ¥298</button>
+          <button class="active" data-plan="month" onclick="selectPlan('month',this)">月会员 ¥30</button>
+          <button data-plan="year" onclick="selectPlan('year',this)">年会员 ¥298</button>
         </div>
 
         <div id="planCard" class="card" style="margin-top:var(--space-lg);padding:var(--space-lg)">
           <div class="between">
-            <div><div class="serif" style="font-size:16px">连续月会员</div><div class="micro-text">自动续费</div></div>
+            <div><div class="serif" style="font-size:16px">月会员</div><div class="micro-text">手动续费</div></div>
             <div class="price-row"><span class="price-now"><span class="cny">¥</span>30</span></div>
           </div>
           <div class="divider"></div>
@@ -1064,7 +1062,7 @@ img{display:block;max-width:100%;}
 
         <div class="disclaimer" style="margin-top:var(--space-lg)">
           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
-          连续月 / 年会员可随时取消自动续费，取消后当期仍可用；普通会员到期不自动续费。
+          月会员 / 年会员到期不自动续费，可在「我的 → 会员管理」中随时续费。
         </div>
 
         <button class="btn btn-pay btn-block" style="margin-top:var(--space-2xl)" onclick="goPay()">确认开通 · 微信支付</button>
@@ -1174,7 +1172,7 @@ img{display:block;max-width:100%;}
             <span class="row"><span style="color:var(--color-primary);width:22px;height:22px;flex:0 0 22px;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h12v18l-6-4-6 4z"/></svg></span><span style="font-size:14px">我的书签</span></span>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-text-tertiary)" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg>
           </button>
-          <button class="row between" style="width:100%;padding:var(--space-lg);border-bottom:1px solid var(--color-border);text-align:left" onclick="requireLoginThen('my-member')">
+          <button class="row between" style="width:100%;padding:var(--space-lg);border-bottom:1px solid var(--color-border);text-align:left" onclick="openMyMember()">
             <span class="row"><span style="color:var(--color-primary);width:22px;height:22px;flex:0 0 22px;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.8 6.8 19l1-5.8L3.6 9.1l5.8-.8z"/></svg></span>            <span style="font-size:14px">我的会员</span></span>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--color-text-tertiary)" stroke-width="2"><polyline points="9 6 15 12 9 18"></polyline></svg>
           </button>
@@ -1296,15 +1294,10 @@ img{display:block;max-width:100%;}
               <div class="ml-row"><span class="ml-k">会员类型</span><span class="ml-v" id="mmType"></span></div>
               <div class="ml-row"><span class="ml-k">开通时间</span><span class="ml-v">2026-08-19</span></div>
               <div class="ml-row"><span class="ml-k">到期时间</span><span class="ml-v" id="mmExpire"></span></div>
-              <div class="ml-row"><span class="ml-k">自动续费</span><span class="ml-v" id="mmAutoRenew" style="color:var(--color-success)">开启中</span></div>
             </div>
           </div>
           <div id="mmNormalBtns">
             <button class="btn btn-secondary btn-block" style="margin-top:var(--space-lg)" onclick="renewMember()">续费</button>
-          </div>
-          <div id="mmContBtns" style="display:none">
-            <button class="btn btn-secondary btn-block" style="margin-top:var(--space-lg);color:var(--color-danger);border-color:var(--color-danger)" onclick="cancelMember()">取消连续续费</button>
-            <p class="pay-note">取消后当期权益仍可使用，到期不再扣费</p>
           </div>
         </div>
       </div>
@@ -1493,7 +1486,7 @@ img{display:block;max-width:100%;}
    ============================================================ */
 let isLoggedIn = false;
 let isMember = false;
-let memberType = 'contmonth'; // 'month' | 'year' | 'contmonth' | 'contyear'
+let memberType = 'month'; // 'month' | 'year'
 let payResult = 'success';
 
 /* 我的邀请码 / 邀请关系（演示数据模型）
@@ -2533,6 +2526,12 @@ function requireLoginThen(target){
   if(!isLoggedIn){ showPermission('请先登录','登录后查看收藏、查询记录与会员权益。', 'login'); return; }
   navigate(target);
 }
+/* 我的会员入口：游客弹登录框；已登录非会员引导购买；会员进入会员页 */
+function openMyMember(){
+  if(!isLoggedIn){ showPermission('请先登录','登录后查看您的会员权益与专属服务。', 'login'); return; }
+  if(!isMember){ navigate('member-purchase'); return; }
+  navigate('my-member');
+}
 function showPermission(title, desc, go){
   document.getElementById('pmTitle').textContent = title;
   document.getElementById('pmDesc').textContent = desc;
@@ -2573,11 +2572,8 @@ function applyState(){
   document.getElementById('mmExpire').textContent = isMember ? (p0.isYear?'2027-08-19':'2026-09-19') : '—';
   const hmc=document.getElementById('homeMemberCard'); if(hmc) hmc.classList.toggle('is-year', isYearCard);
   const mmc=document.getElementById('mmCard'); if(mmc) mmc.classList.toggle('is-year', isYearCard);
-  // 我的会员：普通/连续会员按钮分支
-  const isCont = !!(p0 && p0.isCont);
-  const mnb=document.getElementById('mmNormalBtns'); if(mnb) mnb.style.display = isCont ? 'none' : '';
-  const mcb=document.getElementById('mmContBtns'); if(mcb) mcb.style.display = isCont ? '' : 'none';
-  const mar=document.getElementById('mmAutoRenew'); if(mar){ mar.textContent = isCont ? '开启中' : '未开启'; mar.style.color = isCont ? 'var(--color-success)' : 'var(--color-text-tertiary)'; }
+  // 我的会员：普通会员续费入口（已移除连续会员分支）
+  const mnb=document.getElementById('mmNormalBtns'); if(mnb) mnb.style.display = '';
   // 重新渲染依赖会员态的列表（锁标）
   if(document.getElementById('globalList')) renderGlobalList();
   // 登录态切换后刷新详情字段权限（防死循环：openGlobal 内部 navigate 会触发 render->applyState）
@@ -2638,15 +2634,13 @@ function saveUserInfo(){
 }
 
 /* 会员开通 */
-/* 会员套餐配置（文档 5.10：月/年/连续月/连续年） */
+/* 会员套餐配置：月会员 / 年会员（已移除连续包月 / 连续包年） */
 function planInfo(type){
   const M={
-    month:{name:'月会员', isYear:false, isCont:false, price:45, note:'月会员 · 到期后不自动续费'},
-    year:{name:'年会员', isYear:true, isCont:false, price:360, note:'年会员 · 到期后不自动续费'},
-    contmonth:{name:'连续月会员', isYear:false, isCont:true, price:30, note:'连续包月 · 可随时取消，取消后当期仍可用'},
-    contyear:{name:'连续年会员', isYear:true, isCont:true, price:298, note:'连续包年 · 可随时取消，取消后当期仍可用'}
+    month:{name:'月会员', isYear:false, isCont:false, price:30, note:'月会员 · 到期后不自动续费'},
+    year:{name:'年会员', isYear:true, isCont:false, price:298, note:'年会员 · 到期后不自动续费'}
   };
-  return M[type]||M.contmonth;
+  return M[type]||M.month;
 }
 function selectPlan(plan, btn){
   memberType = plan;
@@ -2666,7 +2660,7 @@ function selectPlan(plan, btn){
       ${p.isYear?'<li>优先新品策展 + 年度检索报告</li>':''}
     </ul>`;
 }
-let pendingPlan = 'contmonth';
+let pendingPlan = 'month';
 function goPay(){
   pendingPlan = memberType;
   const p=planInfo(pendingPlan);
@@ -2691,7 +2685,6 @@ function togglePayResult(){
   document.getElementById('prSuccess').style.display = payResult==='success'?'block':'none';
   document.getElementById('prFail').style.display = payResult==='success'?'none':'block';
 }
-function cancelMember(){ isMember=false; toast('已取消连续续费（演示）'); navigate('my-member'); }
 function renewMember(){ toast('已进入支付流程（演示）：会员期限将延长'); }
 function shareTreasure(){
   if(typeof wx!=='undefined' && wx.shareAppMessage){
@@ -2719,7 +2712,7 @@ function demoToggleLogin(){
 function demoToggleMember(){
   if(!isLoggedIn){ isLoggedIn=true; }
   isMember=true;
-  const _order=['contmonth','contyear','month','year'];
+  const _order=['month','year'];
   memberType = _order[(_order.indexOf(memberType)+1)%_order.length];
   toast('会员态：'+planInfo(memberType).name);
   render();
