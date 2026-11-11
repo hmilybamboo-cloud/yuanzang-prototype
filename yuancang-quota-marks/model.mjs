@@ -16,7 +16,16 @@ export function initial(scenario = 'member', edition = 'points') {
     monthlyUsed: scenario === 'member-month' ? 100 : scenario.startsWith('member-low') ? 99 : 0,
     searchStatus: 'free', downloadStatus: 'success', authorized: false,
     orders: [], ledger: [], tasks: [], saved: [], counter: 0 };
+  seedMembershipOrder(s);
   quota(s); return s;
+}
+export function seedMembershipOrder(s) {
+  if (!s.member || s.orders.some(order => order.type === 'membership')) return;
+  const paidAt = new Date().toISOString();
+  s.orders.push({
+    id: 'DEMO-MEMBER-001', type: 'membership', title: '月会员', amount: 30,
+    status: 'paid', paidAt, createdAt: paidAt, fulfilled: true, example: true,
+  });
 }
 export const manifest = () => [
   { id:'original-1', name:'整体.jpg', format:'JPG', bytes:1400000, thumbnail:'assets/collection-plate.jpg' },
