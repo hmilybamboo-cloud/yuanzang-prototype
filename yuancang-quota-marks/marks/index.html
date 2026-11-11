@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f4f7fa" />
+    <title>瓷器章款库 · 元藏高保真原型</title>
+    <meta name="description" content="元藏瓷器章款库双页高保真原型：年号时间轴、同年号款式、章款图墙与藏品关联。" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+    <style>
+      html,body,.review-shell,.stage,.phones{height:100%;min-height:0}
+      .review-shell,.stage,.phones{display:block;padding:0}
+      .phone{width:100%;height:100%;min-height:0;border:0;border-radius:0;box-shadow:none}
+      .detail-phone,body.mode-detail .list-phone{display:none}
+      body.mode-detail .detail-phone{display:flex}
+    </style>
+  </head>
+  <body>
+    <main class="review-shell">
+      <div class="stage">
+        <div class="phones">
+          <section class="phone list-phone" aria-label="瓷器章款列表页">
+            <div class="phone-scroll" id="listScroll">
+              <section class="list-hero">
+                <div class="hero-photos" aria-hidden="true"><img src="assets/met-42515-5.webp" alt="" /><img src="assets/met-42229-2.webp" alt="" /><img src="assets/met-49358-1.webp" alt="" /><img src="assets/met-53774-6.webp" alt="" /></div>
+                <div class="hero-shade"></div>
+                <div class="hero-line"><span>PORCELAIN MARKS</span><span>章款索引 / 01</span></div>
+                <h2>循年号，<br />观款识。</h2>
+                <p>从明到清，沿着真实馆藏图像辨认不同款式。</p>
+              </section>
+              <div class="search-wrap">
+                <label class="search-box"><span class="search-icon" aria-hidden="true"></span><input id="markSearch" type="search" placeholder="搜索年号、字样或书体" autocomplete="off" /><span class="search-end">检索</span></label>
+              </div>
+              <div class="index-heading"><div><p>CHRONOLOGY / 时间索引</p><h3>按朝代 · 年号浏览</h3></div><span>由早及晚</span></div>
+              <div class="coordinate-bar" id="coordinateBar" aria-live="polite"><span>当前时间坐标</span><strong id="coordinateText">明代 · 宣德</strong><i aria-hidden="true">↓</i></div>
+              <div id="timeline" class="timeline"></div>
+              <p class="list-disclaimer">同一款文字样可见于不同时期的器物。款识仅为检索线索，具体断代以馆藏记录与研究为准。</p>
+            </div>
+          </section>
+
+          <section class="phone detail-phone" aria-label="瓷器章款详情页">
+            <header class="app-nav"><button class="nav-icon" id="detailBack" type="button" aria-label="返回章款列表"><span class="chevron left"></span></button><strong>章款详情</strong><button class="nav-icon" id="detailShare" type="button" aria-label="分享章款"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button></header>
+            <div class="phone-scroll" id="detailScroll"><div id="detailContent"></div></div>
+
+            <div class="viewer" id="imageViewer" role="dialog" aria-modal="true" aria-label="章款图像浏览" hidden>
+              <div class="viewer-top"><button class="viewer-icon" id="viewerClose" type="button" aria-label="关闭图片">×</button><span id="viewerCount"></span></div>
+              <div class="viewer-stage"><button class="viewer-arrow" id="viewerPrev" type="button" aria-label="上一张">‹</button><img id="viewerImage" alt="" /><button class="viewer-arrow" id="viewerNext" type="button" aria-label="下一张">›</button></div>
+              <div class="viewer-bottom">
+                <p class="viewer-name"><span class="viewer-meta-label">款识名称：</span><strong id="viewerCaption"></strong></p>
+                <a class="viewer-action" id="openObject" href="#collection">进入藏品详情 <span aria-hidden="true">↗</span></a>
+                <p class="viewer-description"><span class="viewer-meta-label">款识介绍：</span><span id="viewerDescription"></span></p>
+              </div>
+            </div>
+            <div class="sheet-cover" id="objectCover" hidden></div>
+            <section class="object-sheet" id="objectSheet" role="dialog" aria-modal="true" aria-labelledby="objectTitle" hidden>
+              <div class="sheet-handle" aria-hidden="true"></div>
+              <div class="sheet-heading"><span>COLLECTION / 关联藏品</span><button id="closeObject" type="button" aria-label="关闭藏品详情">×</button></div>
+              <div id="objectContent"></div>
+            </section>
+          </section>
+        </div>
+      </div>
+    </main>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

@@ -1,0 +1,340 @@
+{
+  "images": [
+    {
+      "file": "assets/met-42229-0.webp",
+      "pixels": [
+        615,
+        820
+      ],
+      "role": "object",
+      "object_id": 42229,
+      "object_title": "Vase",
+      "accession_number": "14.40.377",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42229",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP246426.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-42229-2.webp",
+      "pixels": [
+        820,
+        615
+      ],
+      "role": "mark",
+      "object_id": 42229,
+      "object_title": "Vase",
+      "accession_number": "14.40.377",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42229",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP246454.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-42230-0.webp",
+      "pixels": [
+        820,
+        615
+      ],
+      "role": "object",
+      "object_id": 42230,
+      "object_title": "Brush Washer",
+      "accession_number": "14.40.385",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42230",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP-14605-124.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-42230-2.webp",
+      "pixels": [
+        820,
+        615
+      ],
+      "role": "mark",
+      "object_id": 42230,
+      "object_title": "Brush Washer",
+      "accession_number": "14.40.385",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42230",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP-14605-126.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-42232-0.webp",
+      "pixels": [
+        615,
+        820
+      ],
+      "role": "object",
+      "object_id": 42232,
+      "object_title": "Vase",
+      "accession_number": "14.40.374",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42232",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP-14605-118.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-42232-2.webp",
+      "pixels": [
+        820,
+        615
+      ],
+      "role": "mark",
+      "object_id": 42232,
+      "object_title": "Vase",
+      "accession_number": "14.40.374",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42232",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP-14605-120.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-42363-0.webp",
+      "pixels": [
+        615,
+        820
+      ],
+      "role": "object",
+      "object_id": 42363,
+      "object_title": "Vase",
+      "accession_number": "50.145.286",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42363",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP342730.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-42363-1.webp",
+      "pixels": [
+        820,
+        615
+      ],
+      "role": "mark",
+      "object_id": 42363,
+      "object_title": "Vase",
+      "accession_number": "50.145.286",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42363",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP342731.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-42422-0.webp",
+      "pixels": [
+        820,
+        671
+      ],
+      "role": "object",
+      "object_id": 42422,
+      "object_title": "Water Jar",
+      "accession_number": "66.206.11",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42422",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/66_206_11_186317.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-42422-1.webp",
+      "pixels": [
+        820,
+        597
+      ],
+      "role": "mark",
+      "object_id": 42422,
+      "object_title": "Water Jar",
+      "accession_number": "66.206.11",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42422",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/66_206_11_Bm_d1.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-42423-0.webp",
+      "pixels": [
+        820,
+        615
+      ],
+      "role": "object",
+      "object_id": 42423,
+      "object_title": "Box for seal paste",
+      "accession_number": "66.206.17",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42423",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP325001.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-42423-1.webp",
+      "pixels": [
+        820,
+        615
+      ],
+      "role": "mark",
+      "object_id": 42423,
+      "object_title": "Box for seal paste",
+      "accession_number": "66.206.17",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42423",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP325002.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-42515-0.webp",
+      "pixels": [
+        820,
+        637
+      ],
+      "role": "object",
+      "object_id": 42515,
+      "object_title": "Chicken cup",
+      "accession_number": "1987.85",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42515",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/1987_85_2015AT_001.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-42515-5.webp",
+      "pixels": [
+        820,
+        803
+      ],
+      "role": "mark",
+      "object_id": 42515,
+      "object_title": "Chicken cup",
+      "accession_number": "1987.85",
+      "object_page": "https://www.metmuseum.org/art/collection/search/42515",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/1987_85_2015AT_006.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-49349-0.webp",
+      "pixels": [
+        820,
+        615
+      ],
+      "role": "object",
+      "object_id": 49349,
+      "object_title": "Brush Washer",
+      "accession_number": "29.100.352",
+      "object_page": "https://www.metmuseum.org/art/collection/search/49349",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP326725.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-49349-4.webp",
+      "pixels": [
+        820,
+        615
+      ],
+      "role": "mark",
+      "object_id": 49349,
+      "object_title": "Brush Washer",
+      "accession_number": "29.100.352",
+      "object_page": "https://www.metmuseum.org/art/collection/search/49349",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP326738.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-49358-0.webp",
+      "pixels": [
+        820,
+        547
+      ],
+      "role": "object",
+      "object_id": 49358,
+      "object_title": "Bowl",
+      "accession_number": "09.194.23",
+      "object_page": "https://www.metmuseum.org/art/collection/search/49358",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/09_194_23_O1_sf.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-49358-1.webp",
+      "pixels": [
+        820,
+        547
+      ],
+      "role": "mark",
+      "object_id": 49358,
+      "object_title": "Bowl",
+      "accession_number": "09.194.23",
+      "object_page": "https://www.metmuseum.org/art/collection/search/49358",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/09_194_23_d1_sf.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-51221-0.webp",
+      "pixels": [
+        820,
+        615
+      ],
+      "role": "object",
+      "object_id": 51221,
+      "object_title": "Water coupe",
+      "accession_number": "91.1.407",
+      "object_page": "https://www.metmuseum.org/art/collection/search/51221",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP-15452-041.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-51221-1.webp",
+      "pixels": [
+        820,
+        504
+      ],
+      "role": "mark",
+      "object_id": 51221,
+      "object_title": "Water coupe",
+      "accession_number": "91.1.407",
+      "object_page": "https://www.metmuseum.org/art/collection/search/51221",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP-15452-042.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-52049-0.webp",
+      "pixels": [
+        615,
+        820
+      ],
+      "role": "object",
+      "object_id": 52049,
+      "object_title": "Vase",
+      "accession_number": "14.40.372",
+      "object_page": "https://www.metmuseum.org/art/collection/search/52049",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP307773.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-52049-1.webp",
+      "pixels": [
+        820,
+        746
+      ],
+      "role": "mark",
+      "object_id": 52049,
+      "object_title": "Vase",
+      "accession_number": "14.40.372",
+      "object_page": "https://www.metmuseum.org/art/collection/search/52049",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/14_40_372_Bm_sf.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-53774-0.webp",
+      "pixels": [
+        615,
+        820
+      ],
+      "role": "object",
+      "object_id": 53774,
+      "object_title": "Vase with nine peaches",
+      "accession_number": "17.120.193",
+      "object_page": "https://www.metmuseum.org/art/collection/search/53774",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP225236.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    },
+    {
+      "file": "assets/met-53774-6.webp",
+      "pixels": [
+        820,
+        615
+      ],
+      "role": "mark",
+      "object_id": 53774,
+      "object_title": "Vase with nine peaches",
+      "accession_number": "17.120.193",
+      "object_page": "https://www.metmuseum.org/art/collection/search/53774",
+      "image_source": "https://images.metmuseum.org/CRDImages/as/original/DP225567.jpg",
+      "rights": "The Met Open Access · Public Domain"
+    }
+  ]
+}
