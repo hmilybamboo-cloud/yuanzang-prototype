@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>元藏 · 纯额度版管理后台</title>
+  <link rel="stylesheet" href="admin.css">
+  <script src="marks/catalog.js?v=1" defer></script>
+  <script type="module" src="admin.mjs"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span aria-hidden="true">元</span><div><strong>元藏</strong><small>管理后台</small></div></div>
+    <nav aria-label="功能导航">
+      <a href="#downloads" data-nav="downloads">图片下载记录</a>
+      <a href="#libraries" data-nav="libraries">款识库管理</a>
+    </nav>
+    <a class="front-link" id="front-link" href="./" target="_blank" rel="noopener">打开纯额度版 ↗</a>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><span>纯额度版 + 款识库</span><span class="badge">原型 · 本浏览器数据</span></header>
+    <main id="content"></main>
+  </div>
+  <dialog id="editor" aria-labelledby="dialog-title"></dialog>
+  <p id="notice" class="notice" role="status" aria-live="polite"></p>
+</body>
+</html>

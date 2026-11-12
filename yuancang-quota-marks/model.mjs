@@ -108,7 +108,48 @@ export function finishTask(s,task) {
   if (!task.debit) debitTask(s,task);
   task.status='success';
   task.settled=true;
+  task.completedAt=new Date().toISOString();
   return true;
+}
+
+const quotaDownloadLogPrefix = 'yuancang-quota-download-log:';
+function downloadRecord(task, id) {
+  const images = task.files.filter(file => file.done).map(file => ({
+    id:file.id, name:file.name, savedAt:file.savedAt,
+  }));
+  const lastSavedAt = images.map(image => image.savedAt).filter(Boolean).sort().at(-1);
+  return {
+    id, userId:'YC-DEMO-001', userName:'元藏体验用户',
+    time:lastSavedAt || task.completedAt || task.time, legacyTime:!lastSavedAt && !task.completedAt,
+    collectionId:task.collectionId || '', collection:task.title,
+    images,
+  };
+}
+
+export function saveQuotaDownloadRecord(task) {
+  const savedCount = task.files.filter(file => file.done).length;
+  if (!savedCount || savedCount === task.loggedImageCount) return;
+  const id = task.auditId || crypto.randomUUID();
+  localStorage.setItem(quotaDownloadLogPrefix + id, JSON.stringify(downloadRecord(task, id)));
+  task.auditId = id;
+  task.loggedImageCount = savedCount;
+}
+
+export function readQuotaDownloadRecords() {
+  const records = new Map();
+  for (let i=0; i<localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key?.startsWith(quotaDownloadLogPrefix)) continue;
+    const record = JSON.parse(localStorage.getItem(key));
+    if (record) records.set(record.id, record);
+  }
+  const saved = JSON.parse(localStorage.getItem('yuancang-review-download-quota'));
+  for (const task of saved?.tasks || []) {
+    if (!task.files.some(file => file.done)) continue;
+    const id = task.auditId || `legacy-${task.id}-${task.time}`;
+    if (!records.has(id)) records.set(id, downloadRecord(task, id));
+  }
+  return [...records.values()];
 }
 export function failTask(s,task,reason='部分所选图片下载失败',status='failed') {
   if (task.settled || !s.tasks.includes(task)) return;

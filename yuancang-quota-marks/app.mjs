@@ -1,4 +1,4 @@
-import { initial, seedMembershipOrder, quota, manifest, quote, sameQuote, availableBalance, createTask, finishTask, failTask, retryTask, createOrder, payOrder, searchEntitlement, chargeSearch } from './model.mjs';
+import { initial, seedMembershipOrder, quota, manifest, quote, sameQuote, availableBalance, createTask, finishTask, failTask, retryTask, saveQuotaDownloadRecord, createOrder, payOrder, searchEntitlement, chargeSearch } from './model.mjs?v=4';
 import { reviewScenes } from './review-scenes.mjs';
 
 const $ = s => document.querySelector(s);
@@ -35,7 +35,8 @@ function back(){if(ui.modal){closeModal();return;}const prev=ui.stack.pop();ui.p
 function ensureLogin(intent){if(s.logged)return true;ui.returnIntent=intent;navigate('login');return false;}
 function navigateAccount(page){if(ensureLogin({kind:'page',page}))navigate(page);}
 function marksFrame(){
-  const params=new URLSearchParams({member:s.logged&&s.member?'1':'0',v:'2'});
+  const params=new URLSearchParams({member:s.logged&&s.member?'1':'0',v:'3'});
+  if(!hasPoints)params.set('manage','1');
   if(ui.marksWall)params.set('wall',ui.marksWall);
   return `<iframe class="marks-frame" src="marks/index.html?${esc(params)}" title="瓷器款识库"></iframe>`;
 }
@@ -43,7 +44,7 @@ window.addEventListener('message',event=>{
   const origin=location.protocol==='file:'?'null':location.origin;
   if(ui.page!=='marks'||event.origin!==origin||event.source!==$('.marks-frame')?.contentWindow||event.data?.type!=='yuancang:marks-membership'||(s.logged&&s.member))return;
   const wall=event.data.wall;
-  if(typeof wall!=='string'||!/^[a-z-]{1,40}$/.test(wall))return;
+  if(typeof wall!=='string'||!/^[a-z0-9-]{1,60}$/.test(wall))return;
   ui.marksWall=wall;
   const intent={kind:'marks',wall};
   if(ensureLogin(intent)){ui.returnIntent=intent;navigate('plans');}
@@ -241,18 +242,31 @@ function startDownload() {
     return;
   }
   const task=createTask(s,fresh,current().title,current().image);
+  task.collectionId=current().id;
   ui.selectedTask=task.id;
   ui.returnIntent=null;
   openModal('progress');startTimer(task);save();syncPanel();
 }
+function markFileSaved(file) {
+  if (file.done) return;
+  file.done=true;
+  file.savedAt=new Date().toISOString();
+}
 function startTimer(t){clearInterval(workTimer);workTimer=setInterval(()=>{
   if(t.status!=='running'){clearInterval(workTimer);return;}
-  t.percent=Math.min(98,t.percent+7);t.files.forEach((f,i)=>{if(i<t.files.length-1 && t.percent>=(i+1)*90/t.files.length)f.done=true;});
+  t.percent=Math.min(98,t.percent+7);t.files.forEach((f,i)=>{if(i<t.files.length-1 && t.percent>=(i+1)*90/t.files.length)markFileSaved(f);});
   if(t.percent>=70&&['partial','unsupported'].includes(t.scenario)){failTask(s,t,t.scenario==='unsupported'?'当前设备无法保存接口返回的原文件':'补充视图下载失败');clearInterval(workTimer);}
-  else if(t.percent>=98){clearInterval(workTimer);setTimeout(()=>{if(t.status!=='running'||!s.tasks.includes(t))return;t.files.forEach(f=>f.done=true);t.percent=100;t.status='settling';if(t.scenario!=='settling')finishTask(s,t);updateTask();},650);}
-  updateTask();
+  else if(t.percent>=98){clearInterval(workTimer);setTimeout(()=>{if(t.status!=='running'||!s.tasks.includes(t))return;t.files.forEach(markFileSaved);t.percent=100;t.status='settling';if(t.scenario!=='settling')finishTask(s,t);updateTask(t);},650);}
+  updateTask(t);
 },230);}
-function updateTask(){save();syncPanel();if(ui.modal?.type==='progress')renderModal();else if(ui.page==='task'||ui.page==='downloads'){$('#screen').innerHTML=pages[ui.page]();}}
+function updateTask(task){
+  if(task && !hasPoints){
+    try{saveQuotaDownloadRecord(task);}catch{if(!task.auditError){task.auditError=true;toast('浏览器未能保存后台记录');}}
+  }
+  save();syncPanel();
+  if(ui.modal?.type==='progress')renderModal();
+  else if(ui.page==='task'||ui.page==='downloads')$('#screen').innerHTML=pages[ui.page]();
+}
 function submitSearch(){if(ui.searching)return;if(!ui.queryDraft.trim()&&!ui.filters.length){toast('请输入关键词或选择筛选条件');return;}if(!ensureLogin({kind:'search'}))return;try{const result=searchEntitlement(s);if(result==='free')runSearch(false);else if(result==='confirm')openModal('search-confirm');else if(result==='exhausted')openModal('search-exhausted');else{ui.returnIntent={kind:'search'};openModal('insufficient',{kind:'search'});}}catch{openModal('search-error');}}
 function runSearch(paid){closeModal();if(ui.searching)return;ui.searching=true;const query=ui.queryDraft.trim()||ui.filters.join('、');const key='S'+Date.now();navigate('search',ui.page==='search');clearTimeout(searchTimer);searchTimer=setTimeout(()=>{try{if(paid)chargeSearch(s,key,query);ui.query=query;ui.searchCompleted=true;ui.noResults=s.searchStatus==='empty';ui.searchFee=paid?1:0;ui.loaded=4;ui.returnIntent=null;}catch(e){toast(e.message);}ui.searching=false;render();},500);}
 function resetScenario(value){clearInterval(workTimer);clearTimeout(searchTimer);closeModal();s=initial(value,edition);ui.selectedTask=null;ui.selectedOrder=null;ui.returnIntent=null;ui.searching=false;ui.searchCompleted=false;ui.searchFee=0;ui.noResults=false;render();toast('已切换演示场景');}
@@ -269,7 +283,7 @@ const actions={
   download:beginDownload,'confirm-images':confirmImages,'confirm-download':confirmDownload,'edit-images':()=>openModal('selection'),'select-all':()=>{const all=manifest().filter(f=>f.bytes<=50000000).map(f=>f.id);ui.selectedImages=ui.selectedImages.length===all.length?[]:all;renderModal();},'allow-permission':()=>{s.authorized=true;save();confirmImages();},'deny-permission':()=>{s.authorized=false;openModal('denied');},'retry-quote':loadQuote,
   'stop-task':()=>{const t=activeTask();if(t?.status==='running'){clearInterval(workTimer);failTask(s,t,'用户已停止下载','stopped');updateTask();}},
   'hide-progress':()=>{closeModal();toast('进度已收起，可在下载记录中查看');},'retry-task':()=>{const t=activeTask();retryTask(s,t);if(ui.page!=='task')openModal('progress');startTimer(t);updateTask();},
-  'settle-task':()=>{const t=activeTask();finishTask(s,t);updateTask();toast('结算已确认，仅结算一次');},'finish-download':()=>{closeModal();if(ui.page==='task')navigate('detail');else render();},
+  'settle-task':()=>{const t=activeTask();finishTask(s,t);updateTask(t);},'finish-download':()=>{closeModal();if(ui.page==='task')navigate('detail');else render();},
   downloads:()=>navigateAccount('downloads'),task:el=>{ui.selectedTask=el.dataset.id;navigate('task');},
   points:()=>navigateAccount('points'),recharge:()=>{if(!hasPoints)return;ui.agreement=false;ui.custom=false;ui.recharge=10;navigateAccount('recharge');},
   amount:el=>{ui.recharge=Number(el.dataset.value);ui.custom=false;render();validateAmount();},'ledger-tab':el=>{ui.ledgerTab=el.dataset.value;render();},
