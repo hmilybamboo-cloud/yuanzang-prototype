@@ -1,6 +1,8 @@
 export const reviewScenes = [
   {id:'detail',title:'藏品详情',page:'detail',config:{}},
   {id:'marks',title:'瓷器款识库',page:'marks',config:{}},
+  {id:'marks-preview',title:'非会员款识预览',page:'marks',config:{scenario:'paid',marksWall:'kangxi-kaishu'}},
+  {id:'marks-complete',title:'会员款识完整浏览',page:'marks',config:{marksWall:'kangxi-kaishu'}},
   {id:'select',title:'会员选图',page:'detail',config:{modal:'selection'}},
   {id:'confirm',title:'会员下载确认',page:'detail',config:{modal:'quote'}},
   {id:'registered',title:'普通注册用户',page:'detail',config:{scenario:'paid',modal:'selection',selected:[]}},
