@@ -1,41 +1,3 @@
-const asset = (name) => `assets/met-${name}.webp`;
-
-// Image/object pairs come from The Met Open Access. See assets/manifest.json.
-const kangxiImages = [
-  { id: 42229, mark: '42229-2', object: '42229-0', title: '瓶', english: 'Vase', number: '14.40.377' },
-  { id: 42230, mark: '42230-2', object: '42230-0', title: '笔洗', english: 'Brush Washer', number: '14.40.385' },
-  { id: 52049, mark: '52049-1', object: '52049-0', title: '瓶', english: 'Vase', number: '14.40.372', markDescription: '器底青花书「大清康熙年制」楷书六字二行款，官窑年号款。' },
-  { id: 49349, mark: '49349-4', object: '49349-0', title: '笔洗', english: 'Brush Washer', number: '29.100.352' },
-  { id: 42363, mark: '42363-1', object: '42363-0', title: '瓶', english: 'Vase', number: '50.145.286' },
-  { id: 42232, mark: '42232-2', object: '42232-0', title: '瓶', english: 'Vase', number: '14.40.374' },
-  { id: 51221, mark: '51221-1', object: '51221-0', title: '水盂', english: 'Water coupe', number: '91.1.407' },
-  { id: 42422, mark: '42422-1', object: '42422-0', title: '水罐', english: 'Water Jar', number: '66.206.11' },
-  { id: 42423, mark: '42423-1', object: '42423-0', title: '印泥盒', english: 'Box for seal paste', number: '66.206.17' },
-];
-const qianlongImages = [
-  { id: 53774, mark: '53774-6', object: '53774-0', title: '九桃天球瓶', english: 'Vase with nine peaches', number: '17.120.193' },
-];
-const chenghuaImages = [
-  { id: 42515, mark: '42515-5', object: '42515-0', title: '鸡缸杯', english: 'Chicken cup', number: '1987.85' },
-];
-const yongzhengImages = [
-  { id: 49358, mark: '49358-1', object: '49358-0', title: '碗', english: 'Bowl', number: '09.194.23' },
-];
-
-// Reuse credited images to exercise the 20-entry boundary without inventing catalog records.
-const kangxiDemoImages = Array.from({ length: 15 }, (_, index) => ({
-  ...kangxiImages[index % kangxiImages.length], demo: index + 1,
-}));
-
-const variants = {
-  'chenghua-six': { id: 'chenghua-six', dynasty: '明', reign: '成化', title: '大明成化年制六字款', type: '六字款', glyph: '大明成化年制', images: chenghuaImages },
-  'kangxi-four': { id: 'kangxi-four', dynasty: '清', reign: '康熙', title: '康熙年制四字款', type: '四字款', glyph: '康熙年制', images: [] },
-  'kangxi-imperial': { id: 'kangxi-imperial', dynasty: '清', reign: '康熙', title: '康熙御制四字款', type: '四字款', glyph: '康熙御制', images: [] },
-  'kangxi-kaishu': { id: 'kangxi-kaishu', dynasty: '清', reign: '康熙', title: '大清康熙年制楷书款', type: '六字 · 楷书', glyph: '大清康熙年制', images: kangxiImages },
-  'kangxi-zhuanshu': { id: 'kangxi-zhuanshu', dynasty: '清', reign: '康熙', title: '大清康熙年制篆书款', type: '六字 · 篆书', glyph: '大清康熙年制', images: [] },
-  'yongzheng-six': { id: 'yongzheng-six', dynasty: '清', reign: '雍正', title: '大清雍正年制六字款', type: '六字款', glyph: '大清雍正年制', images: yongzhengImages },
-  'qianlong-zhuanshu': { id: 'qianlong-zhuanshu', dynasty: '清', reign: '乾隆', title: '大清乾隆年制篆书款', type: '六字 · 篆书', glyph: '大清乾隆年制', images: qianlongImages },
-};
 const periods = [
   { dynasty: '明', english: 'MING', reigns: [{ name: '宣德', ids: [] }, { name: '成化', ids: ['chenghua-six'] }, { name: '万历', ids: [] }] },
   { dynasty: '清', english: 'QING', reigns: [{ name: '康熙', ids: ['kangxi-four', 'kangxi-imperial', 'kangxi-kaishu', 'kangxi-zhuanshu'] }, { name: '雍正', ids: ['yongzheng-six'] }, { name: '乾隆', ids: ['qianlong-zhuanshu'] }] },
@@ -51,22 +13,31 @@ const objectSheet = document.querySelector('#objectSheet');
 const objectCover = document.querySelector('#objectCover');
 const params = new URLSearchParams(location.search);
 const isMember = window.parent !== window && params.get('member') === '1';
+const isManaged = params.get('manage') === '1';
 const initialWall = params.get('wall');
 const previewLimit = 20;
-let selectedId = Object.hasOwn(variants, initialWall) ? initialWall : 'kangxi-kaishu';
+function libraryMap() {
+  const visible = loadLibraries(isManaged).filter(library => !library.hidden);
+  const wall = visible.find(library => library.id === 'kangxi-kaishu');
+  if (params.get('preview') === '1' && wall && wall.images.length < 24 && wall.images.length) {
+    const images = wall.images.slice();
+    while (wall.images.length < 24) wall.images.push(images[wall.images.length % images.length]);
+  }
+  return Object.fromEntries(visible.map(library => [library.id, library]));
+}
+let variants = libraryMap();
+let selectedId = Object.hasOwn(variants, initialWall) ? initialWall : Object.keys(variants)[0];
 let viewerIndex = 0;
 let toastTimer;
 
-function galleryImages(variant) {
-  return variant.id === 'kangxi-kaishu' ? [...variant.images, ...kangxiDemoImages] : variant.images;
-}
-
 function viewableImages(variant = variants[selectedId]) {
-  const images = galleryImages(variant);
+  const images = variant?.images ?? [];
   return isMember ? images : images.slice(0, previewLimit);
 }
 
-const demoLabel = (entry) => `演示款识 ${String(entry.demo).padStart(2, '0')}`;
+const imageSrc = value => markEscape(safeImageUrl(value));
+const coverSrc = value => markEscape(coverImageUrl(value));
+const libraryLabel = library => `${library.images.length} 幅图像`;
 
 function toast(message) {
   const el = document.querySelector('#toast');
@@ -77,7 +48,7 @@ function toast(message) {
 }
 
 function sampleGlyph(text) {
-  return `<span class="sample-glyph" aria-hidden="true">${[...text].map((char) => `<span>${char}</span>`).join('')}</span><span class="sample-note">字样示意</span>`;
+  return `<span class="sample-glyph" aria-hidden="true">${[...text].map(char => `<span>${markEscape(char)}</span>`).join('')}</span>`;
 }
 
 function renderTimeline() {
@@ -87,23 +58,26 @@ function renderTimeline() {
     const years = group.reigns.map((reign) => {
       ordinal += 1;
       const reignMatch = reign.name.includes(query);
-      const visibleIds = query && !reignMatch ? reign.ids.filter((id) => variants[id].title.toLowerCase().includes(query) || variants[id].type.toLowerCase().includes(query)) : reign.ids;
+      const existingIds = Object.values(variants).filter(library => library.dynasty === group.dynasty && library.reign === reign.name).map(library => library.id);
+      const visibleIds = query && !reignMatch ? existingIds.filter(id => [variants[id].title, variants[id].type, variants[id].dynasty + variants[id].reign].some(value => value?.toLowerCase().includes(query))) : existingIds;
       if (query && !reignMatch && !visibleIds.length) return '';
-      const featuredId = visibleIds.find((id) => variants[id].images.length);
+      const featuredId = visibleIds.find((id) => variants[id].cover || variants[id].images.length);
       const feature = featuredId ? variants[featuredId] : null;
-      const featureImages = feature?.images.slice(0, 3) || [];
-      const mosaic = feature ? `<button class="feature-variant ${featureImages.length === 1 ? 'single' : ''}" type="button" data-variant="${featuredId}" aria-label="查看${feature.title}"><span class="feature-mosaic">${featureImages.map((entry) => `<img src="${asset(entry.mark)}" alt="${entry.title}器底款" loading="lazy" />`).join('')}</span><span class="feature-caption"><span><small>MARK IMAGES / 馆藏图谱</small><strong>${feature.title}</strong><em>${feature.images.length} 幅真实馆藏图像</em></span><span class="feature-arrow" aria-hidden="true">↗</span></span></button>` : '';
+      const featureImages = feature?.cover ? [feature.cover] : feature?.images.slice(0, 3).map(entry => entry.imageUrl) ?? [];
+      const mosaic = feature ? `<button class="feature-variant ${featureImages.length === 1 ? 'single' : ''}" type="button" data-variant="${featuredId}" aria-label="查看${markEscape(feature.title)}"><span class="feature-mosaic">${featureImages.map(url => `<img src="${coverSrc(url)}" alt="" loading="lazy" />`).join('')}</span><span class="feature-caption"><span><small>MARK IMAGES / 馆藏图谱</small><strong>${markEscape(feature.title)}</strong><em>${libraryLabel(feature)}</em></span><span class="feature-arrow" aria-hidden="true">↗</span></span></button>` : '';
       const otherIds = visibleIds.filter((id) => id !== featuredId);
       const cards = otherIds.map((id) => {
         const variant = variants[id];
-        return `<button class="variant-card ${selectedId === id ? 'selected' : ''}" type="button" data-variant="${id}" aria-label="查看${variant.title}"><span class="variant-thumb">${sampleGlyph(variant.glyph)}</span><span class="variant-info"><strong>${variant.title}</strong><small>${variant.type} · 图像待收录</small></span><span class="next" aria-hidden="true">›</span></button>`;
+        return `<button class="variant-card ${selectedId === id ? 'selected' : ''}" type="button" data-variant="${id}" aria-label="查看${markEscape(variant.title)}"><span class="variant-thumb">${variant.cover ? `<img class="library-thumb" src="${coverSrc(variant.cover)}" alt="" loading="lazy">` : sampleGlyph(variant.glyph || variant.reign)}</span><span class="variant-info"><strong>${markEscape(variant.title)}</strong><small>${variant.type ? variant.type+' · ' : ''}${variant.images.length ? libraryLabel(variant) : '图像待收录'}</small></span><span class="next" aria-hidden="true">›</span></button>`;
       }).join('');
       const body = visibleIds.length ? `${mosaic}${otherIds.length ? `<div class="variant-section-label">同年号其他款式 <span>${otherIds.length}</span></div><div class="variant-list">${cards}</div>` : ''}` : '<p class="axis-empty">可核对图像整理中</p>';
-      return `<section class="axis-year" data-year="${reign.name}" data-dynasty="${group.dynasty}"><div class="axis-node" aria-hidden="true"></div><div class="axis-year-head"><span>${String(ordinal).padStart(2, '0')} / ${group.english}</span><h3>${reign.name}<small>${reign.ids.length ? `${reign.ids.length} 类章款` : '待收录'}</small></h3></div><div class="axis-year-body">${body}</div></section>`;
+      return `<section class="axis-year" data-year="${reign.name}" data-dynasty="${group.dynasty}"><div class="axis-node" aria-hidden="true"></div><div class="axis-year-head"><span>${String(ordinal).padStart(2, '0')} / ${group.english}</span><h3>${reign.name}<small>${existingIds.length ? `${existingIds.length} 类章款` : '待收录'}</small></h3></div><div class="axis-year-body">${body}</div></section>`;
     }).join('');
     return years ? `<section class="axis-era"><div class="axis-era-title"><b>${group.dynasty}代</b><span>${group.english} DYNASTY</span></div><div class="axis-era-years">${years}</div></section>` : '';
   }).join('');
-  timeline.innerHTML = groups || '<div class="search-empty"><b>没有找到相关章款</b><span>试试搜索“康熙”“乾隆”或“楷书”。</span></div>';
+  const extra = Object.values(variants).filter(library => !periods.some(group => group.dynasty === library.dynasty && group.reigns.some(reign => reign.name === library.reign)) && (!query || [library.title,library.description,library.dynasty,library.reign,(library.dynasty||'')+(library.reign||'')].some(value => value?.toLowerCase().includes(query))));
+  const libraries = extra.length ? `<section class="managed-libraries"><h3>专题款识库</h3>${extra.map(library => `<button type="button" class="variant-card" data-variant="${markEscape(library.id)}"><span class="variant-thumb"><img class="library-thumb" src="${coverSrc(library.cover)}" alt="" loading="lazy"></span><span class="variant-info"><strong>${markEscape(library.title)}</strong><small>${markEscape([library.dynasty,library.reign].filter(Boolean).join(' · '))} · ${libraryLabel(library)}</small></span><span class="next" aria-hidden="true">›</span></button>`).join('')}</section>` : '';
+  timeline.innerHTML = libraries + groups || '<div class="search-empty"><b>没有找到相关章款</b><span>试试搜索“康熙”“乾隆”或“楷书”。</span></div>';
   requestAnimationFrame(updateCoordinate);
 }
 
@@ -120,17 +94,19 @@ function updateCoordinate() {
 
 function renderDetail() {
   const variant = variants[selectedId];
+  if (!variant) { detailContent.innerHTML = ''; return; }
   const first = variant.images[0];
-  const intro = `<section class="detail-intro"><div class="breadcrumb">瓷器章款 <span>›</span> ${variant.dynasty}代 <span>›</span> ${variant.reign}</div><h1>${variant.title}</h1><p>同一款式，在不同器物上留下各自的笔意与布局。</p><div class="fact-row"><span>${variant.dynasty} · ${variant.reign}</span><span>${variant.type}</span><span>${first ? `${variant.images.length} 幅图像` : '图像整理中'}</span></div></section>`;
+  const intro = `<section class="detail-intro"><div class="breadcrumb">瓷器章款${variant.reign ? ` <span>›</span> ${markEscape(variant.dynasty)}代 <span>›</span> ${markEscape(variant.reign)}` : ''}</div><h1>${markEscape(variant.title)}</h1><p>${markEscape(variant.description)}</p><div class="fact-row">${variant.reign ? `<span>${markEscape(variant.dynasty)} · ${markEscape(variant.reign)}</span>${variant.type ? '<span>'+markEscape(variant.type)+'</span>' : ''}` : ''}<span>${first ? libraryLabel(variant) : '图像整理中'}</span></div></section>`;
   if (!first) {
     detailContent.innerHTML = intro + `<section class="detail-empty"><div class="empty-panel"><div class="empty-symbol">款</div><b>馆藏图像整理中</b><p>此款式的字样名称已列入时间索引。待可核对的器底图像入库后，在此展示图片墙及对应藏品。</p></div></section>`;
     return;
   }
   const images = viewableImages(variant);
-  const isLimited = images.length < galleryImages(variant).length;
-  const gallery = images.map((entry, index) => `<button class="gallery-item" type="button" data-image-index="${index}" aria-label="放大查看${entry.demo ? demoLabel(entry) : `${entry.title}的章款图像`}"><img src="${asset(entry.mark)}" alt="${entry.title}底部的款识图像" loading="lazy" /><span class="gallery-overlay"><strong>${String(index + 1).padStart(2, '0')}</strong><small>${entry.demo ? demoLabel(entry) : `${entry.title} · ${entry.number}`}</small></span></button>`).join('');
+  const isLimited = images.length < variant.images.length;
+  const gallery = images.map((entry, index) => `<button class="gallery-item" type="button" data-image-index="${index}" aria-label="放大查看${markEscape(entry.markName)}"><img src="${imageSrc(entry.imageUrl)}" alt="${markEscape(entry.markName)}" loading="lazy" /><span class="gallery-overlay"><strong>${String(index + 1).padStart(2, '0')}</strong><small>${markEscape(entry.title ? `${entry.title} · ${entry.number}` : entry.markName)}</small></span></button>`).join('');
   const gate = isLimited ? `<section class="member-gate" aria-labelledby="memberGateTitle"><div><p>已展示前 ${previewLimit} 个款识</p><h3 id="memberGateTitle">开通会员，浏览更多内容</h3></div><a class="member-gate-action" href="../index.html?scene=plans">开通会员 <span aria-hidden="true">›</span></a></section>` : '';
-  detailContent.innerHTML = intro + `<div class="gallery-head"><div><p>IMAGE WALL / 馆藏实图</p><h2>章款图墙</h2></div><small>${isLimited ? '预览 ' : ''}${images.length} 幅</small></div><p class="wall-intro">点击图像，放大查看款识并进入对应藏品。${variant.id === 'kangxi-kaishu' ? '<br>演示款识复用已有图像，仅用于体验浏览权限。' : ''}</p><div class="gallery-grid ${images.length === 1 ? 'one-image' : ''}">${gallery}</div><p class="detail-source">图像来源：<a href="https://www.metmuseum.org/art/collection/search/${first.id}" target="_blank" rel="noopener noreferrer">The Metropolitan Museum of Art</a>，Open Access / Public Domain。单凭款识字样不宜判断器物年代。</p>${gate}`;
+  const credit = first.object ? `<p class="detail-source">图像来源：<a href="https://www.metmuseum.org/art/collection/search/${Number(first.id)}" target="_blank" rel="noopener noreferrer">The Metropolitan Museum of Art</a>，Open Access / Public Domain。单凭款识字样不宜判断器物年代。</p>` : '';
+  detailContent.innerHTML = intro + `<div class="gallery-head"><div><p>IMAGE WALL / 馆藏实图</p><h2>章款图墙</h2></div><small>${isLimited ? '预览 ' : ''}${images.length} 幅</small></div><p class="wall-intro">点击图像，放大查看款识并进入对应藏品。</p><div class="gallery-grid ${images.length === 1 ? 'one-image' : ''}">${gallery}</div>${credit}${gate}`;
 }
 
 function openViewer(index) {
@@ -145,12 +121,11 @@ function updateViewer() {
   const variant = variants[selectedId];
   const images = viewableImages(variant);
   const entry = images[viewerIndex];
-  document.querySelector('#viewerImage').src = asset(entry.mark);
-  document.querySelector('#viewerImage').alt = `${entry.title}底部的「${variant.glyph}」款识`;
+  document.querySelector('#viewerImage').src = safeImageUrl(entry.imageUrl);
+  document.querySelector('#viewerImage').alt = entry.markName;
   document.querySelector('#viewerCount').textContent = `${String(viewerIndex + 1).padStart(2, '0')} / ${String(images.length).padStart(2, '0')}`;
-  document.querySelector('#viewerCaption').textContent = entry.demo ? `${variant.glyph} · ${demoLabel(entry)}` : variant.glyph;
-  const markType = variant.type.includes(' · ') ? `${variant.type.replace(' · ', '')}款` : variant.type;
-  document.querySelector('#viewerDescription').textContent = entry.markDescription ?? `${entry.title}器底题「${variant.glyph}」，${markType}。`;
+  document.querySelector('#viewerCaption').textContent = entry.markName;
+  document.querySelector('#viewerDescription').textContent = entry.markDescription;
   document.querySelector('#viewerPrev').disabled = viewerIndex === 0;
   document.querySelector('#viewerNext').disabled = viewerIndex === images.length - 1;
 }
@@ -166,7 +141,9 @@ function closeViewer() {
 }
 function openObject() {
   const entry = viewableImages()[viewerIndex];
-  document.querySelector('#objectContent').innerHTML = `<img class="object-image" src="${asset(entry.object)}" alt="${entry.title}的完整器物图像" /><h2 id="objectTitle">${entry.title}</h2><p class="object-subtitle">${entry.english} · 清代${variants[selectedId].reign}款器物</p><dl class="object-meta"><div><dt>馆藏机构</dt><dd>The Metropolitan Museum of Art</dd></div><div><dt>馆藏编号</dt><dd>${entry.number}</dd></div><div><dt>图像来源</dt><dd>Open Access / Public Domain</dd></div></dl><a class="object-source" href="https://www.metmuseum.org/art/collection/search/${entry.id}" target="_blank" rel="noopener noreferrer">查看原始馆藏记录 ↗</a>`;
+  const source = entry.object ? `<a class="object-source" href="https://www.metmuseum.org/art/collection/search/${Number(entry.id)}" target="_blank" rel="noopener noreferrer">查看原始馆藏记录 ↗</a>` : '';
+  const image = entry.object ? `<img class="object-image" src="${imageSrc(asset(entry.object))}" alt="${markEscape(entry.title)}的完整器物图像" />` : '';
+  document.querySelector('#objectContent').innerHTML = `${image}<h2 id="objectTitle">${markEscape(entry.title || '关联藏品')}</h2><dl class="object-meta"><div><dt>采集机构</dt><dd>${markEscape(entry.institution)}</dd></div><div><dt>藏品 ID</dt><dd>${markEscape(entry.collectionId)}</dd></div>${entry.number ? `<div><dt>馆藏编号</dt><dd>${markEscape(entry.number)}</dd></div>` : ''}</dl>${source}`;
   objectCover.hidden = false;
   objectSheet.hidden = false;
   document.querySelector('#closeObject').focus();
@@ -203,7 +180,7 @@ document.querySelector('#detailBack').addEventListener('click', () => {
 document.querySelector('#detailShare').addEventListener('click', async () => {
   try {
     await navigator.clipboard.writeText(location.href);
-    toast('已复制原型链接');
+    toast('已复制链接');
   } catch { toast('可通过浏览器分享此页面'); }
 });
 document.querySelectorAll('[data-toast]').forEach((button) => button.addEventListener('click', () => toast(button.dataset.toast)));
@@ -234,3 +211,11 @@ viewer.addEventListener('touchend', (event) => {
 renderTimeline();
 renderDetail();
 if (Object.hasOwn(variants, initialWall)) document.body.classList.add('mode-detail');
+window.addEventListener('storage', event => {
+  if (!isManaged || event.key !== libraryStorageKey) return;
+  if (!viewer.hidden) closeViewer();
+  variants = libraryMap();
+  if (!Object.hasOwn(variants, selectedId)) document.body.classList.remove('mode-detail');
+  renderTimeline();
+  renderDetail();
+});

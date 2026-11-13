@@ -22,11 +22,6 @@ const yongzhengImages = [
   { id: 49358, mark: '49358-1', object: '49358-0', title: '碗', english: 'Bowl', number: '09.194.23' },
 ];
 
-// Reuse credited images to exercise the 20-entry boundary without inventing catalog records.
-const kangxiDemoImages = Array.from({ length: 15 }, (_, index) => ({
-  ...kangxiImages[index % kangxiImages.length], demo: index + 1,
-}));
-
 const baseVariants = {
   'chenghua-six': { id: 'chenghua-six', dynasty: '明', reign: '成化', title: '大明成化年制六字款', type: '六字款', glyph: '大明成化年制', images: chenghuaImages },
   'kangxi-four': { id: 'kangxi-four', dynasty: '清', reign: '康熙', title: '康熙年制四字款', type: '四字款', glyph: '康熙年制', images: [] },
@@ -46,7 +41,7 @@ function defaultLibraries() {
     ...variant,
     cover: '',
     description: defaultLibraryDescription,
-    images: (variant.id === 'kangxi-kaishu' ? [...variant.images, ...kangxiDemoImages] : variant.images).map((entry, index) => ({
+    images: variant.images.map((entry, index) => ({
       ...entry,
       key: `${variant.id}-${index + 1}`,
       imageUrl: asset(entry.mark),
@@ -62,10 +57,14 @@ function loadLibraries(managed = true) {
   if (managed) {
     try {
       const saved = JSON.parse(localStorage.getItem(libraryStorageKey));
-      if (Array.isArray(saved)) return saved;
+      if (Array.isArray(saved)) return saved.map(library => ({...library, images:library.images.filter(entry => !entry.demo)}));
     } catch {}
   }
   return defaultLibraries();
+}
+
+function coverImageUrl(value) {
+  return /^data:image\/jpeg;base64,[a-z\d+/=]+$/i.test(value) ? value : safeImageUrl(value);
 }
 
 function safeImageUrl(value) {

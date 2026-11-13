@@ -99,7 +99,7 @@ function debitTask(s,task) {
   quota(s);
 }
 export function finishTask(s,task) {
-  if (!s.tasks.includes(task)) throw new Error('任务不属于当前演示账号');
+  if (!s.tasks.includes(task)) throw new Error('任务不属于当前账号');
   if (task.settled) return false;
   if (!task.files.length || !task.files.every(file => file.done) || task.percent !== 100 || !['running','settling'].includes(task.status)) {
     throw new Error('所选图片尚未全部保存成功，无法结算');

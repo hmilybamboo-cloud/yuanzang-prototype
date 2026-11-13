@@ -45,3 +45,9 @@ dialog::backdrop{background:#1a1a1a66}.dialog-head,.dialog-foot{padding:15px 20p
 @media(max-width:760px){body{display:block}.sidebar{flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:9px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding:0}.sidebar nav{display:flex;flex-wrap:wrap;gap:0}.sidebar a{padding:7px}.front-link{margin:0}.topbar{padding:10px 14px;min-height:0}main{padding:18px 12px 32px}.page-head{align-items:flex-start}h1{font-size:22px}.filters label{flex:1 1 145px}.table-scroll table{min-width:630px}}
 .row-actions a+button{margin-left:12px}
 @media(min-width:761px){.sidebar{position:sticky;top:0;height:100dvh}}
+.upload-field{display:grid;gap:7px}
+.upload-field .thumb{width:96px;height:72px}
+[hidden]{display:none!important}
+.form-error{white-space:pre-line}
+.button:disabled{opacity:.45;cursor:not-allowed}
+#import-preview{overflow-wrap:anywhere}

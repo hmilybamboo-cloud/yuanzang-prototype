@@ -2,7 +2,7 @@
 <html lang="zh-CN" data-edition="points">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>元藏 · 下载与积分交互原型</title>
+  <title>元藏 · 全球博物馆通鉴</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,40 +11,35 @@
     <div class="edition">产品交互评审 · 2026.11.11 · 积分版</div>
     <h1>图片下载 · 积分版</h1>
     <p>优先使用会员免费额度，超出的图片按张扣积分。</p>
-    <nav id="review-links" aria-label="原型页面"></nav>
-    <div class="review-note">沿用原页面视觉与素材<br>所有支付、授权及下载均为模拟<br>不会扣款或保存图片到相册</div>
+    <nav id="review-links" aria-label="页面目录"></nav>
   </aside>
   <main class="preview-stage">
-    <div class="stage-toolbar"><span>可交互原型 <b>演示</b></span><div class="widths" aria-label="预览宽度"><button data-width="320">320</button><button data-width="375">375</button><button data-width="414" class="selected">414</button></div><button class="mobile-settings" data-action="settings">切换状态</button></div>
+    <div class="stage-toolbar"><span>页面预览</span><div class="widths" aria-label="预览宽度"><button data-width="320">320</button><button data-width="375">375</button><button data-width="414" class="selected">414</button></div><button class="mobile-settings" data-action="settings">切换状态</button></div>
     <div class="phone" id="phone">
       <div class="statusbar"><span>9:41</span><span class="status-signal">▮▮▮ &nbsp; Wi-Fi &nbsp; ▰</span></div>
       <header id="app-header"></header>
-      <div class="prototype-ribbon">交互演示 · 无真实支付或文件下载</div>
       <div id="screen" class="screen" tabindex="-1"></div>
       <nav id="tabbar" aria-label="小程序导航"></nav>
       <div id="overlay-root"></div>
       <div id="toast" role="status" aria-live="polite"></div>
     </div>
-    <div class="stage-caption">原有首页 · 藏品详情 · 我的 · 会员页面延续，新增流程可点击体验</div>
   </main>
   <aside class="review-panel">
     <div class="eyebrow">体验控制台</div><h2>切换用户与状态</h2>
     <label for="review-scene">本期页面与浮层目录</label><select id="review-scene"></select>
 
 
-    <p>以下开关仅用于评审，不属于小程序界面。切换场景会重置该场景的演示账本。</p>
     <label for="scenario">用户与额度</label><select id="scenario">
       <option value="guest">未登录</option>
       <option value="paid">普通注册用户 · 积分足够</option><option value="poor">普通注册用户 · 积分不足</option>
       <option value="member-month">会员 · 本月免费已用完</option><option value="member-low">会员 · 日/月仅剩 1 张</option><option value="member-low-poor">会员 · 仅剩 1 张且积分不足</option><option value="member">会员 · 免费下载可用</option><option value="member-paid">会员 · 免费用完，积分足够</option><option value="member-poor">会员 · 免费用完，积分不足</option>
     </select>
-    <label for="search-state">模拟检索接口返回</label><select id="search-state"><option value="free">可免费检索</option><option value="points">免费额度已用完</option><option value="error">接口获取失败</option><option value="empty">检索成功 · 暂无结果（免费）</option></select>
-    <label for="download-state">模拟下载接口与文件</label><select id="download-state"><option value="success">正常完成</option><option value="partial">所选图片失败 · 本次不扣费</option><option value="unsupported">原文件无法保存 · 本次失败</option><option value="error">下载信息获取失败</option><option value="empty">暂无图片</option><option value="blocked">来源未开放下载</option><option value="settling">全部成功 · 结算回执延迟</option></select>
+    <label for="search-state">检索状态</label><select id="search-state"><option value="free">可免费检索</option><option value="points">免费额度已用完</option><option value="error">接口获取失败</option><option value="empty">检索成功 · 暂无结果（免费）</option></select>
+    <label for="download-state">下载状态</label><select id="download-state"><option value="success">正常完成</option><option value="partial">所选图片失败 · 本次不扣费</option><option value="unsupported">原文件无法保存 · 本次失败</option><option value="error">下载信息获取失败</option><option value="empty">暂无图片</option><option value="blocked">来源未开放下载</option><option value="settling">全部成功 · 结算回执延迟</option></select>
     <div id="account-summary" class="account-summary"></div>
-    <button class="review-button" data-action="reset">重置演示数据</button>
+    <button class="review-button" data-action="reset">重置体验状态</button>
     <div class="inspector" id="inspector"></div>
-    <div class="review-note">检索每日次数由后端判断。<br>原型中的余额、大小、套餐均为示例。<br>原文件不做格式转换。</div>
   </aside>
-  <script type="module" src="app.mjs"></script>
+  <script type="module" src="app.mjs?v=5"></script>
 </body>
 </html>
