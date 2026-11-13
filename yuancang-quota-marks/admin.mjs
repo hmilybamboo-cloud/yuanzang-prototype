@@ -121,7 +121,7 @@ function photoWall(library) {
     <td>${text(image.markName)}${image.demo ? '<small>演示款识</small>' : ''}</td><td><span class="clamp" title="${text(image.markDescription)}">${text(image.markDescription)}</span></td>
     <td class="row-actions"><button class="text-btn" data-edit-image="${text(image.key)}">编辑</button><button class="text-btn danger" data-delete-image="${text(image.key)}">删除</button></td></tr>`).join('');
   content.innerHTML = `<a class="crumb" href="#libraries">‹ 返回款识库</a><div class="page-head"><div><h1>${text(library.title)}</h1><p>${text(library.description)}</p></div>
-    <div class="actions"><button class="button" type="button" disabled aria-label="上传 Excel">上传 Excel</button><button class="button primary" data-new-image>添加图片</button></div></div><section class="panel"><div class="section-head"><h2>照片墙</h2><span class="muted">${library.images.length} 张图片</span></div>
+    <div class="actions"><button class="button primary" type="button">Excel导入数据</button><button class="button primary" data-new-image>添加图片</button></div></div><section class="panel"><div class="section-head"><h2>照片墙</h2><span class="muted">${library.images.length} 张图片</span></div>
     ${rows ? table(['图片地址','对应藏品','款识名称','款识说明','操作'],rows) : empty('照片墙暂无图片','添加图片并填写对应的采集机构和藏品 ID。')}</section>`;
 }
 
