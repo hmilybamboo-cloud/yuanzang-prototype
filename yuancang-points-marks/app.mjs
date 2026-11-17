@@ -32,7 +32,14 @@ const tabPages=['home','list','marks','archives','profile'];
 const save=()=>{if(ui.reviewMode)return;try{localStorage.setItem(storageKey,JSON.stringify(s));}catch{}};
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),2600);}
 function navigate(page, replace=false){if(ui.modal) closeModal();if(!replace)ui.stack.push({page:ui.page,scroll:$('#screen').scrollTop});ui.page=page;render();$('#screen').scrollTop=0;}
-function back(){if(ui.modal){closeModal();return;}const prev=ui.stack.pop();ui.page=prev?.page||'home';render();$('#screen').scrollTop=prev?.scroll||0;}
+function back(){
+  if(ui.modal){closeModal();return;}
+  if(ui.page==='marks'&&ui.marksDetail){
+    $('.marks-frame').contentWindow.postMessage({type:'yuancang:marks-back'},location.protocol==='file:'?'*':location.origin);
+    return;
+  }
+  const prev=ui.stack.pop();ui.page=prev?.page||'home';render();$('#screen').scrollTop=prev?.scroll||0;
+}
 function ensureLogin(intent){if(s.logged)return true;ui.returnIntent=intent;navigate('login');return false;}
 function navigateAccount(page){if(ensureLogin({kind:'page',page}))navigate(page);}
 async function shareCollection(){
@@ -44,7 +51,8 @@ async function shareCollection(){
   catch{toast('无法复制链接，请重试');}
 }
 function marksFrame(){
-  const params=new URLSearchParams({member:s.logged&&s.member?'1':'0',v:'8'});
+  ui.marksDetail=false;
+  const params=new URLSearchParams({member:s.logged&&s.member?'1':'0',v:'9'});
   if(!hasPoints)params.set('manage','1');
   if(ui.marksFixture)params.set('preview','1');
   if(ui.marksWall)params.set('wall',ui.marksWall);
@@ -52,7 +60,13 @@ function marksFrame(){
 }
 window.addEventListener('message',event=>{
   const origin=location.protocol==='file:'?'null':location.origin;
-  if(ui.page!=='marks'||event.origin!==origin||event.source!==$('.marks-frame')?.contentWindow||event.data?.type!=='yuancang:marks-membership'||(s.logged&&s.member))return;
+  if(ui.page!=='marks'||event.origin!==origin||event.source!==$('.marks-frame')?.contentWindow)return;
+  if(event.data?.type==='yuancang:marks-detail'){
+    ui.marksDetail=event.data.open===true;
+    if(!ui.marksDetail)ui.marksWall=null;
+    return;
+  }
+  if(event.data?.type!=='yuancang:marks-membership'||(s.logged&&s.member))return;
   const wall=event.data.wall;
   if(typeof wall!=='string'||!/^[a-z0-9-]{1,60}$/.test(wall))return;
   ui.marksWall=wall;
@@ -327,7 +341,7 @@ document.addEventListener('keydown',e=>{if(ui.modal){if(e.key==='Escape'){e.prev
 window.addEventListener('beforeunload',()=>save());
 
 // Review presets only seed deterministic demo data; they never invoke real services.
-function applyReviewScene(id) {
+function applyReviewScene(id, wall) {
   const scene=editionScenes.find(v=>v.id===id);if(!scene)return;
   clearInterval(workTimer);clearTimeout(searchTimer);clearTimeout(toastTimer);$('#toast').classList.remove('show');closeModal();
   const c=scene.config;
@@ -336,6 +350,7 @@ function applyReviewScene(id) {
   ui.selectedImages=c.selected||['original-1','original-2'];
   ui.confirmedQuote=null;
   Object.assign(ui,{reviewMode:true,page:scene.page,stack:[],item:0,image:0,detailTab:'basic',searching:false,searchCompleted:false,searchFee:0,noResults:false,recharge:10,custom:false,agreement:false,ordersTab:'all',ledgerTab:'all',selectedOrder:null,selectedTask:null,returnIntent:null,marksWall:c.marksWall||null,marksFixture:!!c.marksWall});
+  if(id==='marks'&&typeof wall==='string'&&/^[a-z0-9-]{1,60}$/.test(wall))ui.marksWall=wall;
   if(c.emptyQuery){ui.query='';ui.queryDraft='';}
   render();$('#screen').scrollTop=0;
   if(c.toast){toast(c.toast);if(document.body.classList.contains('capture-mode')){clearTimeout(toastTimer);document.body.classList.add('capture-toast');}}
@@ -363,7 +378,7 @@ if(reviewParams.has('capture')){
   $('#phone').insertAdjacentHTML('beforebegin','<div id="capture-label"></div>');
 }
 if(reviewParams.has('scene')){
-  applyReviewScene(reviewParams.get('scene'));
+  applyReviewScene(reviewParams.get('scene'),reviewParams.get('wall'));
   const item=Number(reviewParams.get('item'));
   if(reviewParams.get('scene')==='detail'&&Number.isInteger(item)&&items[item]){ui.item=item;render();}
 }else render();

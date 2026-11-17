@@ -56,3 +56,8 @@
 .gallery-meta b,.gallery-meta small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gallery-meta b{font-size:12px;line-height:1.25;font-weight:650}
 .gallery-overlay .gallery-tags{display:block;font-size:10px;line-height:1.25}
+.detail-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.detail-intro .detail-title-row h1{margin:0;min-width:0;overflow-wrap:anywhere}
+.detail-title-row .nav-icon{width:44px;height:44px;flex:none;border-radius:50%;color:var(--blue);cursor:pointer}
+.detail-title-row .nav-icon:hover{background:#edf3f5}
+.detail-list-back{margin-bottom:8px;border:0;background:none;color:var(--blue);font:inherit;cursor:pointer}

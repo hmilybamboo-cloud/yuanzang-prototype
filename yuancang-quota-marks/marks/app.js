@@ -16,6 +16,9 @@ const isMember = window.parent !== window && params.get('member') === '1';
 const isManaged = params.get('manage') === '1';
 const initialWall = params.get('wall');
 const previewLimit = 20;
+const embedded = window.parent !== window;
+const ownOrigin = location.protocol === 'file:' ? 'null' : location.origin;
+const messageTarget = location.protocol === 'file:' ? '*' : location.origin;
 function libraryMap() {
   const visible = loadLibraries(isManaged).filter(library => !library.hidden);
   const wall = visible.find(library => library.id === 'kangxi-kaishu');
@@ -108,7 +111,8 @@ function renderDetail() {
   const variant = variants[selectedId];
   if (!variant) { detailContent.innerHTML = ''; return; }
   const first = variant.images[0];
-  const intro = `<section class="detail-intro"><div class="breadcrumb">瓷器章款${variant.reign ? ` <span>›</span> ${markEscape(variant.dynasty)}代 <span>›</span> ${markEscape(variant.reign)}` : ''}</div><h1>${markEscape(variant.title)}</h1><p>${markEscape(variant.description)}</p></section>`;
+  const intro = `<section class="detail-intro">${embedded ? '' : '<button type="button" class="detail-list-back" data-detail-back>‹ 返回款识库</button>'}<div class="breadcrumb">瓷器章款${variant.reign ? ` <span>›</span> ${markEscape(variant.dynasty)}代 <span>›</span> ${markEscape(variant.reign)}` : ''}</div>
+    <div class="detail-title-row"><h1>${markEscape(variant.title)}</h1><button class="nav-icon" id="detailShare" type="button" aria-label="分享章款"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button></div><p>${markEscape(variant.description)}</p></section>`;
   if (!first) {
     detailContent.innerHTML = intro + `<section class="detail-empty"><div class="empty-panel"><div class="empty-symbol">款</div><b>馆藏图像整理中</b><p>此款式的字样名称已列入时间索引。待可核对的器底图像入库后，在此展示图片墙及对应藏品。</p></div></section>`;
     return;
@@ -180,6 +184,37 @@ function closeObject() {
   if (!viewer.hidden) document.querySelector('#openObject').focus();
 }
 
+function setDetailMode(open) {
+  document.body.classList.toggle('mode-detail', open);
+  if (embedded) window.parent.postMessage({type:'yuancang:marks-detail', open}, messageTarget);
+}
+
+function backFromDetail() {
+  if (!objectSheet.hidden) { closeObject(); return; }
+  if (!viewer.hidden) { closeViewer(); return; }
+  if (!document.body.classList.contains('mode-detail')) return;
+  setDetailMode(false);
+  timeline.querySelector(`[data-variant="${CSS.escape(selectedId)}"]`)?.focus({preventScroll:true});
+}
+
+function shareUrl() {
+  const url = new URL(location.href);
+  if (embedded) {
+    try {
+      const host = new URL(window.parent.location.href);
+      host.search = '';
+      host.hash = '';
+      host.searchParams.set('scene', 'marks');
+      host.searchParams.set('wall', selectedId);
+      return host.href;
+    } catch {}
+  }
+  url.search = '';
+  url.hash = '';
+  url.searchParams.set('wall', selectedId);
+  return url.href;
+}
+
 timeline.addEventListener('click', (event) => {
   const variantButton = event.target.closest('[data-variant]');
   if (!variantButton) return;
@@ -188,7 +223,7 @@ timeline.addEventListener('click', (event) => {
   renderTimeline();
   renderDetail();
   detailScroll.scrollTop = 0;
-  document.body.classList.add('mode-detail');
+  setDetailMode(true);
 });
 search.addEventListener('input', renderTimeline);
 detailContent.addEventListener('input', event => {
@@ -198,23 +233,21 @@ detailContent.addEventListener('input', event => {
   renderWallResults();
 });
 listScroll.addEventListener('scroll', updateCoordinate, { passive: true });
-detailContent.addEventListener('click', (event) => {
+detailContent.addEventListener('click', async (event) => {
+  if (event.target.closest('[data-detail-back]')) backFromDetail();
+  if (event.target.closest('#detailShare')) {
+    try { await navigator.clipboard.writeText(shareUrl()); toast('已复制款识库链接'); }
+    catch { toast('无法复制链接，请重试'); }
+  }
   const button = event.target.closest('[data-image-index]');
   if (button) openViewer(Number(button.dataset.imageIndex));
-  if (event.target.closest('.member-gate-action') && window.parent !== window) {
+  if (event.target.closest('.member-gate-action') && embedded) {
     event.preventDefault();
-    window.parent.postMessage({ type: 'yuancang:marks-membership', wall: selectedId }, location.protocol === 'file:' ? '*' : location.origin);
+    window.parent.postMessage({ type: 'yuancang:marks-membership', wall: selectedId }, messageTarget);
   }
 });
-document.querySelector('#detailBack').addEventListener('click', () => {
-  document.body.classList.remove('mode-detail');
-  timeline.querySelector(`[data-variant="${selectedId}"]`)?.focus();
-});
-document.querySelector('#detailShare').addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(location.href);
-    toast('已复制链接');
-  } catch { toast('可通过浏览器分享此页面'); }
+window.addEventListener('message', event => {
+  if (embedded && event.source === window.parent && event.origin === ownOrigin && event.data?.type === 'yuancang:marks-back') backFromDetail();
 });
 document.querySelectorAll('[data-toast]').forEach((button) => button.addEventListener('click', () => toast(button.dataset.toast)));
 document.querySelector('#viewerClose').addEventListener('click', closeViewer);
@@ -224,11 +257,7 @@ document.querySelector('#openObject').addEventListener('click', (event) => { eve
 document.querySelector('#closeObject').addEventListener('click', closeObject);
 objectCover.addEventListener('click', closeObject);
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape') {
-    if (!objectSheet.hidden) closeObject();
-    else if (!viewer.hidden) closeViewer();
-    else if (document.body.classList.contains('mode-detail')) document.body.classList.remove('mode-detail');
-  }
+  if (event.key === 'Escape') backFromDetail();
   if (!viewer.hidden && objectSheet.hidden && event.key === 'ArrowLeft') moveViewer(-1);
   if (!viewer.hidden && objectSheet.hidden && event.key === 'ArrowRight') moveViewer(1);
 });
@@ -243,12 +272,12 @@ viewer.addEventListener('touchend', (event) => {
 
 renderTimeline();
 renderDetail();
-if (Object.hasOwn(variants, initialWall)) document.body.classList.add('mode-detail');
+if (Object.hasOwn(variants, initialWall)) setDetailMode(true);
 window.addEventListener('storage', event => {
   if (!isManaged || event.key !== libraryStorageKey) return;
   if (!viewer.hidden) closeViewer();
   variants = libraryMap();
-  if (!Object.hasOwn(variants, selectedId)) document.body.classList.remove('mode-detail');
+  if (!Object.hasOwn(variants, selectedId)) setDetailMode(false);
   renderTimeline();
   renderDetail();
 });
