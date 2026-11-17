@@ -117,7 +117,7 @@ function libraryList(libraries) {
 
 function photoWall(library) {
   const rows = library.images.map(image => `<tr><td><div class="image-field">${thumb(image.imageUrl)}<span class="url" title="${text(image.imageUrl)}">${text(image.imageUrl)}</span></div></td>
-    <td>${text(image.institution)}<small>ID ${text(image.collectionId)}</small></td>
+    <td>${image.collectionName || image.title ? `<strong>${text(image.collectionName || image.title)}</strong><small>${text(image.institution)}</small>` : text(image.institution)}<small>ID ${text(image.collectionId)}</small></td>
     <td>${text(image.markName)}${image.demo ? '<small>演示款识</small>' : ''}</td><td><span class="clamp" title="${text(image.markDescription)}">${text(image.markDescription)}</span></td>
     <td class="row-actions"><button class="text-btn" data-edit-image="${text(image.key)}">编辑</button><button class="text-btn danger" data-delete-image="${text(image.key)}">删除</button></td></tr>`).join('');
   content.innerHTML = `<a class="crumb" href="#libraries">‹ 返回款识库</a><div class="page-head"><div><h1>${text(library.title)}</h1><p>${text(library.description)}</p></div>
@@ -223,8 +223,9 @@ function toggleLibrary(id) {
 function editImage(library, image) {
   openEditor(image ? '编辑照片墙图片' : '添加照片墙图片', `${field('图片地址','imageUrl',image?.imageUrl,{address:true})}<div class="form-row">
     ${field('采集机构','institution',image?.institution)}${field('藏品 ID','collectionId',image?.collectionId)}</div>
+    ${field('藏品名称','collectionName',image?.collectionName || image?.title,{required:false})}
     ${field('款识名称','markName',image?.markName)}${field('款识说明','markDescription',image?.markDescription,{multiline:true})}`, '保存', values => {
-    if (!Object.values(values).every(Boolean)) throw new Error('请填写全部图片字段。');
+    if (!values.imageUrl || !values.institution || !values.collectionId || !values.markName || !values.markDescription) throw new Error('请填写图片地址、采集机构、藏品 ID、款识名称和款识说明。');
     const imageUrl = safeImageUrl(values.imageUrl);
     if (!imageUrl) throw new Error('请输入有效的图片地址。');
     const libraries = loadLibraries();

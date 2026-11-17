@@ -1,6 +1,6 @@
 const periods = [
-  { dynasty: '明', english: 'MING', reigns: [{ name: '宣德', ids: [] }, { name: '成化', ids: ['chenghua-six'] }, { name: '万历', ids: [] }] },
-  { dynasty: '清', english: 'QING', reigns: [{ name: '康熙', ids: ['kangxi-four', 'kangxi-imperial', 'kangxi-kaishu', 'kangxi-zhuanshu'] }, { name: '雍正', ids: ['yongzheng-six'] }, { name: '乾隆', ids: ['qianlong-zhuanshu'] }] },
+  { dynasty: '明', english: 'MING', reigns: ['宣德', '成化', '万历'] },
+  { dynasty: '清', english: 'QING', reigns: ['康熙', '雍正', '乾隆'] },
 ];
 
 const timeline = document.querySelector('#timeline');
@@ -28,6 +28,7 @@ function libraryMap() {
 let variants = libraryMap();
 let selectedId = Object.hasOwn(variants, initialWall) ? initialWall : Object.keys(variants)[0];
 let viewerIndex = 0;
+let collectionQuery = '';
 let toastTimer;
 
 function viewableImages(variant = variants[selectedId]) {
@@ -37,7 +38,14 @@ function viewableImages(variant = variants[selectedId]) {
 
 const imageSrc = value => markEscape(safeImageUrl(value));
 const coverSrc = value => markEscape(coverImageUrl(value));
-const libraryLabel = library => `${library.images.length} 幅图像`;
+const libraryLabel = library => `${library.images.length} 幅章款`;
+const collectionName = entry => entry.collectionName?.trim() || entry.title || '';
+
+function filteredImages(variant = variants[selectedId]) {
+  const query = collectionQuery.trim().toLowerCase();
+  const images = viewableImages(variant);
+  return query ? images.filter(entry => collectionName(entry).toLowerCase().includes(query)) : images;
+}
 
 function toast(message) {
   const el = document.querySelector('#toast');
@@ -51,34 +59,38 @@ function sampleGlyph(text) {
   return `<span class="sample-glyph" aria-hidden="true">${[...text].map(char => `<span>${markEscape(char)}</span>`).join('')}</span>`;
 }
 
+function libraryCard(library) {
+  const images = (library.cover ? [library.cover] : library.images.slice(0, 3).map(entry => entry.imageUrl))
+    .map(coverSrc).filter(Boolean);
+  const cover = images.length ? images.map(src => `<img src="${src}" alt="" loading="lazy">`).join('')
+    : `<span class="feature-placeholder">${sampleGlyph(library.glyph || library.reign || '款识')}</span>`;
+  return `<button class="feature-variant ${images.length < 2 ? 'single' : ''} ${images.length === 2 ? 'double' : ''}" type="button" data-variant="${markEscape(library.id)}" aria-label="查看${markEscape(library.title)}">
+    <span class="feature-mosaic">${cover}</span><span class="feature-caption"><span><small>MARK IMAGES / 馆藏图谱</small><strong>${markEscape(library.title)}</strong><em>${libraryLabel(library)}</em></span><span class="feature-arrow" aria-hidden="true">↗</span></span></button>`;
+}
+
 function renderTimeline() {
   const query = search.value.trim().toLowerCase();
   let ordinal = 0;
   const groups = periods.map((group) => {
-    const years = group.reigns.map((reign) => {
+    const years = group.reigns.map(reign => {
       ordinal += 1;
-      const reignMatch = reign.name.includes(query);
-      const existingIds = Object.values(variants).filter(library => library.dynasty === group.dynasty && library.reign === reign.name).map(library => library.id);
-      const visibleIds = query && !reignMatch ? existingIds.filter(id => [variants[id].title, variants[id].type, variants[id].dynasty + variants[id].reign].some(value => value?.toLowerCase().includes(query))) : existingIds;
-      if (query && !reignMatch && !visibleIds.length) return '';
-      const featuredId = visibleIds.find((id) => variants[id].cover || variants[id].images.length);
-      const feature = featuredId ? variants[featuredId] : null;
-      const featureImages = feature?.cover ? [feature.cover] : feature?.images.slice(0, 3).map(entry => entry.imageUrl) ?? [];
-      const mosaic = feature ? `<button class="feature-variant ${featureImages.length === 1 ? 'single' : ''}" type="button" data-variant="${featuredId}" aria-label="查看${markEscape(feature.title)}"><span class="feature-mosaic">${featureImages.map(url => `<img src="${coverSrc(url)}" alt="" loading="lazy" />`).join('')}</span><span class="feature-caption"><span><small>MARK IMAGES / 馆藏图谱</small><strong>${markEscape(feature.title)}</strong><em>${libraryLabel(feature)}</em></span><span class="feature-arrow" aria-hidden="true">↗</span></span></button>` : '';
-      const otherIds = visibleIds.filter((id) => id !== featuredId);
-      const cards = otherIds.map((id) => {
-        const variant = variants[id];
-        return `<button class="variant-card ${selectedId === id ? 'selected' : ''}" type="button" data-variant="${id}" aria-label="查看${markEscape(variant.title)}"><span class="variant-thumb">${variant.cover ? `<img class="library-thumb" src="${coverSrc(variant.cover)}" alt="" loading="lazy">` : sampleGlyph(variant.glyph || variant.reign)}</span><span class="variant-info"><strong>${markEscape(variant.title)}</strong><small>${variant.type ? variant.type+' · ' : ''}${variant.images.length ? libraryLabel(variant) : '图像待收录'}</small></span><span class="next" aria-hidden="true">›</span></button>`;
-      }).join('');
-      const body = visibleIds.length ? `${mosaic}${otherIds.length ? `<div class="variant-section-label">同年号其他款式 <span>${otherIds.length}</span></div><div class="variant-list">${cards}</div>` : ''}` : '<p class="axis-empty">可核对图像整理中</p>';
-      return `<section class="axis-year" data-year="${reign.name}" data-dynasty="${group.dynasty}"><div class="axis-node" aria-hidden="true"></div><div class="axis-year-head"><span>${String(ordinal).padStart(2, '0')} / ${group.english}</span><h3>${reign.name}<small>${existingIds.length ? `${existingIds.length} 类章款` : '待收录'}</small></h3></div><div class="axis-year-body">${body}</div></section>`;
+      const libraries = Object.values(variants).filter(library => library.dynasty === group.dynasty && library.reign === reign && matchesLibrary(library,query));
+      if (!libraries.length) return '';
+      const hasCover = library => Boolean(library.cover || library.images.length);
+      libraries.sort((a,b) => Number(hasCover(b)) - Number(hasCover(a)));
+      return `<section class="axis-year" data-year="${reign}" data-dynasty="${group.dynasty}"><div class="axis-node" aria-hidden="true"></div><div class="axis-year-head"><span>${String(ordinal).padStart(2, '0')} / ${group.english}</span><h3>${reign}</h3></div><div class="axis-year-body library-cards">${libraries.map(libraryCard).join('')}</div></section>`;
     }).join('');
     return years ? `<section class="axis-era"><div class="axis-era-title"><b>${group.dynasty}代</b><span>${group.english} DYNASTY</span></div><div class="axis-era-years">${years}</div></section>` : '';
   }).join('');
-  const extra = Object.values(variants).filter(library => !periods.some(group => group.dynasty === library.dynasty && group.reigns.some(reign => reign.name === library.reign)) && (!query || [library.title,library.description,library.dynasty,library.reign,(library.dynasty||'')+(library.reign||'')].some(value => value?.toLowerCase().includes(query))));
-  const libraries = extra.length ? `<section class="managed-libraries"><h3>专题款识库</h3>${extra.map(library => `<button type="button" class="variant-card" data-variant="${markEscape(library.id)}"><span class="variant-thumb"><img class="library-thumb" src="${coverSrc(library.cover)}" alt="" loading="lazy"></span><span class="variant-info"><strong>${markEscape(library.title)}</strong><small>${markEscape([library.dynasty,library.reign].filter(Boolean).join(' · '))} · ${libraryLabel(library)}</small></span><span class="next" aria-hidden="true">›</span></button>`).join('')}</section>` : '';
+  const extra = Object.values(variants).filter(library => !periods.some(group => group.dynasty === library.dynasty && group.reigns.includes(library.reign)) && matchesLibrary(library,query));
+  const libraries = extra.length ? `<section class="managed-libraries library-cards"><h3>专题款识库</h3>${extra.map(libraryCard).join('')}</section>` : '';
   timeline.innerHTML = libraries + groups || '<div class="search-empty"><b>没有找到相关章款</b><span>试试搜索“康熙”“乾隆”或“楷书”。</span></div>';
   requestAnimationFrame(updateCoordinate);
+}
+
+function matchesLibrary(library, query) {
+  return !query || [library.title, library.type, library.dynasty, library.reign, library.description,
+    `${library.dynasty || ''}${library.reign || ''}`].some(value => value?.toLowerCase().includes(query));
 }
 
 function updateCoordinate() {
@@ -101,16 +113,29 @@ function renderDetail() {
     detailContent.innerHTML = intro + `<section class="detail-empty"><div class="empty-panel"><div class="empty-symbol">款</div><b>馆藏图像整理中</b><p>此款式的字样名称已列入时间索引。待可核对的器底图像入库后，在此展示图片墙及对应藏品。</p></div></section>`;
     return;
   }
-  const images = viewableImages(variant);
-  const isLimited = images.length < variant.images.length;
-  const gallery = images.map((entry, index) => `<button class="gallery-item" type="button" data-image-index="${index}" aria-label="放大查看${markEscape(entry.markName)}"><img src="${imageSrc(entry.imageUrl)}" alt="${markEscape(entry.markName)}" loading="lazy" /><span class="gallery-overlay"><strong>${String(index + 1).padStart(2, '0')}</strong><small>${markEscape(entry.title ? `${entry.title} · ${entry.number}` : entry.markName)}</small></span></button>`).join('');
+  detailContent.innerHTML = intro + `<div class="gallery-head"><div><p>IMAGE WALL / 馆藏实图</p><h2>章款图墙</h2></div></div><p class="wall-intro">点击图像，放大查看款识并进入对应藏品。</p>
+    <div class="wall-search"><label class="search-box"><span class="search-icon" aria-hidden="true"></span><input id="collectionSearch" type="search" aria-label="请检索藏品名称" placeholder="请检索藏品名称" autocomplete="off" value="${markEscape(collectionQuery)}"></label></div><div id="wallResults"></div>`;
+  renderWallResults(variant);
+}
+
+function renderWallResults(variant = variants[selectedId]) {
+  const isLimited = viewableImages(variant).length < variant.images.length;
+  const images = filteredImages(variant);
+  const gallery = images.map((entry, index) => {
+    const name = collectionName(entry) || '藏品名称待补充';
+    return `<button class="gallery-item" type="button" data-image-index="${index}" aria-label="放大查看${markEscape(name)}的款识">
+      <img src="${imageSrc(entry.imageUrl)}" alt="${markEscape(entry.markName)}" loading="lazy" />
+      <span class="gallery-overlay"><strong>${String(index + 1).padStart(2, '0')}</strong><span class="gallery-meta"><b>${markEscape(name)}</b><small>帝王年号款</small></span></span></button>`;
+  }).join('');
+  const results = gallery ? `<div class="gallery-grid">${gallery}</div>` : '<div class="search-empty"><b>没有找到匹配的藏品</b><span>换个藏品名称试试。</span></div>';
   const gate = isLimited ? `<section class="member-gate" aria-labelledby="memberGateTitle"><div><p>已展示前 ${previewLimit} 个款识</p><h3 id="memberGateTitle">开通会员，浏览更多内容</h3></div><a class="member-gate-action" href="../index.html?scene=plans">开通会员 <span aria-hidden="true">›</span></a></section>` : '';
-  const credit = first.object ? `<p class="detail-source">图像来源：<a href="https://www.metmuseum.org/art/collection/search/${Number(first.id)}" target="_blank" rel="noopener noreferrer">The Metropolitan Museum of Art</a>，Open Access / Public Domain。单凭款识字样不宜判断器物年代。</p>` : '';
-  detailContent.innerHTML = intro + `<div class="gallery-head"><div><p>IMAGE WALL / 馆藏实图</p><h2>章款图墙</h2></div><small>${isLimited ? '预览 ' : ''}${images.length} 幅</small></div><p class="wall-intro">点击图像，放大查看款识并进入对应藏品。</p><div class="gallery-grid ${images.length === 1 ? 'one-image' : ''}">${gallery}</div>${credit}${gate}`;
+  const firstMet = images.find(entry => entry.object);
+  const credit = firstMet ? `<p class="detail-source">图像来源：<a href="https://www.metmuseum.org/art/collection/search/${Number(firstMet.id)}" target="_blank" rel="noopener noreferrer">The Metropolitan Museum of Art</a>，Open Access / Public Domain。单凭款识字样不宜判断器物年代。</p>` : '';
+  document.querySelector('#wallResults').innerHTML = `<p class="wall-count" role="status">${collectionQuery.trim() ? '找到 ' : isLimited ? '预览 ' : ''}${images.length} 幅章款</p>${results}${credit}${gate}`;
 }
 
 function openViewer(index) {
-  const images = viewableImages();
+  const images = filteredImages();
   if (!images[index]) return;
   viewerIndex = index;
   updateViewer();
@@ -118,8 +143,7 @@ function openViewer(index) {
   document.querySelector('#viewerClose').focus();
 }
 function updateViewer() {
-  const variant = variants[selectedId];
-  const images = viewableImages(variant);
+  const images = filteredImages();
   const entry = images[viewerIndex];
   document.querySelector('#viewerImage').src = safeImageUrl(entry.imageUrl);
   document.querySelector('#viewerImage').alt = entry.markName;
@@ -130,7 +154,7 @@ function updateViewer() {
   document.querySelector('#viewerNext').disabled = viewerIndex === images.length - 1;
 }
 function moveViewer(step) {
-  const images = viewableImages();
+  const images = filteredImages();
   viewerIndex = Math.max(0, Math.min(images.length - 1, viewerIndex + step));
   updateViewer();
 }
@@ -140,10 +164,10 @@ function closeViewer() {
   detailContent.querySelector(`[data-image-index="${viewerIndex}"]`)?.focus();
 }
 function openObject() {
-  const entry = viewableImages()[viewerIndex];
+  const entry = filteredImages()[viewerIndex];
   const source = entry.object ? `<a class="object-source" href="https://www.metmuseum.org/art/collection/search/${Number(entry.id)}" target="_blank" rel="noopener noreferrer">查看原始馆藏记录 ↗</a>` : '';
   const image = entry.object ? `<img class="object-image" src="${imageSrc(asset(entry.object))}" alt="${markEscape(entry.title)}的完整器物图像" />` : '';
-  document.querySelector('#objectContent').innerHTML = `${image}<h2 id="objectTitle">${markEscape(entry.title || '关联藏品')}</h2><dl class="object-meta"><div><dt>采集机构</dt><dd>${markEscape(entry.institution)}</dd></div><div><dt>藏品 ID</dt><dd>${markEscape(entry.collectionId)}</dd></div>${entry.number ? `<div><dt>馆藏编号</dt><dd>${markEscape(entry.number)}</dd></div>` : ''}</dl>${source}`;
+  document.querySelector('#objectContent').innerHTML = `${image}<h2 id="objectTitle">${markEscape(collectionName(entry) || '关联藏品')}</h2><dl class="object-meta"><div><dt>采集机构</dt><dd>${markEscape(entry.institution)}</dd></div><div><dt>藏品 ID</dt><dd>${markEscape(entry.collectionId)}</dd></div>${entry.number ? `<div><dt>馆藏编号</dt><dd>${markEscape(entry.number)}</dd></div>` : ''}</dl>${source}`;
   objectCover.hidden = false;
   objectSheet.hidden = false;
   document.querySelector('#closeObject').focus();
@@ -158,12 +182,19 @@ timeline.addEventListener('click', (event) => {
   const variantButton = event.target.closest('[data-variant]');
   if (!variantButton) return;
   selectedId = variantButton.dataset.variant;
+  collectionQuery = '';
   renderTimeline();
   renderDetail();
   detailScroll.scrollTop = 0;
   document.body.classList.add('mode-detail');
 });
 search.addEventListener('input', renderTimeline);
+detailContent.addEventListener('input', event => {
+  if (event.target.id !== 'collectionSearch') return;
+  if (!viewer.hidden) closeViewer();
+  collectionQuery = event.target.value;
+  renderWallResults();
+});
 listScroll.addEventListener('scroll', updateCoordinate, { passive: true });
 detailContent.addEventListener('click', (event) => {
   const button = event.target.closest('[data-image-index]');
