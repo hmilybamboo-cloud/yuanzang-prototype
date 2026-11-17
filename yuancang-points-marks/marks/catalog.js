@@ -36,6 +36,26 @@ const libraryStorageKey = 'yuancang-quota-mark-libraries-v1';
 const metInstitution = 'The Metropolitan Museum of Art';
 const defaultLibraryDescription = '同一款式，在不同器物上留下各自的笔意与布局。';
 
+// Only assign a frame when the mark and its surrounding area are visible.
+const markFrames = {
+  '42229-2':'无圈框', '42230-2':'无圈框', '52049-1':'无圈框',
+  '42363-1':'无圈框', '42232-2':'无圈框', '42423-1':'无圈框',
+  '42515-5':'双方框', '49358-1':'单圈',
+};
+const markScripts = Object.fromEntries([
+  ...kangxiImages.map(entry => [entry.mark, '楷书']),
+  ['42515-5','楷书'], ['49358-1','楷书'], ['53774-6','篆书'],
+]);
+
+function markTags(entry) {
+  const originalPhoto = entry.mark && entry.imageUrl === asset(entry.mark);
+  return [
+    ['书体', entry.script || (originalPhoto && markScripts[entry.mark])],
+    ['圈框', entry.frame || (originalPhoto && markFrames[entry.mark])],
+    ['色彩', entry.color || (originalPhoto && Object.hasOwn(markScripts, entry.mark) ? '青花' : '')],
+  ].filter(([, value]) => value);
+}
+
 function defaultLibraries() {
   return Object.values(baseVariants).map(variant => ({
     ...variant,
