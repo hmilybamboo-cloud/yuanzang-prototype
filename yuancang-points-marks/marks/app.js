@@ -108,7 +108,7 @@ function renderDetail() {
   const variant = variants[selectedId];
   if (!variant) { detailContent.innerHTML = ''; return; }
   const first = variant.images[0];
-  const intro = `<section class="detail-intro"><div class="breadcrumb">瓷器章款${variant.reign ? ` <span>›</span> ${markEscape(variant.dynasty)}代 <span>›</span> ${markEscape(variant.reign)}` : ''}</div><h1>${markEscape(variant.title)}</h1><p>${markEscape(variant.description)}</p><div class="fact-row">${variant.reign ? `<span>${markEscape(variant.dynasty)} · ${markEscape(variant.reign)}</span>${variant.type ? '<span>'+markEscape(variant.type)+'</span>' : ''}` : ''}<span>${first ? libraryLabel(variant) : '图像整理中'}</span></div></section>`;
+  const intro = `<section class="detail-intro"><div class="breadcrumb">瓷器章款${variant.reign ? ` <span>›</span> ${markEscape(variant.dynasty)}代 <span>›</span> ${markEscape(variant.reign)}` : ''}</div><h1>${markEscape(variant.title)}</h1><p>${markEscape(variant.description)}</p></section>`;
   if (!first) {
     detailContent.innerHTML = intro + `<section class="detail-empty"><div class="empty-panel"><div class="empty-symbol">款</div><b>馆藏图像整理中</b><p>此款式的字样名称已列入时间索引。待可核对的器底图像入库后，在此展示图片墙及对应藏品。</p></div></section>`;
     return;
