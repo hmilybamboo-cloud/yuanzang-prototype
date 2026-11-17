@@ -1,5 +1,7 @@
+const params = new URLSearchParams(location.search);
+const isManaged = params.get('manage') === '1';
 const periods = [
-  { dynasty: '明', english: 'MING', reigns: ['宣德', '成化', '万历'] },
+  { dynasty: '明', english: 'MING', reigns: isManaged ? ['宣德', '成化', '弘治', '正德', '嘉靖', '隆庆', '万历'] : ['宣德', '成化', '万历'] },
   { dynasty: '清', english: 'QING', reigns: ['康熙', '雍正', '乾隆'] },
 ];
 
@@ -11,9 +13,7 @@ const detailScroll = document.querySelector('#detailScroll');
 const viewer = document.querySelector('#imageViewer');
 const objectSheet = document.querySelector('#objectSheet');
 const objectCover = document.querySelector('#objectCover');
-const params = new URLSearchParams(location.search);
 const isMember = window.parent !== window && params.get('member') === '1';
-const isManaged = params.get('manage') === '1';
 const initialWall = params.get('wall');
 const previewLimit = 20;
 const embedded = window.parent !== window;
@@ -80,7 +80,7 @@ function renderTimeline() {
       const libraries = Object.values(variants).filter(library => library.dynasty === group.dynasty && library.reign === reign && matchesLibrary(library,query));
       if (!libraries.length) return '';
       const hasCover = library => Boolean(library.cover || library.images.length);
-      libraries.sort((a,b) => Number(hasCover(b)) - Number(hasCover(a)));
+      if (!isManaged) libraries.sort((a,b) => Number(hasCover(b)) - Number(hasCover(a)));
       return `<section class="axis-year" data-year="${reign}" data-dynasty="${group.dynasty}"><div class="axis-node" aria-hidden="true"></div><div class="axis-year-head"><span>${String(ordinal).padStart(2, '0')} / ${group.english}</span><h3>${reign}</h3></div><div class="axis-year-body library-cards">${libraries.map(libraryCard).join('')}</div></section>`;
     }).join('');
     return years ? `<section class="axis-era"><div class="axis-era-title"><b>${group.dynasty}代</b><span>${group.english} DYNASTY</span></div><div class="axis-era-years">${years}</div></section>` : '';

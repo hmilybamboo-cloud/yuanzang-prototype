@@ -52,7 +52,7 @@ async function shareCollection(){
 }
 function marksFrame(){
   ui.marksDetail=false;
-  const params=new URLSearchParams({member:s.logged&&s.member?'1':'0',v:'9'});
+  const params=new URLSearchParams({member:s.logged&&s.member?'1':'0',v:'10'});
   if(!hasPoints)params.set('manage','1');
   if(ui.marksFixture)params.set('preview','1');
   if(ui.marksWall)params.set('wall',ui.marksWall);

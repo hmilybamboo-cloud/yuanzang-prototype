@@ -107,12 +107,12 @@ function downloadResults() {
 }
 
 function libraryList(libraries) {
-  const rows = libraries.map(library => `<tr><td>${thumb(library.cover || library.images[0]?.imageUrl)}</td><td><strong>${text(library.title)}</strong></td>
+  const rows = libraries.map(library => `<tr><td>${thumb(library.cover)}</td><td><strong>${text(library.title)}</strong><small class="library-id" title="${text(library.id)}">ID ${text(library.id)}</small></td><td>${library.sortOrder ?? '—'}</td>
     <td>${text(library.dynasty || '—')} / ${text(library.reign || '—')}</td><td><span class="clamp" title="${text(library.description)}">${text(library.description)}</span></td><td>${library.images.length} 张</td>
     <td><span class="${library.hidden?'muted':'badge'}">${library.hidden?'已隐藏':'已显示'}</span></td>
     <td class="row-actions"><a class="text-btn" href="#libraries/${text(library.id)}">管理照片墙</a> <button class="text-btn" data-edit-library="${text(library.id)}">编辑</button><button class="text-btn" data-toggle-library="${text(library.id)}">${library.hidden?'显示':'隐藏'}</button><button class="text-btn danger" data-delete-library="${text(library.id)}">删除</button></td></tr>`).join('');
-  content.innerHTML = `<div class="page-head"><div><h1>款识库管理</h1><p>新建款识库并设置封面、标题和说明，再添加照片墙图片。</p></div><button class="button primary" data-new-library>新建款识库</button></div>
-    <section class="panel">${rows ? table(['封面','标题','朝代 / 年号','说明','照片墙','状态','操作'],rows) : empty('还没有款识库','新建款识库后即可添加照片墙。')}</section>`;
+  content.innerHTML = `<div class="page-head"><div><h1>款识库管理</h1><p>设置库名称、朝代年号、排序和显示状态，再添加照片墙图片。</p></div><button class="button primary" data-new-library>新建款识库</button></div>
+    <section class="panel">${rows ? table(['封面','库名称 / ID','排序','朝代 / 年号','库说明','照片墙','状态','操作'],rows) : empty('还没有款识库','新建款识库后即可添加照片墙。')}</section>`;
 }
 
 function photoWall(library) {
@@ -178,17 +178,20 @@ async function readCover(file) {
 
 function editLibrary(library) {
   let uploadedCover = '';
-  openEditor(library ? '编辑款识库' : '新建款识库', `${field('标题','title',library?.title)}<div class="form-row">${field('朝代','dynasty',library?.dynasty)}${field('年号','reign',library?.reign)}</div>
-    <div class="upload-field"><strong>封面</strong><div class="actions"><span id="cover-preview">${thumb(library?.cover || library?.images[0]?.imageUrl)}</span><button class="button" type="button" data-pick-cover>上传图片</button></div><input id="cover-file" type="file" accept="image/jpeg,image/png,image/webp" aria-label="封面图片" hidden><small>支持 JPG、PNG、WebP，最大 8 MB</small></div>
-    ${field('说明','description',library?.description,{multiline:true})}`, '保存', values => {
+  const nextOrder = Math.max(0, ...loadLibraries().map(item => item.sortOrder ?? 0)) + 1;
+  openEditor(library ? '编辑款识库' : '新建款识库', `${field('库名称','title',library?.title)}<div class="form-row">${field('朝代','dynasty',library?.dynasty)}${field('年号','reign',library?.reign)}</div>
+    <div class="form-row"><label>排序<input name="sortOrder" type="number" min="1" step="1" value="${library?.sortOrder ?? nextOrder}" required></label><label>状态<select name="status"><option value="visible">显示</option><option value="hidden" ${library?.hidden ? 'selected' : ''}>隐藏</option></select></label></div>
+    <div class="upload-field"><strong>封面</strong><div class="actions"><span id="cover-preview">${thumb(library?.cover)}</span><button class="button" type="button" data-pick-cover>上传图片</button></div><input id="cover-file" type="file" accept="image/jpeg,image/png,image/webp" aria-label="封面图片" hidden><small>支持 JPG、PNG、WebP，最大 8 MB</small></div>
+    ${field('库说明','description',library?.description,{multiline:true,required:false})}<p class="muted">${library ? `ID ${text(library.id)}` : '保存后自动生成 ID'}</p>`, '保存', values => {
     const {title, description, reign} = values;
     const dynasty = values.dynasty.replace(/代$/,'');
-    if (!title || !description || !dynasty || !reign) throw new Error('请填写标题、朝代、年号和说明。');
-    if (!library && !uploadedCover) throw new Error('请上传封面图片。');
+    const sortOrder = Number(values.sortOrder);
+    if (!title || !dynasty || !reign) throw new Error('请填写库名称、朝代和年号。');
+    if (!Number.isSafeInteger(sortOrder) || sortOrder < 1) throw new Error('排序请填写正整数。');
     const libraries = loadLibraries();
     const current = libraries.find(item => item.id === library?.id);
     if (library && !current) throw new Error('该款识库已删除。');
-    const data = {title, description, dynasty, reign, cover:uploadedCover || current?.cover || ''};
+    const data = {title, description, dynasty, reign, sortOrder, hidden:values.status === 'hidden', cover:uploadedCover || current?.cover || ''};
     if (current) Object.assign(current, data);
     else libraries.push({id:`lib-${crypto.randomUUID()}`, ...data, images:[]});
     persist(libraries);

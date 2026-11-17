@@ -51,3 +51,5 @@ dialog::backdrop{background:#1a1a1a66}.dialog-head,.dialog-foot{padding:15px 20p
 .form-error{white-space:pre-line}
 .button:disabled{opacity:.45;cursor:not-allowed}
 #import-preview{overflow-wrap:anywhere}
+.library-id{max-width:14rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dialog-body select{width:100%;padding:8px 10px;border:1px solid #d2c9b4;border-radius:6px;background:#fffdf8;color:var(--ink);font:inherit;font-weight:400}
