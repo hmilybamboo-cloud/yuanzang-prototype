@@ -123,11 +123,11 @@ function renderWallResults(variant = variants[selectedId]) {
   const images = filteredImages(variant);
   const gallery = images.map((entry, index) => {
     const name = collectionName(entry) || '藏品名称待补充';
-    const tags = markTags(entry).map(([label, value]) => `<small title="${label}">${markEscape(value)}</small>`).join('');
+    const tags = markTags(entry).map(([label, value]) => `<span title="${label}">${markEscape(value)}</span>`).join(' · ');
     return `<button class="gallery-item" type="button" data-image-index="${index}" aria-label="放大查看${markEscape(name)}的款识">
       <img src="${imageSrc(entry.imageUrl)}" alt="${markEscape(entry.markName)}" loading="lazy" />
-      <span class="gallery-overlay"><strong>${String(index + 1).padStart(2, '0')}</strong><span class="gallery-meta"><b>${markEscape(name)}</b>
-      ${tags ? `<span class="gallery-tags">${tags}</span>` : ''}</span></span></button>`;
+      <span class="gallery-overlay"><span class="gallery-meta"><b>${markEscape(name)}</b>
+      ${tags ? `<small class="gallery-tags">${tags}</small>` : ''}</span></span></button>`;
   }).join('');
   const results = gallery ? `<div class="gallery-grid">${gallery}</div>` : '<div class="search-empty"><b>没有找到匹配的藏品</b><span>换个藏品名称试试。</span></div>';
   const gate = isLimited ? `<section class="member-gate" aria-labelledby="memberGateTitle"><div><p>已展示前 ${previewLimit} 个款识</p><h3 id="memberGateTitle">开通会员，浏览更多内容</h3></div><a class="member-gate-action" href="../index.html?scene=plans">开通会员 <span aria-hidden="true">›</span></a></section>` : '';

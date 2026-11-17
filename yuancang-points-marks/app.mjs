@@ -44,7 +44,7 @@ async function shareCollection(){
   catch{toast('无法复制链接，请重试');}
 }
 function marksFrame(){
-  const params=new URLSearchParams({member:s.logged&&s.member?'1':'0',v:'6'});
+  const params=new URLSearchParams({member:s.logged&&s.member?'1':'0',v:'7'});
   if(!hasPoints)params.set('manage','1');
   if(ui.marksFixture)params.set('preview','1');
   if(ui.marksWall)params.set('wall',ui.marksWall);

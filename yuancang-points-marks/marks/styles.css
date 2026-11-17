@@ -51,8 +51,8 @@
 .feature-placeholder .sample-glyph{font-size:clamp(18px,5vw,27px);color:#245e8a}
 .wall-search{padding:0 12px 2px}
 .wall-count{margin:8px 14px;color:var(--ink-soft);font-size:11px;text-align:right}
-.gallery-overlay .gallery-meta{display:grid;gap:4px;text-align:right;min-width:0}
+.gallery-overlay:has(.gallery-meta){justify-content:flex-end}
+.gallery-overlay .gallery-meta{display:grid;gap:3px;text-align:right;min-width:0}
 .gallery-meta b,.gallery-meta small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gallery-meta b{font-size:12px;line-height:1.25;font-weight:650}
-.gallery-tags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:3px;min-width:0}
-.gallery-overlay .gallery-tags small{font-size:9px;line-height:1.2;padding:2px 5px;border:1px solid #ffffff66;border-radius:999px;background:#162c3bbf;color:#fff}
+.gallery-overlay .gallery-tags{display:block;font-size:10px;line-height:1.25}
